@@ -125,7 +125,13 @@ write module; only the *color channel* format is fixed to OKLCH.
 - Families: `--font-sans`, `--font-mono` (+ `--font-serif` if the template uses one).
 - Type scale: `--text-xs … --text-4xl`. Weights. Line-heights.
 
-**Spacing** — `--space-1 … --space-12`.
+**Spacing — single `--spacing` multiplier (v4-native).** Tailwind v4 generates every numeric spacing
+utility (`p-1 … p-12 … p-N`) from one `--spacing` multiplier via `calc()`; there is no discrete
+`--space-1..12` scale (that was a v3 model). So spacing is **one editable token** — change `--spacing` and
+the whole `p-/m-/gap-/size-` scale ripples proportionally. **Honest boundary:** because `p-13` is computed
+on demand, off-scale spacing **cannot fail at compile** the way an off-palette color can — it is caught by
+**lint** (§6.2), not the compiler. The design-system page renders the derived steps (p-1..p-12) as
+reference; they are derived, not authored.
 
 **Radii** — `--radius` (shadcn keys off this) + `--radius-sm/md/lg`.
 
@@ -162,18 +168,21 @@ Tailwind v4 configures in CSS, not `tailwind.config.ts`. All wiring lives in `gl
 it *even more* the single source of truth (§2). **Two layers, shadcn-v4 pattern:**
 
 1. **Runtime layer — `:root` / `.dark`** hold the authored, editable token values:
-   `--primary: oklch(...)`, `--space-4: …`, etc. **The editor writes here. The manifest generates from
-   here.** This is the source of truth.
+   `--primary: oklch(...)`, etc. **The editor writes here. The manifest generates from here.** This is the
+   source of truth. (`--spacing` lives here too, as the single spacing knob.)
 2. **Utility layer — `@theme inline`** maps each token into Tailwind's namespace so it generates a
-   utility: `@theme inline { --color-primary: var(--primary); --spacing-4: var(--space-4); … }`. The
-   `inline` keyword means the utility resolves to `var(--primary)` (not a copied literal), so a runtime
+   utility: `@theme inline { --color-primary: var(--primary); --text-lg: var(--fs-lg); … }`. The `inline`
+   keyword means the utility resolves *through* `var(--primary)` (not a copied literal), so a runtime
    change to the `:root` var repaints instantly — no rebuild. So `bg-primary`, `text-lg`, `p-4`,
-   `shadow-md`, `rounded-lg`, `border-thick` all resolve to the runtime vars.
+   `shadow-md`, `rounded-lg` all resolve to the runtime vars.
 
-**Defaults are cleared, not extended (load-bearing).** In v4 the default palette/scale are cleared by
-resetting the namespace inside `@theme` (`--color-*: initial; --spacing-*: initial;`) *before* defining
-the token-mapped entries. With the defaults gone, `bg-red-500` and off-scale values **fail to compile**,
-not just fail lint (§6.2) — the most likely drift vector becomes a build error. Non-token-backed
+**Defaults are cleared, not extended (load-bearing).** In v4 the default palettes/scales are cleared by
+resetting the namespace inside `@theme` (`--color-*: initial; --text-*: initial; --shadow-*: initial;` …)
+*before* defining the token-mapped entries. With the defaults gone, off-token utilities in a **cleared
+namespace fail to compile** — `bg-red-500`, `text-[10px]`-style off-scale type, etc. become build errors,
+not lint warnings. **Caveat (spacing):** the `--spacing` multiplier is *not* a clearable enum, so off-scale
+spacing (`p-13`) compiles and is caught by lint instead (§6.2) — the only group where the compile-gate
+doesn't apply. Non-token-backed
 utilities (layout, flex, grid, etc.) are untouched. **A `tailwind.config.ts` is optional and near-empty**
 (content globs / plugin hooks only) — no token mapping lives there.
 
@@ -316,9 +325,14 @@ that flag hardcoded colors / raw px where a token exists / literal hex / arbitra
 
 Three enforcement mechanisms, layered (the first is the strongest):
 
-- **Compile-time (strongest).** Because `@theme` *clears* the default palette/scale namespaces (§3),
-  `bg-red-500` and off-scale spacing don't exist → build error, no lint needed. Lint catches what
-  compiles: arbitrary-value escapes (`bg-[#abc]`, `p-[13px]`) and raw values in CSS.
+- **Compile-time (strongest, cleared namespaces only).** Because `@theme` *clears* the default color,
+  font-size, shadow, radius (etc.) namespaces (§3), `bg-red-500` and off-scale type don't exist → build
+  error, no lint needed. **Exception — spacing:** v4's `--spacing` multiplier can't be cleared to an enum,
+  so `p-13` compiles; spacing off-scale falls to lint (next bullet). Lint also catches arbitrary-value
+  escapes everywhere (`bg-[#abc]`, `p-[13px]`) and raw values in CSS.
+- **Spacing scale (lint, since compile can't).** A rule flags numeric spacing utilities outside the
+  curated step list (e.g. `p-13`, `gap-7` if 7 isn't a step) and arbitrary `p-[13px]`. This is spacing's
+  only guard — the compile-gate above explicitly does not cover it.
 - **Both-theme completeness.** A rule asserts every color token defined in `:root` also exists in `.dark`
   (and vice-versa). Closes a guaranteed bug class: the extension procedure adds a token to one block and
   forgets the other → broken dark mode that nothing else catches.
@@ -386,8 +400,8 @@ AGENTS.md  CLAUDE.md      # LLM contract (+ .cursor/rules)
 
 ## 8. Data flow (end to end)
 
-- **Build (LLM):** LLM reads `design-system.md` → generates components using `bg-primary`, `var(--space-4)`,
-  etc. → lint passes. Needs a missing value → follows the extension procedure → adds `--warning` to
+- **Build (LLM):** LLM reads `design-system.md` → generates components using `bg-primary`, `p-4`,
+  `text-lg`, etc. → lint passes. Needs a missing value → follows the extension procedure → adds `--warning` to
   `globals.css` → `npm run tokens` regenerates the manifest → uses `bg-warning`.
 - **Edit (human):** opens `/design-system` in dev → enables Edit → clicks a swatch → picks a new value →
   live repaint via `setProperty` → commit → `POST /api/ds/token` → `lib/tokens/write` rewrites
