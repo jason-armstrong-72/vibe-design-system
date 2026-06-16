@@ -99,6 +99,16 @@ Extended-but-curated. Authored as CSS vars under `:root` (light) and `.dark` (da
 the contract** — the stable API the editor, lint, and LLM all key on; v1 fixes a documented naming
 convention.
 
+**Color storage format — OKLCH, decided.** Color tokens store a **full `oklch(...)` value**, not bare
+channels and not hex. Rationale: (a) OKLCH is perceptually uniform — the brand ramp and the fast-follow
+WCAG contrast check (§10) both reason about lightness, which OKLCH gives directly; (b) P3 wide-gamut for
+free; (c) it is shadcn's current default, so the template is not born legacy. **Consequence for Tailwind
+wiring:** utilities reference the var directly (`colors.primary = 'var(--primary)'`), **not** the legacy
+`hsl(var(--primary))` wrapper. The color picker emits `oklch(...)`; the write module stores it verbatim.
+One format end-to-end (picker → write → var → utility) — no per-edit format conversion, no hex/hsl
+ambiguity. Aliases (`var()`), `color-mix()`, and numeric/string non-color tokens are still handled by the
+write module; only the *color channel* format is fixed to OKLCH.
+
 **Color**
 - shadcn semantic set: `--background`, `--foreground`, `--primary`, `--secondary`, `--muted`, `--accent`,
   `--destructive`, `--border`, `--input`, `--ring`, plus their `*-foreground` pairs.
@@ -142,10 +152,17 @@ schema now, so a **contrast check** (WCAG) can be added as a fast-follow (§10) 
 
 ### Tailwind wiring
 
-`tailwind.config.ts` maps utilities → vars (`colors.primary = 'hsl(var(--primary))'`, `spacing`,
-`fontSize`, `boxShadow`, `borderWidth`, `zIndex`, etc.), the shadcn-standard pattern extended to the new
-scales. So `bg-primary`, `text-lg`, `p-4`, `shadow-md`, `rounded-lg`, `border-thick` all resolve to vars
-at runtime.
+`tailwind.config.ts` maps utilities → vars (`colors.primary = 'var(--primary)'`, `spacing`, `fontSize`,
+`boxShadow`, `borderWidth`, `zIndex`, etc.), the shadcn-standard pattern extended to the new scales. So
+`bg-primary`, `text-lg`, `p-4`, `shadow-md`, `rounded-lg`, `border-thick` all resolve to vars at runtime.
+
+**Defaults are stripped, not extended (load-bearing).** The config **replaces** Tailwind's default color
+palette and spacing scale rather than adding alongside them — `colors` and `spacing` are *redefined* to
+contain only token-mapped entries. This is what gives the lint (§6.2) teeth: with the defaults gone,
+`bg-red-500` and `p-4`-style off-scale values **fail to compile**, not just fail lint. The most likely
+drift vector (LLM reaching for a stock Tailwind color/scale that "looks fine") becomes a build error
+instead of silent inconsistency. Utilities that are not token-backed (layout, flex, grid, etc.) are
+untouched.
 
 ---
 
@@ -175,9 +192,11 @@ A dev-only edit layer over the design-system page (and, secondarily, any app pag
 proven `aws_agent` prototype interaction (panel + live preview + writeback), **rebuilt properly** to
 remove that prototype's tech debt.
 
-### Two edit paths
+### Edit paths
 
-1. **Token editing (primary).** Click a `data-token` element → a control panel for *that token* opens.
+**v1 ships path 1 only.** Pick-anywhere (path 2) is **cut from v1 to fast-follow** — see the note below.
+
+1. **Token editing (primary, the whole of v1).** Click a `data-token` element → a control panel for *that token* opens.
    The **control type is derived from the token group**: color picker for colors, slider for
    spacing/radii/border-widths, dropdown for font families, an easing-curve control for transitions,
    etc. Changing a value:
@@ -186,16 +205,16 @@ remove that prototype's tech debt.
    Because the unit edited is a **token**, the change ripples everywhere it is used. No selector
    derivation — the click maps to a known token.
 
-2. **Pick-anywhere (secondary).** On a real app page in dev, hover/click any element. The editor resolves
-   which token(s) drive its computed styles and offers to edit those tokens. If the element uses a
-   **hardcoded value** (drift), the editor **flags it** ("not tokenized") rather than silently patching —
-   surfacing drift instead of hiding it (same philosophy as `website-editor`'s conflict-flagging).
-
-   **Reverse-resolution is the riskiest part of M4** and the v1 bar is deliberately modest. Mapping a
-   computed style back to a token is not always 1:1 — a computed `hsl(...)` may match several tokens, or
-   match none (e.g. after `color-mix()` / opacity). v1 behaviour: **exact, unambiguous match → offer that
-   token; multiple matches → present the candidate list, never guess; no match → flag "not tokenized".**
-   Anything richer (fuzzy/derived-value resolution) is fast-follow polish, not v1.
+2. **Pick-anywhere (CUT FROM v1 → fast-follow).** Hover/click any element on a real app page, resolve
+   which token(s) drive its computed styles, offer to edit those. **Why cut:** reverse-resolution (mapping
+   a computed color back to a token) is the riskiest, lowest-value path in the whole product. It is *not
+   always 1:1* — a computed color may match several tokens or none (after `color-mix()` / opacity) — which
+   is precisely the `website-editor` selector-derivation problem this project escaped by tagging
+   `data-token`. For a **greenfield template we own**, everything worth editing is already `data-token`-
+   tagged, so path 1 covers the real need. Pulling pick-anywhere out of M4 removes its single biggest risk
+   and ships a smaller, safer editor. When it returns as a fast-follow, the modest bar holds: **exact
+   unambiguous match → offer it; multiple → show candidates, never guess; no match → flag "not
+   tokenized".** Drift is surfaced, never silently patched.
 
 ### Token list — single source
 
@@ -209,11 +228,21 @@ list duplicated across the showcase page, the tweaker, and the API allowlist, wh
   never ships to prod.
 - Receives `{ token, value, theme }` and rewrites the matching var in the correct theme block (`:root`
   or `.dark`).
+- **Input validation is a security boundary, not just hygiene.** `value` flows into a CSS declaration; an
+  un-validated value (e.g. `red; } body { display:none`) breaks out of the declaration and injects
+  arbitrary CSS. The route therefore: (a) rejects any `token` not already present in `globals.css` (no
+  creating tokens via the editor — that is the LLM/human extension path); (b) **validates `value` against
+  the expected type for that token's group** (color → parses as `oklch()`/`var()`/`color-mix()`; numeric →
+  number + allowed unit; etc.) and rejects `;`, `}`, `{`, and comment delimiters outright. Dev-only +
+  local-file write keeps severity low, but a malformed/hostile value must never reach the file.
 - Backed by a **robust, heavily-TDD'd CSS-var read/write module** (`lib/tokens/parse|write`) that:
   - parses `:root` and `.dark` blocks;
   - updates exactly one declaration;
   - **preserves formatting, comments, and ordering**;
-  - handles all token value types (hex, hsl, `var()` aliases, `color-mix()`, numeric, string);
+  - handles all token value types (`oklch()`, `var()` aliases, `color-mix()`, numeric, string);
+  - **re-reads `globals.css` immediately before each write** (it may have changed under the editor — the
+    LLM or a human can edit the same file via the extension path while the dev server runs), so the editor
+    never writes against a stale snapshot;
   - rejects malformed input.
   This **replaces** the prototype's fragile, hex-only regex patch.
 - On save → Next hot-reload → repaint. The **manifest regenerates on the same save** (cold path, §2).
@@ -259,9 +288,10 @@ coders use Claude Code. Contains:
 - The token table + usage rules: *use Tailwind utilities / CSS vars; never hardcode color / px / font /
   duration.*
 - **The extension procedure (the crux):**
-  > Need a value the system lacks? **Add a token** to `globals.css` (correct theme block) → run
-  > `npm run tokens` (regenerates the manifest) → use it via its Tailwind utility. **Never hardcode.**
-  > The new token auto-appears on `/design-system` and becomes editable.
+  > Need a value the system lacks? **Add a token** to `globals.css` — for a **color, add it to BOTH
+  > `:root` and `.dark`** (other groups: the relevant block) → run `npm run tokens` (regenerates the
+  > manifest) → use it via its Tailwind utility. **Never hardcode.** The new token auto-appears on
+  > `/design-system` and becomes editable. *(CI enforces both-theme presence and a fresh manifest — §6.2.)*
 - A pointer to the generated `design-system.md` (the always-current token reference).
 
 ### 6.2 Enforcement — blocking lint (the teeth)
@@ -269,6 +299,19 @@ coders use Claude Code. Contains:
 Prose reduces drift; it does not eliminate it. The template ships **lint rules** (stylelint + eslint)
 that flag hardcoded colors / raw px where a token exists / literal hex / arbitrary Tailwind values
 (`bg-[#abc]`, `p-[13px]`). Wired to `npm run check` + a pre-commit hook + CI so it **fails the build**.
+
+Three enforcement mechanisms, layered (the first is the strongest):
+
+- **Compile-time (strongest).** Because the Tailwind config *strips* the default palette/scale (§3),
+  `bg-red-500` and off-scale spacing don't exist → build error, no lint needed. Lint catches what
+  compiles: arbitrary-value escapes (`bg-[#abc]`, `p-[13px]`) and raw values in CSS.
+- **Both-theme completeness.** A rule asserts every color token defined in `:root` also exists in `.dark`
+  (and vice-versa). Closes a guaranteed bug class: the extension procedure adds a token to one block and
+  forgets the other → broken dark mode that nothing else catches.
+- **Manifest freshness (CI gate).** CI runs `npm run tokens` and **fails if the working tree is dirty** —
+  i.e. the committed `design-system.{md,json}` disagrees with `globals.css`. This is the real enforcement
+  of "the LLM ran the regen step": it cannot land a token without a current manifest, whether or not it
+  remembered to run the command locally. Standard generated-artifact check.
 
 **Escape hatch:** an explicit inline disable comment (e.g. `/* ds-disable: <reason> */`) for a deliberate
 one-off — a conscious, greppable, reviewable override. **Never silent.**
@@ -328,11 +371,17 @@ AGENTS.md  CLAUDE.md      # LLM contract (+ .cursor/rules)
 ## 9. Testing (TDD, per project law)
 
 - **`lib/tokens/parse|write`** — exhaustive unit tests. Parse `:root`/`.dark`; update one var; preserve
-  formatting/comments/order; both themes; all value types; malformed input. **The correctness core.**
+  formatting/comments/order; both themes; all value types; malformed input; **value-type validation +
+  CSS-injection rejection** (`;`/`}`/`{`/comment delimiters refused); **pre-write re-read** picks up an
+  external edit. **The correctness core.**
 - **`lib/tokens/generate`** — vars in → manifest md/json out, fixture-defined (the manifest shape is
   defined by its fixtures, the way `website-editor`'s selector-derive was).
 - **`lib/tokens/schema`** — token group → control-type mapping; fg/bg pairing.
-- **Lint rules** — fixtures: hardcoded hex fails; token use passes; `ds-disable` override passes.
+- **Lint rules** — fixtures: hardcoded hex fails; arbitrary Tailwind value fails; `bg-red-500` (stripped
+  default) fails to compile; a color in `:root` but not `.dark` fails the both-theme rule; token use
+  passes; `ds-disable` override passes.
+- **Manifest freshness CI gate** — a token added without rerunning `npm run tokens` leaves a dirty tree →
+  CI fails; after regen → passes.
 - **Editor e2e (Playwright)** — enable Edit → click token → change → assert live repaint → assert
   `globals.css` rewritten → assert ripple on a second element bound to the same token. (Repaint/layout is
   only provable in a real browser, as in `website-editor`.)
@@ -358,18 +407,26 @@ Each milestone is TDD'd and reviewed, and is independently usable.
   Fixture tests. *Done = manifest always reflects the vars.*
 - **M3 — Design-system page.** `/design-system` rendering auto-iterated token sections + hand-authored
   shadcn component showcase, `data-token`-tagged. *Done = living style guide, truthful by construction.*
-- **M4 — Editor.** Edit toggle, per-group control panels, live preview, dev-only writeback API → M1 core,
-  thin highlight overlay, pick-anywhere with drift-flagging. Playwright e2e for the full
-  edit→repaint→writeback→ripple loop. *Done = visually edit a token; it lands in `globals.css` and
-  ripples.*
+- **M4 — Editor.** Edit toggle, per-group control panels, live preview, dev-only writeback API → M1 core
+  (with value-type/injection validation + pre-write re-read), thin highlight overlay. **Token editing only
+  — pick-anywhere is cut to fast-follow (§5).** Playwright e2e for the full edit→repaint→writeback→ripple
+  loop. *Done = visually edit a token; it lands in `globals.css` and ripples.*
 - **M5 — LLM contract.** `AGENTS.md`/`CLAUDE.md`/`.cursor/rules` + extension procedure + blocking
-  stylelint/eslint + `ds-disable` override + optional Claude skill. Lint fixture tests. *Done = a
-  hardcoded value fails CI; the extension procedure is documented and works.*
+  stylelint/eslint (stripped-defaults compile gate + both-theme completeness + arbitrary-value rules) +
+  `ds-disable` override + manifest-freshness CI gate + optional Claude skill. Lint fixture tests. *Done = a
+  hardcoded value fails CI; a one-theme token fails CI; a stale manifest fails CI; the extension procedure
+  is documented and works.*
+- **M6 — Dogfood gate (validates the headline).** Drive an LLM to build one real sample feature on the
+  finished template: it reads the manifest, builds with tokens, hits a missing value, runs the extension
+  procedure end-to-end, and passes lint + CI. The product's actual job ("build with an LLM") is the
+  acceptance test — not just "lint fails on hardcode." *Done = an LLM ships a feature through the full loop
+  with zero hand-fixes to the contract.*
 
 ### Fast-follows (post-v1)
 
-- **Contrast check** in the editor (fg/bg already paired in the schema) — warn on WCAG failures.
-- **Pick-anywhere** drift-flagging polish.
+- **Contrast check** in the editor (fg/bg already paired in the schema; OKLCH lightness makes it cheap) —
+  warn on WCAG failures.
+- **Pick-anywhere** (reverse-resolution, cut from v1 M4) — exact/candidate-list/flag behaviour per §5.
 - **Gradient editing** (gradients shippable as tokens now; a gradient-builder control is later).
 - **`npx create-*` CLI** (§11).
 
