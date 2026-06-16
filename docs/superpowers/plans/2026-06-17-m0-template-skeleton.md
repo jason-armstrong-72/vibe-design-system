@@ -465,12 +465,14 @@ Proves the load-bearing claim: cleared namespaces make `bg-red-500` a build erro
 npm i -D vitest @tailwindcss/node
 ```
 
-Add to `package.json` `scripts`: `"test": "vitest run"`. Create `vitest.config.ts` (minimal — Vitest runs without it, but the Step 5 commit references it):
+Add to `package.json` `scripts`: `"test": "vitest run"`. Create `vitest.config.ts`. **The `@` alias is required** — later milestones (M1+) import via `@/lib/...`, and Vitest does NOT read `tsconfig.json` `paths` by default. Without this alias every future test fails with `Cannot find package '@/...'`:
 
 ```ts
 import { defineConfig } from "vitest/config";
+import { resolve } from "node:path";
 
 export default defineConfig({
+  resolve: { alias: { "@": resolve(__dirname, ".") } },
   test: { include: ["tests/**/*.test.ts"] },
 });
 ```
