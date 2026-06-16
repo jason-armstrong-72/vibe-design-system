@@ -126,16 +126,18 @@ name is a breaking change to the design system's API. Pin once; change deliberat
 6. **Font weight**: `--fw-<name>` (normal,medium,semibold,bold) → `--font-weight-<name>`.
 7. **Radius**: single knob `--radius`; sm/md/lg/xl are DERIVED via calc in `@theme inline`
    (shadcn pattern) — not authored.
-8. **Shadow**: `--elevation-<size>` (sm,md,lg) → `--shadow-<size>`.
-9. **Motion**: `--duration-<speed>` (fast,base,slow); easing `--ease-<name>`
-   (standard,in,out) → `--ease-<name>`.
-10. **Spacing**: ONE knob, `--spacing-base`, mapped to the `--spacing` multiplier.
+8. **Border width**: `--border-width-<size>` (thin,base,thick) → `border-<size>` utility.
+    Plain `:root` vars + `@utility` helpers; not a Tailwind namespace.
+9. **Shadow**: `--elevation-<size>` (sm,md,lg) → `--shadow-<size>`.
+10. **Motion**: `--duration-<speed>` (fast,base,slow); easing `--ease-<name>`
+    (standard,in,out) → `--ease-<name>`.
+11. **Spacing**: ONE knob, `--spacing-base`, mapped to the `--spacing` multiplier.
     There is NO discrete `--space-N`. The whole numeric scale derives from it.
-11. **Z-index**: `--z-<role>` (dropdown,sticky,modal,toast). Plain `:root` vars +
+12. **Z-index**: `--z-<role>` (dropdown,sticky,modal,toast). Plain `:root` vars +
     `@utility` helpers; not a Tailwind namespace.
-12. **Opacity**: `--opacity-<role>` (disabled,muted). Same treatment as z-index.
-13. **Container**: `--container-<size>` (sm,md,lg) → `--container-<size>` namespace.
-14. **Breakpoints**: `--breakpoint-<size>` in `@theme` — documented reference, NOT
+13. **Opacity**: `--opacity-<role>` (disabled,muted). Same treatment as z-index.
+14. **Container**: `--container-<size>` (sm,md,lg) → `--container-<size>` namespace.
+15. **Breakpoints**: `--breakpoint-<size>` in `@theme` — documented reference, NOT
     runtime-editable (CSS media queries can't read runtime vars).
 
 ## fg/bg pairing
@@ -235,6 +237,11 @@ Set `app/globals.css` to (top of file; mapping/clears added next step). OKLCH va
 
   /* ---- radius (single knob; sm/md/lg derived in @theme) ---- */
   --radius: 0.625rem;
+
+  /* ---- border widths ---- */
+  --border-width-thin: 1px;
+  --border-width-base: 2px;
+  --border-width-thick: 4px;
 
   /* ---- shadow ---- */
   --elevation-sm: 0 1px 2px 0 oklch(0 0 0 / 0.05);
@@ -408,7 +415,10 @@ Append to `app/globals.css`:
   --breakpoint-xl: 80rem;
 }
 
-/* z-index + opacity: not Tailwind namespaces — expose as utilities */
+/* border-width + z-index + opacity: not Tailwind namespaces — expose as utilities */
+@utility border-thin  { border-width: var(--border-width-thin); }
+@utility border-base  { border-width: var(--border-width-base); }
+@utility border-thick { border-width: var(--border-width-thick); }
 @utility z-dropdown { z-index: var(--z-dropdown); }
 @utility z-sticky   { z-index: var(--z-sticky); }
 @utility z-modal    { z-index: var(--z-modal); }

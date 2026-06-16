@@ -72,6 +72,7 @@ export type TokenGroup =
   | "lineHeight"
   | "fontWeight"
   | "radius"
+  | "borderWidth"
   | "shadow"
   | "duration"
   | "easing"
@@ -124,6 +125,7 @@ Create `tests/tokens/fixtures/sample.css` — small but exercises every parse/wr
   --fw-bold: 700;
   /* geometry + motion */
   --radius: 0.625rem;
+  --border-width-base: 2px;
   --elevation-md: 0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.1);
   --duration-base: 250ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
@@ -184,6 +186,7 @@ describe("groupForName", () => {
     ["--lh-lg", "lineHeight"],
     ["--fw-bold", "fontWeight"],
     ["--radius", "radius"],
+    ["--border-width-thick", "borderWidth"],
     ["--elevation-md", "shadow"],
     ["--duration-base", "duration"],
     ["--ease-standard", "easing"],
@@ -254,6 +257,7 @@ export function groupForName(name: string): TokenGroup {
   const bare = name.slice(2);
 
   if (name === "--radius") return "radius";
+  if (/^border-width-/.test(bare)) return "borderWidth";
   if (name === "--spacing-base") return "spacing";
   if (/^brand-/.test(bare) || /^chart-/.test(bare)) return "color";
   if (/^font-(sans|mono|serif)$/.test(bare)) return "fontFamily";
@@ -278,6 +282,7 @@ const CONTROL: Record<TokenGroup, ControlType> = {
   lineHeight: "length-slider",
   fontWeight: "select",
   radius: "length-slider",
+  borderWidth: "length-slider",
   shadow: "text",
   duration: "duration-slider",
   easing: "easing",
@@ -511,6 +516,7 @@ function checkGroup(group: TokenGroup, v: string): boolean {
     case "fontSize":
     case "lineHeight":
     case "radius":
+    case "borderWidth":
     case "spacing":
     case "container":
       return isLength(v);
