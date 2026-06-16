@@ -85,8 +85,11 @@ them. The LLM-facing manifest is **generated** from them (one-directional, never
 ### Why CSS vars are the source of truth (not a JSON manifest)
 
 The editor needs **runtime** value changes — set a var, repaint *now*, no rebuild. CSS custom properties
-give this natively; tokens living only in `tailwind.config` (build-time) would force a rebuild per edit
-and kill the live-editing feel. So CSS vars **must** exist at runtime regardless. Making them the
+give this natively; tokens baked in at build time (a JS `tailwind.config`, or a v4 `@theme` block without
+`inline` that copies literals) would force a rebuild per edit and kill the live-editing feel. The v4
+`@theme inline` pattern (§3) sidesteps this — utilities resolve *through* `var(--token)` to the runtime
+`:root` value, so an edit repaints with no rebuild. So CSS vars **must** exist at runtime regardless.
+Making them the
 *authored* source keeps the hot path (edit → repaint) zero-step and pushes generation (the LLM doc) onto
 the cold path (on save), where latency does not matter. A JSON-as-truth model would insert a
 generate-CSS step between every edit and repaint — the wrong tradeoff.
@@ -103,8 +106,9 @@ convention.
 channels and not hex. Rationale: (a) OKLCH is perceptually uniform — the brand ramp and the fast-follow
 WCAG contrast check (§10) both reason about lightness, which OKLCH gives directly; (b) P3 wide-gamut for
 free; (c) it is shadcn's current default, so the template is not born legacy. **Consequence for Tailwind
-wiring:** utilities reference the var directly (`colors.primary = 'var(--primary)'`), **not** the legacy
-`hsl(var(--primary))` wrapper. The color picker emits `oklch(...)`; the write module stores it verbatim.
+wiring:** the `@theme inline` map points the utility straight at the var (`--color-primary: var(--primary)`),
+storing a full `oklch(...)` — **not** the legacy `hsl(var(--primary))` bare-channel wrapper. The color
+picker emits `oklch(...)`; the write module stores it verbatim.
 One format end-to-end (picker → write → var → utility) — no per-edit format conversion, no hex/hsl
 ambiguity. Aliases (`var()`), `color-mix()`, and numeric/string non-color tokens are still handled by the
 write module; only the *color channel* format is fixed to OKLCH.
@@ -132,7 +136,9 @@ write module; only the *color channel* format is fixed to OKLCH.
 **Transitions** — `--duration-fast/base/slow`, `--ease-standard/in/out`.
 
 **Animation primitives** — durations + easings above drive a small named-animation set (fade, slide,
-scale, accordion) shipped via `tailwindcss-animate`. **The keyframe shapes are NOT editable tokens** —
+scale, accordion) shipped via `tw-animate-css` (the Tailwind-v4 successor to the deprecated
+`tailwindcss-animate`; imported in `globals.css` via `@import "tw-animate-css"`). **The keyframe shapes
+are NOT editable tokens** —
 a `@keyframes` rule cannot be stored in a CSS custom property. Only their **timing** (duration/easing)
 is token-editable and ripples through all animations. The design-system page shows live animation demos
 so they are visible even though their shape is code-only.
@@ -144,25 +150,32 @@ so they are visible even though their shape is code-only.
 **Container/layout widths** — `--container-sm/md/lg` + content gutter.
 
 **Breakpoints — documented, NOT runtime-editable.** CSS media queries cannot reliably read CSS vars for
-breakpoints, so breakpoints live in `tailwind.config`, are surfaced in the manifest as reference, but are
-not editable tokens. Honest boundary — surfaced, not faked.
+breakpoints, so breakpoints live in the `@theme` block (`--breakpoint-*`), are surfaced in the manifest as
+reference, but are not editable tokens. Honest boundary — surfaced, not faked.
 
 **fg/bg pairing.** Color tokens that form a foreground/background pair are modeled as pairs in the token
 schema now, so a **contrast check** (WCAG) can be added as a fast-follow (§10) without re-modeling.
 
-### Tailwind wiring
+### Tailwind wiring (Tailwind v4, CSS-first)
 
-`tailwind.config.ts` maps utilities → vars (`colors.primary = 'var(--primary)'`, `spacing`, `fontSize`,
-`boxShadow`, `borderWidth`, `zIndex`, etc.), the shadcn-standard pattern extended to the new scales. So
-`bg-primary`, `text-lg`, `p-4`, `shadow-md`, `rounded-lg`, `border-thick` all resolve to vars at runtime.
+Tailwind v4 configures in CSS, not `tailwind.config.ts`. All wiring lives in `globals.css` — which makes
+it *even more* the single source of truth (§2). **Two layers, shadcn-v4 pattern:**
 
-**Defaults are stripped, not extended (load-bearing).** The config **replaces** Tailwind's default color
-palette and spacing scale rather than adding alongside them — `colors` and `spacing` are *redefined* to
-contain only token-mapped entries. This is what gives the lint (§6.2) teeth: with the defaults gone,
-`bg-red-500` and `p-4`-style off-scale values **fail to compile**, not just fail lint. The most likely
-drift vector (LLM reaching for a stock Tailwind color/scale that "looks fine") becomes a build error
-instead of silent inconsistency. Utilities that are not token-backed (layout, flex, grid, etc.) are
-untouched.
+1. **Runtime layer — `:root` / `.dark`** hold the authored, editable token values:
+   `--primary: oklch(...)`, `--space-4: …`, etc. **The editor writes here. The manifest generates from
+   here.** This is the source of truth.
+2. **Utility layer — `@theme inline`** maps each token into Tailwind's namespace so it generates a
+   utility: `@theme inline { --color-primary: var(--primary); --spacing-4: var(--space-4); … }`. The
+   `inline` keyword means the utility resolves to `var(--primary)` (not a copied literal), so a runtime
+   change to the `:root` var repaints instantly — no rebuild. So `bg-primary`, `text-lg`, `p-4`,
+   `shadow-md`, `rounded-lg`, `border-thick` all resolve to the runtime vars.
+
+**Defaults are cleared, not extended (load-bearing).** In v4 the default palette/scale are cleared by
+resetting the namespace inside `@theme` (`--color-*: initial; --spacing-*: initial;`) *before* defining
+the token-mapped entries. With the defaults gone, `bg-red-500` and off-scale values **fail to compile**,
+not just fail lint (§6.2) — the most likely drift vector becomes a build error. Non-token-backed
+utilities (layout, flex, grid, etc.) are untouched. **A `tailwind.config.ts` is optional and near-empty**
+(content globs / plugin hooks only) — no token mapping lives there.
 
 ---
 
@@ -236,7 +249,8 @@ list duplicated across the showcase page, the tweaker, and the API allowlist, wh
   number + allowed unit; etc.) and rejects `;`, `}`, `{`, and comment delimiters outright. Dev-only +
   local-file write keeps severity low, but a malformed/hostile value must never reach the file.
 - Backed by a **robust, heavily-TDD'd CSS-var read/write module** (`lib/tokens/parse|write`) that:
-  - parses `:root` and `.dark` blocks;
+  - parses **only** the `:root` and `.dark` blocks (the runtime source of truth) — the v4 `@theme inline`
+    utility-mapping block is never written to (editing it would break the namespace, not a value);
   - updates exactly one declaration;
   - **preserves formatting, comments, and ordering**;
   - handles all token value types (`oklch()`, `var()` aliases, `color-mix()`, numeric, string);
@@ -302,7 +316,7 @@ that flag hardcoded colors / raw px where a token exists / literal hex / arbitra
 
 Three enforcement mechanisms, layered (the first is the strongest):
 
-- **Compile-time (strongest).** Because the Tailwind config *strips* the default palette/scale (§3),
+- **Compile-time (strongest).** Because `@theme` *clears* the default palette/scale namespaces (§3),
   `bg-red-500` and off-scale spacing don't exist → build error, no lint needed. Lint catches what
   compiles: arbitrary-value escapes (`bg-[#abc]`, `p-[13px]`) and raw values in CSS.
 - **Both-theme completeness.** A rule asserts every color token defined in `:root` also exists in `.dark`
@@ -331,23 +345,38 @@ the md guide + lint stand alone for non-Claude agents.
 
 ## 7. Stack & repo layout
 
-**Stack:** Next.js (App Router) + TypeScript + Tailwind + shadcn/ui + `tailwindcss-animate`. Lint:
-stylelint + eslint. Tests: Vitest + Playwright. (Same family this project's team already knows.)
+**Stack (versions pinned at M0, 2026-06-16):**
+
+| Dependency | Version | Notes |
+|---|---|---|
+| Next.js | 16.x (App Router) | 16.2.9 LTS at pin time |
+| React | 19.x | shadcn-v4 / Next 16 baseline |
+| TypeScript | 5.x | latest stable |
+| **Tailwind CSS** | **4.x** | CSS-first `@theme`; config lives in `globals.css` (§3) |
+| shadcn/ui | v4-native CLI | OKLCH default, React 19 components |
+| Animations | `tw-animate-css` | **replaces** deprecated `tailwindcss-animate` |
+| Lint | stylelint + eslint | the blocking rules (§6.2) |
+| Tests | Vitest + Playwright | unit + browser e2e (§9) |
+| Node | 20 LTS+ | Next 16 floor |
+
+Exact versions are locked in the committed lockfile at M0; the table is the intent. (Same family this
+project's team already knows.) **Tailwind v4 is load-bearing on the architecture** — config-in-CSS is what
+keeps `globals.css` the single source of truth (§3), not a happenstance version bump.
 
 ```
 app/
-  globals.css            # SOURCE OF TRUTH (CSS vars, :root + .dark)
+  globals.css            # SOURCE OF TRUTH: :root + .dark token vars, @theme inline mapping, tw-animate-css import
   design-system/page.tsx # living style guide (token sections auto-iterate; components hand-authored; data-token tagged)
   api/ds/token/route.ts  # dev-only writeback (NODE_ENV guarded)
 components/ui/           # shadcn components (token-themed)
 components/editor/       # edit overlay, control panels, thin highlight overlay (dev-only)
 lib/tokens/
-  parse.ts  write.ts     # CSS-var read/write — heavy TDD, load-bearing correctness core
+  parse.ts  write.ts     # CSS-var read/write (:root/.dark only) — heavy TDD, load-bearing correctness core
   generate.ts            # vars -> design-system.{md,json}
   schema.ts              # token groups -> control types; fg/bg pairing
 design-system.md         # generated LLM brief
 design-system.json       # generated machine manifest
-tailwind.config.ts       # utilities -> vars
+tailwind.config.ts       # optional, near-empty (content globs / plugins only — NO token mapping; that's in globals.css)
 AGENTS.md  CLAUDE.md      # LLM contract (+ .cursor/rules)
 <skill dir>              # optional Claude Code skill
 .stylelintrc / eslint     # the blocking lint rules
@@ -395,12 +424,15 @@ AGENTS.md  CLAUDE.md      # LLM contract (+ .cursor/rules)
 
 Each milestone is TDD'd and reviewed, and is independently usable.
 
-- **M0 — Template skeleton + naming convention.** Next + TS + Tailwind + shadcn scaffolded. Extended
-  `globals.css` (all token groups, light + dark). Tailwind config wired to vars. **Pin the exact token
-  naming convention as a written rule** (not just examples): how `*-foreground` pairs, scale suffixes
-  (`-sm/md/lg`, `-1..-12`), brand-ramp steps, and status tokens are named. Lint, `generate`, `schema`,
-  and the editor all key on names, so the convention must be fixed here to prevent later churn. *Done =
-  `npm run dev` shows a themed shadcn app and the naming convention is documented.*
+- **M0 — Template skeleton + naming convention.** Next 16 + TS + Tailwind v4 + shadcn (v4 CLI)
+  scaffolded; versions pinned in lockfile (§7). Extended `globals.css` (all token groups, light + dark,
+  OKLCH colors) with the v4 two-layer wiring: `:root`/`.dark` runtime vars + `@theme inline` utility
+  mapping + namespace clears (`--color-*: initial`) so defaults can't leak (§3). `tw-animate-css`
+  imported. **Pin the exact token naming convention as a written rule** (not just examples): how
+  `*-foreground` pairs, scale suffixes (`-sm/md/lg`, `-1..-12`), brand-ramp steps, and status tokens are
+  named. Lint, `generate`, `schema`, and the editor all key on names, so the convention must be fixed here
+  to prevent later churn. *Done = `npm run dev` shows a themed shadcn app, `bg-red-500` fails to compile,
+  and the naming convention is documented.*
 - **M1 — Token write-core (load-bearing).** `lib/tokens/parse|write|schema` with exhaustive TDD. *Done =
   can programmatically change any token in `globals.css` safely, preserving formatting, in either theme.*
 - **M2 — Manifest generation.** `generate.ts` → `design-system.{md,json}` + `npm run tokens` + dev watch.
