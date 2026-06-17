@@ -21,7 +21,7 @@ export function parseTokens(css: string): Token[] {
         name: decl.prop,
         value: decl.value.trim(),
         theme,
-        group: groupForName(decl.prop),
+        group: groupForName(decl.prop, decl.value.trim()),
       });
     });
   });
