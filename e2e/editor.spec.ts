@@ -108,6 +108,39 @@ test.describe("editor seam", () => {
     }
   });
 
+  test("Reset restores the token's original value in globals.css", async ({
+    page,
+  }) => {
+    const before = readFileSync(GLOBALS, "utf8");
+    // Capture the original --z-modal value from :root so we can assert the revert.
+    const origMatch = before.match(/--z-modal:\s*([^;]+);/);
+    const original = origMatch?.[1].trim();
+    expect(original).toBeTruthy();
+    try {
+      await page.goto("/design-system");
+      await page.getByRole("button", { name: /edit/i }).click(); // enable edit mode
+      await page.locator('[data-token="--z-modal"]').click(); // select
+
+      // Change it and confirm the file was rewritten.
+      const input = page.getByLabel(/--z-modal value/i);
+      await input.fill("1500");
+      await input.blur();
+      await expect
+        .poll(() => readFileSync(GLOBALS, "utf8"), { timeout: 5000 })
+        .toContain("--z-modal: 1500");
+
+      // Reset → the file must return to the original value.
+      await page
+        .getByRole("button", { name: /reset --z-modal to original/i })
+        .click();
+      await expect
+        .poll(() => readFileSync(GLOBALS, "utf8"), { timeout: 5000 })
+        .toContain(`--z-modal: ${original}`);
+    } finally {
+      writeFileSync(GLOBALS, before, "utf8"); // restore
+    }
+  });
+
   test("edit --radius length → globals.css rewritten with the new length", async ({
     page,
   }) => {

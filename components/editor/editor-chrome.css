@@ -177,6 +177,71 @@
   font-size: 10px;
   color: var(--ed-muted);
 }
+.ed-context-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ed-reset {
+  all: unset;
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--ed-border);
+  background: var(--ed-field);
+  color: var(--ed-text);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+.ed-reset:hover:not(:disabled) {
+  background: var(--ed-field-hover);
+}
+.ed-reset:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Save-state indicator (Task 12) */
+.ed-savestate {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--ed-muted);
+  min-height: 14px;
+}
+.ed-savestate-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ed-muted);
+  flex: 0 0 auto;
+}
+.ed-savestate[data-status="idle"] .ed-savestate-dot {
+  opacity: 0.35;
+}
+.ed-savestate[data-status="saved"] .ed-savestate-dot {
+  background: var(--ed-accent);
+}
+.ed-savestate[data-status="dirty"] .ed-savestate-dot,
+.ed-savestate[data-status="error"] .ed-savestate-dot {
+  background: var(--ed-warn);
+}
+.ed-savestate[data-status="dirty"] .ed-savestate-label,
+.ed-savestate[data-status="error"] .ed-savestate-label,
+.ed-savestate[data-status="error"] .ed-savestate-msg {
+  color: var(--ed-warn);
+}
+.ed-savestate-msg {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
+}
 
 .ed-body {
   padding: 11px 12px;

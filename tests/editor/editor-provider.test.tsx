@@ -1,27 +1,35 @@
 // @vitest-environment jsdom
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
+import { act } from "react";
 import { render, fireEvent, screen, cleanup } from "@testing-library/react";
 import { EditorProvider, useEditor } from "@/components/editor/editor-provider";
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
+  vi.useRealTimers();
   document.documentElement.classList.remove("dark");
   document.documentElement.removeAttribute("style");
 });
 
 function Probe() {
   const e = useEditor();
+  const pt = e.selectedToken ? e.perToken[e.selectedToken] : undefined;
   return (
     <div>
       <span data-testid="enabled">{String(e.enabled)}</span>
       <span data-testid="selected">{e.selectedToken ?? "none"}</span>
       <span data-testid="block">{e.editingBlock}</span>
+      <span data-testid="pt-original">{pt?.original ?? "none"}</span>
+      <span data-testid="pt-current">{pt?.current ?? "none"}</span>
+      <span data-testid="pt-status">{pt?.status ?? "none"}</span>
       <button onClick={() => e.enable()}>do-enable</button>
       <button onClick={() => e.select("--z-modal")}>do-select</button>
       <button onClick={() => e.select("--primary")}>do-select-primary</button>
       <button onClick={() => e.editValue("--primary", "oklch(0.5 0 0)")}>
         do-edit-primary
       </button>
+      <button onClick={() => e.reset("--primary")}>do-reset-primary</button>
       <button onClick={() => e.setEditingBlock("dark")}>do-dark</button>
       <button onClick={() => e.setEditingBlock("light")}>do-light</button>
     </div>
@@ -69,6 +77,58 @@ describe("EditorProvider", () => {
     expect(document.documentElement.classList.contains("dark")).toBe(true);
     fireEvent.click(screen.getByText("do-light"));
     expect(document.documentElement.classList.contains("dark")).toBe(false);
+  });
+
+  it("editValue marks the token dirty with original preserved", () => {
+    setup();
+    fireEvent.click(screen.getByText("do-enable"));
+    fireEvent.click(screen.getByText("do-select-primary"));
+    const original = screen.getByTestId("pt-original").textContent;
+    fireEvent.click(screen.getByText("do-edit-primary"));
+    expect(screen.getByTestId("pt-status").textContent).toBe("dirty");
+    expect(screen.getByTestId("pt-current").textContent).toBe("oklch(0.5 0 0)");
+    expect(screen.getByTestId("pt-original").textContent).toBe(original);
+  });
+
+  it("reset restores current to original and status to idle", () => {
+    setup();
+    fireEvent.click(screen.getByText("do-enable"));
+    fireEvent.click(screen.getByText("do-select-primary"));
+    const original = screen.getByTestId("pt-original").textContent;
+    fireEvent.click(screen.getByText("do-edit-primary"));
+    expect(screen.getByTestId("pt-current").textContent).toBe("oklch(0.5 0 0)");
+    fireEvent.click(screen.getByText("do-reset-primary"));
+    expect(screen.getByTestId("pt-current").textContent).toBe(original);
+    expect(screen.getByTestId("pt-status").textContent).toBe("idle");
+  });
+
+  it("surfaces a rejected write as status 'error' (and the queue rolls the preview back)", async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ error: "out of range" }), {
+          status: 400,
+        }),
+    ) as unknown as typeof fetch;
+    vi.stubGlobal("fetch", fetchMock);
+
+    setup();
+    fireEvent.click(screen.getByText("do-enable"));
+    fireEvent.click(screen.getByText("do-select-primary"));
+    const original = screen.getByTestId("pt-original").textContent;
+    fireEvent.click(screen.getByText("do-edit-primary"));
+    expect(screen.getByTestId("pt-status").textContent).toBe("dirty");
+
+    // Flush the debounced write (rejected by the 400) inside act so React state settles.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300);
+    });
+
+    expect(screen.getByTestId("pt-status").textContent).toBe("error");
+    // Queue rolled the inline preview var back to last-known-good (the original).
+    expect(document.documentElement.style.getPropertyValue("--primary")).toBe(
+      original,
+    );
   });
 
   it("switching blocks clears inline preview vars set during editing", () => {

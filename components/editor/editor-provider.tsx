@@ -150,17 +150,29 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
 
   const reset = useCallback(
     (name: string) => {
+      const existing = perToken[name];
+      if (!existing) return;
+      const { original } = existing;
+      // Persist the revert: setVar(name, original) (inside edit) + queue a write so the file
+      // reverts too. queue.edit() synchronously flips status to 'dirty' via onStatus; we then
+      // pin it back to 'idle' so the reset reads as "back to the original, nothing pending".
+      // On the queue's successful write it will transition to 'saved'.
+      queue.edit({ name, value: original, theme: editingBlock });
       setPerToken((prev) => {
-        const existing = prev[name];
-        if (!existing) return prev;
-        queue.edit({ name, value: existing.original, theme: editingBlock });
+        const cur = prev[name];
+        if (!cur) return prev;
         return {
           ...prev,
-          [name]: { ...existing, current: existing.original, status: "dirty" },
+          [name]: {
+            ...cur,
+            current: original,
+            status: "idle",
+            error: undefined,
+          },
         };
       });
     },
-    [editingBlock, queue],
+    [editingBlock, queue, perToken],
   );
 
   const value = useMemo<EditorContextValue>(
