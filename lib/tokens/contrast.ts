@@ -25,10 +25,16 @@ const LARGE_OK = new Set(["--muted-foreground"]);
 
 export function contrastResults(tokens: Token[]): PairResult[] {
   const out: PairResult[] = [];
-  const bgNames = [...new Set(tokens.map((t) => t.name))].filter((n) => foregroundFor(n));
+  // foregroundFor pairs by the `{name}-foreground` convention; --background/--foreground is the one
+  // body-text pair that doesn't follow it, so add it explicitly (it's the most important pair).
+  const pairs: Array<[string, string]> = [
+    ["--background", "--foreground"],
+    ...[...new Set(tokens.map((t) => t.name))]
+      .filter((n) => foregroundFor(n))
+      .map((bg) => [bg, foregroundFor(bg)!] as [string, string]),
+  ];
   for (const theme of ["light", "dark"] as Theme[]) {
-    for (const bg of bgNames) {
-      const fg = foregroundFor(bg)!;
+    for (const [bg, fg] of pairs) {
       const bgv = effective(tokens, bg, theme);
       const fgv = effective(tokens, fg, theme);
       if (!bgv || !fgv) continue;
