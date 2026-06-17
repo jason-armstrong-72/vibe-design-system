@@ -275,7 +275,7 @@
       "group": "color",
       "values": {
         "light": "oklch(0.577 0.245 27.325)",
-        "dark": "oklch(0.704 0.191 22.216)"
+        "dark": "oklch(0.575 0.191 22.216)"
       },
       "utilities": [
         "bg-destructive",
@@ -311,7 +311,7 @@
       "name": "--info",
       "group": "color",
       "values": {
-        "light": "oklch(0.62 0.17 250)",
+        "light": "oklch(0.55 0.17 250)",
         "dark": "oklch(0.7 0.15 250)"
       },
       "utilities": [
@@ -454,7 +454,7 @@
       "name": "--success",
       "group": "color",
       "values": {
-        "light": "oklch(0.62 0.17 145)",
+        "light": "oklch(0.535 0.17 145)",
         "dark": "oklch(0.7 0.16 145)"
       },
       "utilities": [

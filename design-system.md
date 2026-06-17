@@ -44,10 +44,10 @@ then `npm run tokens` → use `bg-highlight text-highlight-foreground`.
 | `--chart-3` | color | `oklch(0.398 0.07 227.392)` / `oklch(0.769 0.188 70.08)` | bg-chart-3 text-chart-3 border-chart-3 |
 | `--chart-4` | color | `oklch(0.828 0.189 84.429)` / `oklch(0.627 0.265 303.9)` | bg-chart-4 text-chart-4 border-chart-4 |
 | `--chart-5` | color | `oklch(0.769 0.188 70.08)` / `oklch(0.645 0.246 16.439)` | bg-chart-5 text-chart-5 border-chart-5 |
-| `--destructive` | color | `oklch(0.577 0.245 27.325)` / `oklch(0.704 0.191 22.216)` | bg-destructive text-destructive border-destructive |
+| `--destructive` | color | `oklch(0.577 0.245 27.325)` / `oklch(0.575 0.191 22.216)` | bg-destructive text-destructive border-destructive |
 | `--destructive-foreground` | color | `oklch(0.985 0 0)` / `oklch(0.985 0 0)` | text-destructive-foreground |
 | `--foreground` | color | `oklch(0.145 0 0)` / `oklch(0.985 0 0)` | bg-foreground text-foreground border-foreground |
-| `--info` | color | `oklch(0.62 0.17 250)` / `oklch(0.7 0.15 250)` | bg-info text-info border-info |
+| `--info` | color | `oklch(0.55 0.17 250)` / `oklch(0.7 0.15 250)` | bg-info text-info border-info |
 | `--info-foreground` | color | `oklch(0.985 0 0)` / `oklch(0.205 0 0)` | text-info-foreground |
 | `--input` | color | `oklch(0.922 0 0)` / `oklch(1 0 0 / 0.15)` | border-input |
 | `--muted` | color | `oklch(0.97 0 0)` / `oklch(0.269 0 0)` | bg-muted text-muted border-muted |
@@ -59,7 +59,7 @@ then `npm run tokens` → use `bg-highlight text-highlight-foreground`.
 | `--ring` | color | `oklch(0.708 0 0)` / `oklch(0.556 0 0)` | ring-ring outline-ring |
 | `--secondary` | color | `oklch(0.97 0 0)` / `oklch(0.269 0 0)` | bg-secondary text-secondary border-secondary |
 | `--secondary-foreground` | color | `oklch(0.205 0 0)` / `oklch(0.985 0 0)` | text-secondary-foreground |
-| `--success` | color | `oklch(0.62 0.17 145)` / `oklch(0.7 0.16 145)` | bg-success text-success border-success |
+| `--success` | color | `oklch(0.535 0.17 145)` / `oklch(0.7 0.16 145)` | bg-success text-success border-success |
 | `--success-foreground` | color | `oklch(0.985 0 0)` / `oklch(0.205 0 0)` | text-success-foreground |
 | `--warning` | color | `oklch(0.79 0.16 80)` / `oklch(0.83 0.15 80)` | bg-warning text-warning border-warning |
 | `--warning-foreground` | color | `oklch(0.205 0 0)` / `oklch(0.205 0 0)` | text-warning-foreground |

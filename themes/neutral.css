@@ -19,11 +19,11 @@
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
   /* ---- color: status (fills shadcn gap) ---- */
-  --success: oklch(0.62 0.17 145);
+  --success: oklch(0.535 0.17 145);
   --success-foreground: oklch(0.985 0 0);
   --warning: oklch(0.79 0.16 80);
   --warning-foreground: oklch(0.205 0 0);
-  --info: oklch(0.62 0.17 250);
+  --info: oklch(0.55 0.17 250);
   --info-foreground: oklch(0.985 0 0);
   /* ---- color: form/border ---- */
   --border: oklch(0.922 0 0);
@@ -124,7 +124,7 @@
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
+  --destructive: oklch(0.575 0.191 22.216);
   --destructive-foreground: oklch(0.985 0 0);
   --success: oklch(0.7 0.16 145);
   --success-foreground: oklch(0.205 0 0);
