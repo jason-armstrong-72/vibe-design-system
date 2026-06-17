@@ -74,9 +74,39 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
   const disable = useCallback(() => setEnabled(false), []);
   const toggle = useCallback(() => setEnabled((e) => !e), []);
 
-  const setEditingBlock = useCallback((block: Theme) => {
-    setEditingBlockState(block);
-  }, []);
+  const setEditingBlock = useCallback(
+    (block: Theme) => {
+      setEditingBlockState(block);
+      // Forced-dark preview: the page renders dark iff we're editing the dark block, so what
+      // you see is what you're editing (globals.css keys dark off the .dark class on the root).
+      if (typeof document !== "undefined") {
+        document.documentElement.classList.toggle("dark", block === "dark");
+      }
+      // An inline preview var on the root wins over BOTH :root and .dark, so a preview applied
+      // while editing one block would leak its (overriding) value into the other. Clear them so
+      // the newly-active block shows the file's actual :root/.dark value...
+      queue.clearPreviews();
+      // ...then re-seed the currently-selected token's control + queue from the new block's value.
+      if (selectedToken) {
+        const value = currentValue(selectedToken, block);
+        queue.seed(selectedToken, value);
+        setPerToken((prev) => {
+          const existing = prev[selectedToken];
+          if (!existing) return prev;
+          return {
+            ...prev,
+            [selectedToken]: {
+              original: value,
+              current: value,
+              status: "idle",
+              error: undefined,
+            },
+          };
+        });
+      }
+    },
+    [queue, selectedToken],
+  );
 
   const setPanelAppearance = useCallback((appearance: PanelAppearance) => {
     setPanelAppearanceState(appearance);

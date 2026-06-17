@@ -85,18 +85,65 @@
 
 .ed-toolbar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   gap: 6px;
   padding: 8px 12px;
   border-bottom: 1px solid var(--ed-border);
   background: var(--ed-panel-raised);
+}
+.ed-toolbar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.ed-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 .ed-toolbar .ed-title {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--ed-text);
+}
+
+/* Editing-block chip: which theme block of the SITE is being edited (light/dark) */
+.ed-chip {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--ed-border);
+  background: var(--ed-field);
+  color: var(--ed-text);
+  font-size: 11px;
+  cursor: pointer;
+}
+.ed-chip:hover {
+  background: var(--ed-field-hover);
+}
+.ed-chip[data-block="dark"] {
+  border-color: var(--ed-accent);
+  background: var(--ed-accent-soft);
+}
+.ed-chip .ed-chip-label {
+  color: var(--ed-muted);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+.ed-chip .ed-chip-value {
+  font-weight: 600;
+}
+
+.ed-caption {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--ed-muted);
 }
 .ed-iconbtn {
   all: unset;

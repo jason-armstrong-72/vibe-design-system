@@ -13,6 +13,8 @@ interface WritebackOpts {
   debounceMs: number;
   /** Apply a CSS var for instant preview (document.documentElement.style.setProperty in the hook). */
   setVar: (name: string, value: string) => void;
+  /** Remove an inline preview var (document.documentElement.style.removeProperty in the hook). */
+  clearVar: (name: string) => void;
   /** Report per-token status transitions to the provider. */
   onStatus: (name: string, status: EditStatus, error?: string) => void;
   /** Override for tests; defaults to the real endpoint. */
@@ -31,6 +33,8 @@ export class WritebackQueue {
   private timers = new Map<string, ReturnType<typeof setTimeout>>();
   private pending = new Map<string, WritebackEdit>();
   private lastGood = new Map<string, string>();
+  /** Names of vars we've applied inline for preview, so clearPreviews() can remove exactly those. */
+  private applied = new Set<string>();
   private readonly endpoint: string;
 
   constructor(private opts: WritebackOpts) {
@@ -41,8 +45,19 @@ export class WritebackQueue {
     this.lastGood.set(name, value);
   }
 
+  /**
+   * Remove every inline preview var we applied. Used when switching the editing block: an inline
+   * var on documentElement wins over BOTH :root and .dark, so stale previews would leak the wrong
+   * value across blocks. Clearing them lets the page fall back to the file's :root/.dark value.
+   */
+  clearPreviews(): void {
+    for (const name of this.applied) this.opts.clearVar(name);
+    this.applied.clear();
+  }
+
   edit(edit: WritebackEdit): void {
     this.opts.setVar(edit.name, edit.value); // optimistic preview, immediate
+    this.applied.add(edit.name);
     this.opts.onStatus(edit.name, "dirty");
     this.pending.set(edit.name, edit);
     const existing = this.timers.get(edit.name);
@@ -100,6 +115,7 @@ export function useTokenWriteback(
       new WritebackQueue({
         debounceMs,
         setVar: (name, value) => document.documentElement.style.setProperty(name, value),
+        clearVar: (name) => document.documentElement.style.removeProperty(name),
         onStatus,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps

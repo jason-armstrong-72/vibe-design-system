@@ -7,12 +7,14 @@ beforeEach(() => vi.useFakeTimers());
 function makeQueue(fetchImpl: typeof fetch) {
   vi.stubGlobal("fetch", fetchImpl);
   const applied: Array<[string, string]> = [];
+  const cleared: string[] = [];
   const q = new WritebackQueue({
     debounceMs: 250,
     setVar: (name, value) => applied.push([name, value]),
+    clearVar: (name) => cleared.push(name),
     onStatus: vi.fn(),
   });
-  return { q, applied };
+  return { q, applied, cleared };
 }
 
 describe("WritebackQueue", () => {
@@ -45,5 +47,20 @@ describe("WritebackQueue", () => {
     q.edit({ name: "--primary", value: "oklch(0.9 0 0)", theme: "light" });
     await vi.advanceTimersByTimeAsync(250);
     expect(applied.at(-1)).toEqual(["--primary", "oklch(0.2 0 0)"]);
+  });
+
+  it("clearPreviews() clears every inline var it applied (via injected clearVar)", () => {
+    const fetchMock = vi.fn(
+      async () => new Response(JSON.stringify({ ok: true })),
+    ) as unknown as typeof fetch;
+    const { q, cleared } = makeQueue(fetchMock);
+    q.edit({ name: "--primary", value: "oklch(0.3 0 0)", theme: "light" });
+    q.edit({ name: "--radius", value: "0.5rem", theme: "light" });
+    q.clearPreviews();
+    expect(cleared.sort()).toEqual(["--primary", "--radius"]);
+    // Clearing twice does nothing the second time (applied set is emptied).
+    cleared.length = 0;
+    q.clearPreviews();
+    expect(cleared).toEqual([]);
   });
 });
