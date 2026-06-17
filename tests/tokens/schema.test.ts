@@ -26,8 +26,17 @@ describe("groupForName", () => {
     expect(groupForName(name)).toBe(group);
   });
 
-  it("throws on a name outside the convention", () => {
+  it("throws on a name outside the convention with no value to infer from", () => {
     expect(() => groupForName("--mystery")).toThrow(/unknown token/i);
+  });
+
+  it("infers color for an unknown name whose value is a color (the extension path)", () => {
+    expect(groupForName("--highlight", "oklch(0.7 0.2 320)")).toBe("color");
+    expect(groupForName("--highlight-foreground", "#ffffff")).toBe("color");
+  });
+
+  it("still throws on an unknown name with a non-color value", () => {
+    expect(() => groupForName("--mystery", "1rem")).toThrow(/unknown token/i);
   });
 });
 

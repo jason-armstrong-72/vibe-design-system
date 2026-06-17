@@ -53,10 +53,23 @@ describe("writeToken", () => {
     ).rejects.toThrow(/not found/i);
   });
 
-  it("rejects a name outside the naming convention", async () => {
+  it("rejects a name outside the naming convention (non-color value can't be inferred)", async () => {
     await expect(
-      writeToken(file, { name: "--does-not-exist", value: "oklch(0 0 0)", theme: "light" }),
+      writeToken(file, { name: "--does-not-exist", value: "1rem", theme: "light" }),
     ).rejects.toThrow(/unknown token/i);
+  });
+
+  it("accepts a user-added color token (unknown name, color value) and writes it", async () => {
+    // simulate the extension path: a new color already added to the file
+    const css = readFileSync(file, "utf8").replace(
+      "--success: oklch(0.62 0.17 145);",
+      "--success: oklch(0.62 0.17 145);\n  --highlight: oklch(0.7 0.2 320);",
+    );
+    writeFileSync(file, css);
+    await writeToken(file, { name: "--highlight", value: "oklch(0.6 0.2 320)", theme: "light" });
+    const tokens = parseTokens(readFileSync(file, "utf8"));
+    expect(tokens.find((t) => t.name === "--highlight")?.group).toBe("color");
+    expect(tokens.find((t) => t.name === "--highlight")?.value).toBe("oklch(0.6 0.2 320)");
   });
 
   it("rejects an injection value before touching the file", async () => {

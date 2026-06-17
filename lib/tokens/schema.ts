@@ -10,7 +10,20 @@ const COLOR_ROLES = new Set([
   "info", "info-foreground", "border", "input", "ring",
 ]);
 
-export function groupForName(name: string): TokenGroup {
+/** True if a value is a CSS color (the shapes the system stores). */
+export function isColorValue(value: string): boolean {
+  const v = value.trim();
+  return /^(oklch|rgb|rgba|hsl|hsla|color-mix)\(.+\)$/.test(v) || /^#[0-9a-fA-F]{3,8}$/.test(v);
+}
+
+/**
+ * Classify a token by name (and optionally its value). Known prefixes/roles win first.
+ * An UNKNOWN name is accepted as a `color` when its value is a color — this is what makes
+ * the extension procedure work: a vibe coder can add `--highlight: oklch(...)` and it
+ * classifies as a color with no allowlist edit. An unknown name with a non-color value
+ * (or no value) still throws, so genuine drift/typos surface loudly.
+ */
+export function groupForName(name: string, value?: string): TokenGroup {
   if (!name.startsWith("--")) throw new Error(`unknown token: ${name}`);
   const bare = name.slice(2);
 
@@ -29,6 +42,9 @@ export function groupForName(name: string): TokenGroup {
   if (/^opacity-/.test(bare)) return "opacity";
   if (/^container-/.test(bare)) return "container";
   if (COLOR_ROLES.has(bare)) return "color";
+
+  // unknown name → infer color from value (the extension path); else it's real drift
+  if (value !== undefined && isColorValue(value)) return "color";
 
   throw new Error(`unknown token: ${name} (not in naming convention)`);
 }

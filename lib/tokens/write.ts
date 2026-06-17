@@ -15,8 +15,9 @@ const SELECTOR_FOR_THEME = { light: ":root", dark: ".dark" } as const;
 export async function writeToken(filePath: string, edit: TokenEdit): Promise<void> {
   const { name, value, theme } = edit;
 
-  // 1. validate (throws before any IO)
-  validateValue(groupForName(name), value);
+  // 1. validate (throws before any IO). Pass value so a user-added color
+  //    (unknown name, color value) classifies correctly instead of throwing.
+  validateValue(groupForName(name, value), value);
 
   // 2. re-read current file
   const css = await readFile(filePath, "utf8");
