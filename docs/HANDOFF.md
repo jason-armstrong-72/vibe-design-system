@@ -18,7 +18,8 @@ The full design is the spec: **[docs/specs/2026-06-16-design-system-starter-desi
 - ✅ **M2** — manifest generation: `lib/tokens/{utilities,generate,sync}.ts` → `design-system.{json,md}` via `npm run tokens` + dev watch.
 - ✅ **M2.5** — informal LLM dogfood of the manifest. **Found + fixed** that the extension procedure was broken (see "B-fixes" below).
 - ✅ **M3** — `/design-system` page (living style guide). Auto-iterates all tokens, each `data-token`-tagged; reference-guided visual pass.
-- **Status: 88 vitest + 4 Playwright e2e passing. 94 tokens.** Run `npm test` (vitest) and `npx playwright test` (e2e).
+- ✅ **M3a** — theme preset suite. 3 v1 themes (`themes/{neutral,swiss,brutalist}.css`), each a complete `:root`/`.dark` value-set under the fixed names. `npm run theme <name>` swaps a preset into `globals.css` (atomic write, reuses M1 parse via `lib/tokens/apply-theme.ts`) + regenerates the manifest (`lib/tokens/regenerate.ts`, shared with `npm run tokens`). Gates: WCAG-AA contrast (`lib/tokens/contrast.ts` via `culori`, light+dark, body 4.5 / muted 3:1), theme parity (same name-set as Neutral), no-overflow (`e2e/themes.spec.ts`). README screenshot gallery via `npm run gallery` (`e2e/gallery.spec.ts`, GALLERY=1-guarded). **Neutral status colors (success/info/destructive) were nudged darker to pass AA** — was failing on shadcn defaults.
+- **Status: 164 vitest + 7 Playwright e2e passing (+1 gallery, skipped without GALLERY=1). 94 tokens.** Run `npm test` (vitest) and `npx playwright test` (e2e).
 
 Plans for executed milestones live in `docs/superpowers/plans/` (M0–M3). **M3a/M4/M5/M6 are NOT yet planned.**
 
@@ -51,12 +52,15 @@ Plans for executed milestones live in `docs/superpowers/plans/` (M0–M3). **M3a
 - VSCode shows "Unknown at rule @theme/@utility/@apply" warnings on `globals.css` — harmless (stock CSS linter doesn't know Tailwind v4).
 
 ## Next steps (pick with the user)
-1. **M3a — Theme preset suite (recommended next).** The `/design-system` page is now camera-ready. Author **Swiss + Brutalist** as `themes/<name>.css` value-sets (per `DESIGN-BRIEF.md` mini-briefs), build `scripts/apply-theme.ts` (`npm run theme <name>` — swap the `:root`/`.dark` block, reusing M1's parse), screenshot the page under each theme → README gallery. Each theme must pass the WCAG-AA + no-overflow gates. **Plan it first, get it reviewed.**
-2. **M4 — The editor (biggest milestone).** Dev-only visual token editor over the page. Primary visual input: **[docs/figma-style-sidebar-design-language.md](figma-style-sidebar-design-language.md)** (Part A = adopt; Part B = skip, it's for the QA-Restyle tool). Editor chrome uses its OWN dark UI tokens, separate from the design-system tokens it edits. Token editing only — pick-anywhere is cut to fast-follow. Consumes `data-token` + `lib/tokens/write.ts` behind a dev-only `NODE_ENV`-guarded API route.
-3. **M5 — LLM contract + blocking lint.** `AGENTS.md`/`CLAUDE.md`/`.cursor/rules` + stylelint/eslint that FAIL the build on hardcoded values / off-token classes / one-theme colors / stale manifest. This is the "real teeth" the page/manifest currently only gesture at.
-4. **M6 — Dogfood gate.** Drive an LLM to build a real feature end-to-end through the finished template.
+1. **M4 — The editor (recommended next; biggest milestone).** Dev-only visual token editor over the page. Primary visual input: **[docs/figma-style-sidebar-design-language.md](figma-style-sidebar-design-language.md)** (Part A = adopt; Part B = skip, it's for the QA-Restyle tool). Editor chrome uses its OWN dark UI tokens, separate from the design-system tokens it edits. Token editing only — pick-anywhere is cut to fast-follow. Consumes `data-token` + `lib/tokens/write.ts` behind a dev-only `NODE_ENV`-guarded API route.
+2. **M5 — LLM contract + blocking lint.** `AGENTS.md`/`CLAUDE.md`/`.cursor/rules` + stylelint/eslint that FAIL the build on hardcoded values / off-token classes / one-theme colors / stale manifest. This is the "real teeth" the page/manifest currently only gesture at. (The both-theme-completeness rule now has natural fixtures — the theme files.)
+3. **M6 — Dogfood gate.** Drive an LLM to build a real feature end-to-end through the finished template.
 
-**Recommended order: M3a → M4 → M5 → M6.** Each is plan → review → TDD-execute → merge.
+**Recommended order: M4 → M5 → M6.** Each is plan → review → TDD-execute → merge.
+
+### M3a follow-ups (fast, deferred)
+- **5 more themes** (Editorial, Warm, Pastel, Technical, Corporate) on the same machinery — Editorial needs a serif face added to `lib/fonts.ts` (the only non-value coupling).
+- Swiss keeps **status colors functional** (not desaturated) — a deliberate call (badges must communicate); revisit if a stricter monochrome reading is wanted.
 
 ## First moves for the next agent
 1. Read this file, then the spec (§ for the milestone you're doing).
