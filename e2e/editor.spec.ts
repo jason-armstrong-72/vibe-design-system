@@ -164,6 +164,36 @@ test.describe("editor seam", () => {
     );
   });
 
+  test("empty state → select --primary shows group sibling rows → clicking a sibling promotes it", async ({
+    page,
+  }) => {
+    // Cosmetic-only navigation/selection: touches no tokens and no globals.css.
+    await page.goto("/design-system");
+    await page.getByRole("button", { name: /edit/i }).click(); // enable edit mode
+
+    // Nothing selected yet → the instructional empty state is shown.
+    await expect(
+      page.getByText(/click any swatch, type sample, or component/i),
+    ).toBeVisible();
+
+    // Select --primary (color group) → sibling rows render, e.g. --secondary.
+    await page.locator('[data-token="--primary"]').first().click();
+    const siblings = page.locator(".ed-siblings");
+    await expect(siblings).toBeVisible();
+    const secondaryRow = siblings.getByRole("button", {
+      name: "--secondary",
+      exact: true,
+    });
+    await expect(secondaryRow).toBeVisible();
+
+    // Click the sibling → the panel's context bar now shows that sibling's name.
+    await secondaryRow.click();
+    await expect(page.locator(".ed-context .ed-name")).toHaveText("--secondary");
+
+    // Preview-width readout is present.
+    await expect(page.getByTestId("ed-preview-width")).toBeVisible();
+  });
+
   test("edit --radius length → globals.css rewritten with the new length", async ({
     page,
   }) => {

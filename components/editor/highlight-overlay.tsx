@@ -8,11 +8,12 @@ interface Box {
   left: number;
   width: number;
   height: number;
+  name: string;
 }
 
 /**
  * In edit mode, draws a thin fixed-position outline over the hovered [data-token]
- * element; clicking selects that token. Token-name label on hover is a later task.
+ * element, tagged with the token name; clicking selects that token.
  */
 export function HighlightOverlay() {
   const { enabled, select } = useEditor();
@@ -28,12 +29,19 @@ export function HighlightOverlay() {
 
     const onMove = (e: PointerEvent) => {
       const el = tokenEl(e.target);
-      if (!el) {
+      const name = el?.getAttribute("data-token");
+      if (!el || !name) {
         setBox(null);
         return;
       }
       const r = el.getBoundingClientRect();
-      setBox({ top: r.top, left: r.left, width: r.width, height: r.height });
+      setBox({
+        top: r.top,
+        left: r.left,
+        width: r.width,
+        height: r.height,
+        name,
+      });
     };
 
     const onClick = (e: MouseEvent) => {
@@ -64,6 +72,8 @@ export function HighlightOverlay() {
         width: box.width,
         height: box.height,
       }}
-    />
+    >
+      <span className="ed-highlight-label">{box.name}</span>
+    </div>
   );
 }

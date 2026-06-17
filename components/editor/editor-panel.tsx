@@ -11,7 +11,8 @@ const MANIFEST = designSystem as Manifest;
 
 /** Docked-right panel, visible only when edit mode is enabled. */
 export function EditorPanel() {
-  const { enabled, selectedToken, perToken, reset } = useEditor();
+  const { enabled, selectedToken, editingBlock, perToken, reset, select } =
+    useEditor();
   if (!enabled) return null;
 
   const token = selectedToken
@@ -23,6 +24,15 @@ export function EditorPanel() {
   const canReset =
     !!state &&
     (state.status !== "idle" || state.current !== state.original);
+
+  // Group sibling rows (model B): only the OTHER tokens in the selected token's group —
+  // never the full catalogue. Robust across single-member groups (then siblings is empty).
+  const siblings = token
+    ? MANIFEST.tokens.filter(
+        (t) => t.group === token.group && t.name !== token.name,
+      )
+    : [];
+  const isColorGroup = token?.group === "color";
 
   return (
     <aside className="ed-panel" aria-label="Token editor">
@@ -47,6 +57,45 @@ export function EditorPanel() {
           </div>
           <div className="ed-body">
             <ControlHost />
+          </div>
+          <div className="ed-siblings" aria-label={`Other ${token?.group ?? ""} tokens`}>
+            <p className="ed-siblings-head">In this group</p>
+            {siblings.length === 0 ? (
+              <p className="ed-siblings-empty">No other tokens in this group.</p>
+            ) : (
+              <ul className="ed-siblings-list">
+                {siblings.map((t) => {
+                  const v =
+                    t.values[editingBlock] ??
+                    t.values.light ??
+                    t.values.dark ??
+                    "";
+                  return (
+                    <li key={t.name}>
+                      <button
+                        type="button"
+                        className="ed-sibling"
+                        onClick={() => select(t.name)}
+                        title={`Edit ${t.name}`}
+                      >
+                        {isColorGroup ? (
+                          <span
+                            className="ed-sibling-swatch"
+                            style={{ background: v }}
+                            aria-hidden="true"
+                          />
+                        ) : (
+                          <span className="ed-sibling-value" aria-hidden="true">
+                            {v}
+                          </span>
+                        )}
+                        <span className="ed-sibling-name">{t.name}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
         </>
       ) : (
