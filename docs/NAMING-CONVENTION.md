@@ -21,6 +21,8 @@ name is a breaking change to the design system's API. Pin once; change deliberat
    `--text-<step>`. Each size has a paired line-height `--lh-<step>` mapped to
    `--text-<step>--line-height`.
 5. **Font family**: `--font-sans`, `--font-mono` (mapped 1:1 to the `--font-*` namespace).
+   `--font-heading` is a shadcn-required alias of `--font-sans`, declared only in `@theme inline`
+   (not a runtime token) so the generated card's `font-heading` class resolves; M1/M2 never see it.
 6. **Font weight**: `--fw-<name>` (normal,medium,semibold,bold) → `--font-weight-<name>`.
 7. **Radius**: single knob `--radius`; sm/md/lg/xl are DERIVED via calc in `@theme inline`
    (shadcn pattern) — not authored.
