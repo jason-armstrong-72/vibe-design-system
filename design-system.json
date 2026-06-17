@@ -549,6 +549,36 @@
       ]
     },
     {
+      "name": "--fs-5xl",
+      "group": "fontSize",
+      "values": {
+        "light": "3rem"
+      },
+      "utilities": [
+        "text-5xl"
+      ]
+    },
+    {
+      "name": "--fs-6xl",
+      "group": "fontSize",
+      "values": {
+        "light": "3.75rem"
+      },
+      "utilities": [
+        "text-6xl"
+      ]
+    },
+    {
+      "name": "--fs-7xl",
+      "group": "fontSize",
+      "values": {
+        "light": "4.5rem"
+      },
+      "utilities": [
+        "text-7xl"
+      ]
+    },
+    {
       "name": "--fs-base",
       "group": "fontSize",
       "values": {
@@ -624,6 +654,33 @@
       },
       "utilities": [],
       "usage": "applied with text-4xl"
+    },
+    {
+      "name": "--lh-5xl",
+      "group": "lineHeight",
+      "values": {
+        "light": "3.25rem"
+      },
+      "utilities": [],
+      "usage": "applied with text-5xl"
+    },
+    {
+      "name": "--lh-6xl",
+      "group": "lineHeight",
+      "values": {
+        "light": "4rem"
+      },
+      "utilities": [],
+      "usage": "applied with text-6xl"
+    },
+    {
+      "name": "--lh-7xl",
+      "group": "lineHeight",
+      "values": {
+        "light": "4.75rem"
+      },
+      "utilities": [],
+      "usage": "applied with text-7xl"
     },
     {
       "name": "--lh-base",
@@ -901,6 +958,16 @@
       ]
     },
     {
+      "name": "--opacity-hover",
+      "group": "opacity",
+      "values": {
+        "light": "0.08"
+      },
+      "utilities": [
+        "opacity-hover"
+      ]
+    },
+    {
       "name": "--opacity-muted",
       "group": "opacity",
       "values": {
@@ -908,6 +975,16 @@
       },
       "utilities": [
         "opacity-muted"
+      ]
+    },
+    {
+      "name": "--opacity-overlay",
+      "group": "opacity",
+      "values": {
+        "light": "0.6"
+      },
+      "utilities": [
+        "opacity-overlay"
       ]
     },
     {

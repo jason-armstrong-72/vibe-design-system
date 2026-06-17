@@ -68,6 +68,9 @@ then `npm run tokens` → use `bg-highlight text-highlight-foreground`.
 | `--fs-2xl` | fontSize | `1.5rem` | text-2xl |
 | `--fs-3xl` | fontSize | `1.875rem` | text-3xl |
 | `--fs-4xl` | fontSize | `2.25rem` | text-4xl |
+| `--fs-5xl` | fontSize | `3rem` | text-5xl |
+| `--fs-6xl` | fontSize | `3.75rem` | text-6xl |
+| `--fs-7xl` | fontSize | `4.5rem` | text-7xl |
 | `--fs-base` | fontSize | `1rem` | text-base |
 | `--fs-lg` | fontSize | `1.125rem` | text-lg |
 | `--fs-sm` | fontSize | `0.875rem` | text-sm |
@@ -76,6 +79,9 @@ then `npm run tokens` → use `bg-highlight text-highlight-foreground`.
 | `--lh-2xl` | lineHeight | `2rem` | applied with text-2xl |
 | `--lh-3xl` | lineHeight | `2.25rem` | applied with text-3xl |
 | `--lh-4xl` | lineHeight | `2.5rem` | applied with text-4xl |
+| `--lh-5xl` | lineHeight | `3.25rem` | applied with text-5xl |
+| `--lh-6xl` | lineHeight | `4rem` | applied with text-6xl |
+| `--lh-7xl` | lineHeight | `4.75rem` | applied with text-7xl |
 | `--lh-base` | lineHeight | `1.5rem` | applied with text-base |
 | `--lh-lg` | lineHeight | `1.75rem` | applied with text-lg |
 | `--lh-sm` | lineHeight | `1.25rem` | applied with text-sm |
@@ -104,7 +110,9 @@ then `npm run tokens` → use `bg-highlight text-highlight-foreground`.
 | `--z-sticky` | zIndex | `1100` | z-sticky |
 | `--z-toast` | zIndex | `1400` | z-toast |
 | `--opacity-disabled` | opacity | `0.5` | opacity-disabled |
+| `--opacity-hover` | opacity | `0.08` | opacity-hover |
 | `--opacity-muted` | opacity | `0.7` | opacity-muted |
+| `--opacity-overlay` | opacity | `0.6` | opacity-overlay |
 | `--container-lg` | container | `64rem` | max-w-lg |
 | `--container-md` | container | `48rem` | max-w-md |
 | `--container-sm` | container | `40rem` | max-w-sm |

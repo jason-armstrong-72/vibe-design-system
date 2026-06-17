@@ -3,5 +3,5 @@ import { resolve } from "node:path";
 
 export default defineConfig({
   resolve: { alias: { "@": resolve(__dirname, ".") } },
-  test: { include: ["tests/**/*.test.ts"] },
+  test: { include: ["tests/**/*.test.{ts,tsx}"] },
 });

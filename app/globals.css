@@ -68,6 +68,9 @@
   --fs-2xl: 1.5rem;   --lh-2xl: 2rem;
   --fs-3xl: 1.875rem; --lh-3xl: 2.25rem;
   --fs-4xl: 2.25rem;  --lh-4xl: 2.5rem;
+  --fs-5xl: 3rem;     --lh-5xl: 3.25rem;
+  --fs-6xl: 3.75rem;  --lh-6xl: 4rem;
+  --fs-7xl: 4.5rem;   --lh-7xl: 4.75rem;
   --fw-normal: 400;
   --fw-medium: 500;
   --fw-semibold: 600;
@@ -106,6 +109,8 @@
   /* ---- opacity ---- */
   --opacity-disabled: 0.5;
   --opacity-muted: 0.7;
+  --opacity-overlay: 0.6;
+  --opacity-hover: 0.08;
 
   /* ---- container widths ---- */
   --container-sm: 40rem;
@@ -218,6 +223,9 @@
   --text-2xl: var(--fs-2xl);   --text-2xl--line-height: var(--lh-2xl);
   --text-3xl: var(--fs-3xl);   --text-3xl--line-height: var(--lh-3xl);
   --text-4xl: var(--fs-4xl);   --text-4xl--line-height: var(--lh-4xl);
+  --text-5xl: var(--fs-5xl);   --text-5xl--line-height: var(--lh-5xl);
+  --text-6xl: var(--fs-6xl);   --text-6xl--line-height: var(--lh-6xl);
+  --text-7xl: var(--fs-7xl);   --text-7xl--line-height: var(--lh-7xl);
 
   --font-weight-normal: var(--fw-normal);
   --font-weight-medium: var(--fw-medium);
@@ -265,6 +273,8 @@
 @utility z-toast    { z-index: var(--z-toast); }
 @utility opacity-disabled { opacity: var(--opacity-disabled); }
 @utility opacity-muted    { opacity: var(--opacity-muted); }
+@utility opacity-overlay  { opacity: var(--opacity-overlay); }
+@utility opacity-hover    { opacity: var(--opacity-hover); }
 
 @layer base {
   * {
