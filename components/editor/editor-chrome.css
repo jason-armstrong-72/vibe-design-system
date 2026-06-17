@@ -1,0 +1,173 @@
+/*
+ * Editor chrome token kit (figma Part A §A7).
+ * NAMESPACED under [data-editor-root] and prefixed --ed-* so these can NEVER collide
+ * with — or be repainted by — the design-system tokens the editor mutates. Editing
+ * --primary must not restyle the editor. Light + dark sets switch via [data-editor-theme].
+ */
+
+[data-editor-root][data-editor-theme="dark"] {
+  --ed-panel: #1e1e1e;
+  --ed-panel-raised: #252525;
+  --ed-field: #2a2a2a;
+  --ed-field-hover: #303030;
+  --ed-border: #333;
+  --ed-text: #e6e6e6;
+  --ed-muted: #8a8a8a;
+  --ed-accent: #4f9cf9;
+  --ed-accent-soft: #26344a;
+  --ed-warn: #f5b454;
+}
+
+[data-editor-root][data-editor-theme="light"] {
+  --ed-panel: #fff;
+  --ed-panel-raised: #f7f8fa;
+  --ed-field: #f1f3f5;
+  --ed-field-hover: #e9ecef;
+  --ed-border: #e2e5e9;
+  --ed-text: #1a1a1a;
+  --ed-muted: #6b7280;
+  --ed-accent: #2563eb;
+  --ed-accent-soft: #dbeafe;
+  --ed-warn: #b45309;
+}
+
+/* Edit toggle dock button */
+.ed-toggle {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2147483000;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--ed-border);
+  background: var(--ed-panel-raised);
+  color: var(--ed-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.25);
+}
+.ed-toggle[data-on="true"] {
+  background: var(--ed-accent);
+  border-color: var(--ed-accent);
+  color: #fff;
+}
+
+/* Highlight overlay box */
+.ed-highlight {
+  position: fixed;
+  pointer-events: none;
+  z-index: 2147482000;
+  border: 1px solid var(--ed-accent);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ed-accent) 8%, transparent);
+}
+
+/* Docked-right panel */
+.ed-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 312px;
+  z-index: 2147483100;
+  display: flex;
+  flex-direction: column;
+  background: var(--ed-panel);
+  color: var(--ed-text);
+  border-left: 1px solid var(--ed-border);
+  font-size: 12px;
+  overflow-y: auto;
+}
+
+.ed-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--ed-border);
+  background: var(--ed-panel-raised);
+}
+.ed-toolbar .ed-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ed-text);
+}
+.ed-iconbtn {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--ed-muted);
+  cursor: pointer;
+}
+.ed-iconbtn:hover {
+  background: var(--ed-field-hover);
+  color: var(--ed-text);
+}
+
+.ed-context {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ed-border);
+}
+.ed-context .ed-name {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--ed-text);
+}
+.ed-context .ed-group {
+  font-size: 10px;
+  color: var(--ed-muted);
+}
+
+.ed-body {
+  padding: 11px 12px;
+}
+.ed-empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--ed-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.ed-stub {
+  color: var(--ed-muted);
+  font-size: 12px;
+}
+
+/* Field row (figma A3) */
+.ed-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--ed-field);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+.ed-row:hover {
+  border-color: var(--ed-border);
+}
+.ed-row .ed-label {
+  color: var(--ed-muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+.ed-row input {
+  all: unset;
+  flex: 1;
+  min-width: 0;
+  color: var(--ed-text);
+}
