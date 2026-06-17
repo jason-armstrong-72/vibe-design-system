@@ -10,6 +10,7 @@
     "test": "vitest run",
     "tokens": "tsx scripts/generate-tokens.ts",
     "tokens:watch": "tsx scripts/watch-tokens.ts",
+    "theme": "tsx scripts/apply-theme.ts",
     "e2e": "playwright test"
   },
   "dependencies": {
@@ -36,6 +37,7 @@
     "@types/react-dom": "^19",
     "chokidar": "^5.0.0",
     "concurrently": "^9.2.1",
+    "culori": "^4.0.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "jsdom": "^29.1.1",
