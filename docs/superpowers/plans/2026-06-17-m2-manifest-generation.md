@@ -78,6 +78,11 @@ describe("utilitiesForToken", () => {
     expect(utilitiesForToken(tok("--brand-500", "color")).utilities).toContain("bg-brand-500");
     expect(utilitiesForToken(tok("--chart-1", "color")).utilities).toContain("bg-chart-1");
   });
+  it("non-paintable semantic colors map to specific utilities", () => {
+    expect(utilitiesForToken(tok("--ring", "color")).utilities).toContain("ring-ring");
+    expect(utilitiesForToken(tok("--border", "color")).utilities).toEqual(["border-border"]);
+    expect(utilitiesForToken(tok("--input", "color")).utilities).toEqual(["border-input"]);
+  });
   it("type size -> text-<step>", () => {
     expect(utilitiesForToken(tok("--fs-lg", "fontSize")).utilities).toEqual(["text-lg"]);
   });
@@ -124,6 +129,10 @@ export function utilitiesForToken(t: Token): UtilityHint {
   switch (t.group) {
     case "color":
       if (bare.endsWith("-foreground")) return { utilities: [`text-${bare}`] };
+      // non-paintable semantic colors map to specific utilities, not bg/text/border
+      if (bare === "ring") return { utilities: ["ring-ring", "outline-ring"] };
+      if (bare === "border") return { utilities: ["border-border"] };
+      if (bare === "input") return { utilities: ["border-input"] };
       return { utilities: [`bg-${bare}`, `text-${bare}`, `border-${bare}`] };
     case "fontSize":
       return { utilities: [`text-${bare.replace(/^fs-/, "")}`] };

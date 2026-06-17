@@ -40,15 +40,21 @@ Decomposition rationale: `globals.css` is the one load-bearing file; the naming 
 
 - [ ] **Step 1: Scaffold the Next app (non-interactive)**
 
-Run from repo root (the dir already contains `docs/`, `README.md`, `.gitignore` — scaffold in place):
+The repo already contains `README.md`, `.gitignore`, and `docs/`. **`create-next-app` aborts on a conflicting `README.md`/`.gitignore` AND exits 0 (silent success-looking abort)** — so scaffold into a temp dir and merge back, which is robust regardless of which files conflict:
 
 ```bash
+# stash existing repo files, scaffold clean, restore docs/ + our README
+mkdir -p /tmp/ds-keep && mv README.md .gitignore docs /tmp/ds-keep/
 npx create-next-app@latest . \
-  --ts --eslint --app --tailwind --src-dir=false \
-  --import-alias "@/*" --use-npm --no-turbopack --yes
+  --ts --eslint --app --tailwind \
+  --import-alias "@/*" --use-npm --yes
+# restore ours (keep Next's .gitignore — it's more complete; append ours if needed)
+mv /tmp/ds-keep/docs ./docs
+mv /tmp/ds-keep/README.md ./README.md   # overwrite Next's stub with ours
+rm -rf /tmp/ds-keep
 ```
 
-Expected: Next 16.x installed, `app/`, `tailwind` v4 wired, `app/globals.css` present with `@import "tailwindcss";`. If the CLI refuses because the dir is non-empty, move `docs/` aside, scaffold, move it back — do NOT delete `docs/`.
+Expected: Next 16.x installed, `app/`, Tailwind v4 wired, `app/globals.css` present with `@import "tailwindcss";`, and `docs/` + our `README.md` intact. (`--src-dir` omitted → no `src/`; Next 16 also writes `AGENTS.md`/`CLAUDE.md` stubs by default — fine, M5 overwrites them.) Verify `ls docs/specs` still lists the spec before continuing.
 
 - [ ] **Step 2: Pin and verify versions**
 
@@ -230,7 +236,7 @@ Set `app/globals.css` to (top of file; mapping/clears added next step). OKLCH va
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   /* ---- color: semantic (OKLCH) ---- */
@@ -445,9 +451,15 @@ Append to `app/globals.css`:
   --font-weight-semibold: var(--fw-semibold);
   --font-weight-bold: var(--fw-bold);
 
-  /* radius: knob + derived steps (shadcn pattern) */
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  /* font families: map tokens into the --font-* namespace so font-sans/font-mono
+     are token-backed (NOT Tailwind's default stacks) */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  /* radius: knob + derived steps (shadcn pattern). max(0px, …) so a radius-0
+     theme (Swiss/Brutalist) doesn't yield negative radii from the offsets. */
+  --radius-sm: max(0px, calc(var(--radius) - 4px));
+  --radius-md: max(0px, calc(var(--radius) - 2px));
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
@@ -494,7 +506,7 @@ body {
 }
 ```
 
-> NOTE on the `--container-*` and `--ease-*` self-references (`--container-sm: var(--container-sm)`): the LEFT side is the `@theme` namespace var; the RIGHT side is the runtime `:root` var of the same name. This works because `@theme inline` resolves the right side against `:root`. If the build errors on a circular reference, rename the runtime vars to `--ctr-sm` / `--motion-ease-standard` and update the mapping. Verify in Task 4.
+> NOTE on the same-name maps (`--container-sm: var(--container-sm)`, `--ease-standard: var(--ease-standard)`, `--font-sans: var(--font-sans)`): the LEFT side is the `@theme` namespace var; the RIGHT side is the runtime `:root` var of the same name. This is **not** a circular reference — with `inline`, Tailwind does NOT emit the theme var as a declaration; it inlines `var(--x)` into the generated utility, which resolves against the single `:root` definition. (Verified: a full compile of this file succeeds and `bg-primary` emits `var(--primary)`.) Task 4's test asserts this resolves correctly, so a regression would fail loudly rather than silently.
 
 - [ ] **Step 3: Verify the build compiles and tokens resolve**
 
@@ -502,7 +514,7 @@ body {
 npm run build
 ```
 
-Expected: build SUCCEEDS. If it fails on a circular `@theme inline` self-reference, apply the rename in the NOTE above and rebuild.
+Expected: build SUCCEEDS (no circular-reference error). Task 4 adds the executable assertion that utilities resolve to the runtime vars.
 
 - [ ] **Step 4: Confirm `tw-animate-css`, not the deprecated package**
 
@@ -561,20 +573,24 @@ import { resolve } from "node:path";
 const css = readFileSync(resolve("app/globals.css"), "utf8");
 
 async function utilitiesFor(classes: string[]): Promise<string> {
-  // compile globals.css, then ask Tailwind to generate the given candidate classes
-  const compiler = await compile(css, { base: process.cwd() });
-  return compiler.build(classes);
+  // compile globals.css, then ask Tailwind to generate the given candidate classes.
+  // onDependency is REQUIRED — without it compile() throws `TypeError: t is not a function`.
+  const compiler = await compile(css, { base: process.cwd(), onDependency: () => {} });
+  return compiler.build(classes); // build() is synchronous
 }
 
 describe("compile gate", () => {
-  it("generates a utility for an in-system token class", async () => {
+  it("generates a utility for an in-system token class — resolving to the runtime var", async () => {
     const out = await utilitiesFor(["bg-primary"]);
-    expect(out).toContain("--color-primary");
+    // @theme inline resolves the utility THROUGH var(--primary); the namespace
+    // name (--color-primary) does NOT appear in output. Assert the real result:
+    expect(out).toMatch(/\.bg-primary\s*\{/);
+    expect(out).toContain("var(--primary)");
   });
 
   it("does NOT generate a utility for a cleared default-palette class", async () => {
     const out = await utilitiesFor(["bg-red-500"]);
-    expect(out).not.toContain("bg-red-500");
+    expect(out).not.toContain(".bg-red-500"); // selector absent; "red" appears in the license banner, so match the selector
   });
 });
 ```
@@ -587,9 +603,9 @@ Run:
 npx vitest run tests/compile-gate.test.ts
 ```
 
-Expected: the FIRST run may fail if the `@tailwindcss/node` `compile` API signature differs in the installed v4 version. If so, fix the harness against the installed API (check `node_modules/@tailwindcss/node`), not the assertions. The assertions encode the requirement; keep them. Re-run until the test executes and the `bg-primary` assertion PASSES and — temporarily comment the second test, prove the first passes, then restore.
+Expected: FAIL on the first run because `tests/compile-gate.test.ts` exists but `app/globals.css`'s cleared namespaces aren't yet… — actually globals.css is authored in Task 3, so the gate is meaningful immediately. The genuine TDD red here is the *second* test: before the namespace clears existed it would have found `.bg-red-500`. To prove the test can fail, temporarily add `--color-red-500: red;` to the `@theme` block, run (second test FAILS), remove it, re-run (PASS). The first test should PASS once globals.css is authored.
 
-> If `@tailwindcss/node`'s programmatic API proves unstable, fall back to a CLI-based harness: write the two candidate sets to temp files, run `npx @tailwindcss/cli -i app/globals.css --content <tmp> -o <out>`, and grep the output. Same assertions.
+> The `compile`/`build` shapes above were verified against `@tailwindcss/node@4.x`: `compile(css, { base, onDependency })` returns `{ build(candidates: string[]): string }`, `build` is synchronous. If a future version shifts the API, fall back to the CLI harness: `npx @tailwindcss/cli -i app/globals.css --content <tmp> -o <out>` then grep. Same assertions.
 
 - [ ] **Step 4: Run to verify both pass**
 
@@ -599,7 +615,7 @@ Run:
 npm test
 ```
 
-Expected: 2 passed. `bg-primary` → output contains `--color-primary`; `bg-red-500` → output contains no `red`.
+Expected: 2 passed. `bg-primary` → output has a `.bg-primary { … }` rule resolving to `var(--primary)`; `bg-red-500` → output has no `.bg-red-500` selector (note: the substring "red" *does* appear in Tailwind's license banner, which is why the assertion matches the selector, not the bare word).
 
 - [ ] **Step 5: Commit**
 

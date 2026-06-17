@@ -16,6 +16,12 @@ for continuity; the implementation plan will target the new repo.
 A **design-system starter template** — shipped as a GitHub template repo — for people building a website
 or SaaS app **with an LLM** (vibe coders). The template gives them, from line one:
 
+> **Who this is actually for.** The *visual* surface (theme gallery, point-click editor) is approachable
+> for non-designers — but adoption and daily use run on a real dev workflow (`npx degit` / "Use this
+> template", `npm install`, `npm run dev`, git-tracked edits, pre-commit hooks, CI). So the target is a
+> **technical-enough builder working alongside an LLM in a dev environment**, not a fully non-technical
+> user working solo. M6's acceptance and the README onboarding are written for that person.
+
 1. A complete, opinionated **token set** (the design system) as the single source of truth.
 2. A **visual design-system page** — a living style guide that renders every token and component.
 3. A **built-in visual editor** (dev-only) to edit tokens point-and-click; edits ripple everywhere.
@@ -141,11 +147,14 @@ on demand, off-scale spacing **cannot fail at compile** the way an off-palette c
 **lint** (§6.2), not the compiler. The design-system page renders the derived steps (p-1..p-12) as
 reference; they are derived, not authored.
 
-**Radii** — `--radius` (shadcn keys off this) + `--radius-sm/md/lg`.
+**Radii** — single authored knob `--radius` (shadcn keys off this); `--radius-sm/md/lg/xl` are **derived**
+via `calc()` in `@theme inline` (clamped with `max(0px, …)` so radius-0 themes don't go negative), not
+authored tokens.
 
-**Border widths** — `--border-width-thin/base/thick`.
+**Border widths** — `--border-width-thin/base/thick` (exposed as `border-thin/base/thick` utilities).
 
-**Shadows** — `--shadow-sm/md/lg`.
+**Shadows** — authored as `--elevation-sm/md/lg` (runtime), mapped to the `--shadow-sm/md/lg` utilities.
+(Runtime base names avoid colliding with the Tailwind `--shadow-*` namespace; see the naming convention.)
 
 **Transitions** — `--duration-fast/base/slow`, `--ease-standard/in/out`.
 
@@ -161,7 +170,9 @@ so they are visible even though their shape is code-only.
 
 **Opacity** — `--opacity-disabled/muted`.
 
-**Container/layout widths** — `--container-sm/md/lg` + content gutter.
+**Container/layout widths** — `--container-sm/md/lg` + content gutter. *Note:* container widths and the
+`--breakpoint-*` values below are **intentionally independent** (a content max-width need not equal a
+responsive breakpoint); they are not derived from each other, by design.
 
 **Breakpoints — documented, NOT runtime-editable.** CSS media queries cannot reliably read CSS vars for
 breakpoints, so breakpoints live in the `@theme` block (`--breakpoint-*`), are surfaced in the manifest as
@@ -352,6 +363,12 @@ Three enforcement mechanisms, layered (the first is the strongest):
 **Escape hatch:** an explicit inline disable comment (e.g. `/* ds-disable: <reason> */`) for a deliberate
 one-off — a conscious, greppable, reviewable override. **Never silent.**
 
+**Recovery UX (what a failure looks like, and the one command that fixes it).** Lint/CI failures must be
+*actionable*, not cryptic — the user may not know stylelint. Each rule's message names the fix: a hardcoded
+color → "use `bg-<token>` or add a token (see `design-system.md`)"; a stale manifest → "run `npm run
+tokens` and commit"; a one-theme token → "add it to both `:root` and `.dark`". M5 writes these messages,
+and `AGENTS.md` documents the recovery commands so the *LLM* can self-correct when CI fails.
+
 ### 6.3 Bonus — Claude Code skill (additive)
 
 A bundled skill encoding the extension procedure as a richer workflow for Claude Code users. Optional —
@@ -469,6 +486,13 @@ Each milestone is TDD'd and reviewed, and is independently usable.
   can programmatically change any token in `globals.css` safely, preserving formatting, in either theme.*
 - **M2 — Manifest generation.** `generate.ts` → `design-system.{md,json}` + `npm run tokens` + dev watch.
   Fixture tests. *Done = manifest always reflects the vars.*
+- **M2.5 — Manifest dogfood (informal, de-risks the headline early).** Before building the page/editor/lint,
+  hand `design-system.md` *alone* (no lint, no editor) to a fresh LLM and ask it to build one component +
+  follow the extension procedure by hand. The manifest is the LLM's actual input and exists now — if it's
+  confusing or the extension procedure doesn't land, fix it here (reword a generated doc) while it's cheap,
+  not at M6 after M3a/M4/M5 were built on a flawed contract. The lint (M5) proves drift *fails*; this proves
+  the LLM can *succeed* — different tests. *Done = a fresh LLM builds + extends from the manifest with no
+  hand-holding, or the manifest/procedure is reworded until it can.*
 - **M3 — Design-system page.** `/design-system` rendering auto-iterated token sections + hand-authored
   shadcn component showcase, `data-token`-tagged. *Done = living style guide, truthful by construction.*
 - **M3a — Theme preset suite (§13).** Depends on M3 (the page is what gets screenshotted). Author the
@@ -509,6 +533,10 @@ Each milestone is TDD'd and reviewed, and is independently usable.
 package to own or publish. **Theme selection is part of adoption:** the README gallery (§13) shows one
 screenshot per theme; the user picks a look and runs `npm run theme <name>` to apply it, then fine-tunes
 in the editor. Default is **Neutral** (already applied), so doing nothing is also valid.
+
+**Known limitation:** `degit` / "Use this template" produces a **fork-at-a-snapshot** — there is no
+upstream-update path; later template improvements don't flow to adopted projects. Accepted for v1 (it's
+how starters work); a future "sync upstream" story is out of scope.
 
 **Fast-follow: `npx create-*` CLI.** Thin scaffolder (~1 day once the template is stable): prompts
 (project name, **theme choice** from the §13 gallery), **`degit`s from the template repo** (so the
@@ -574,6 +602,20 @@ the value-set → apply → render `/design-system` → screenshot → critique 
 coherence, distinctiveness) → revise. The 8 run in parallel. **Hard gate every theme must pass:** all
 fg/bg pairs meet WCAG AA in both light and dark; no token left at the Neutral default unintentionally; the
 design-system page renders without overflow at every breakpoint.
+
+### Honest boundaries (invariance is "mostly", not "pure")
+
+"A theme is only values, names fixed" holds for the vast majority — colors, spacing, shadows, durations,
+opacity, z-index, border widths. Three couplings are **not** pure value-swaps and are accepted as such:
+
+- **Fonts.** `--font-sans/-mono/-serif` are tokens, but their *values* reference `next/font` faces declared
+  in `lib/fonts.ts`. A theme wanting a face outside the ~4 bundled faces edits `lib/fonts.ts` (code), then
+  points the token at it. Bounded, not free.
+- **Radius-0 themes.** Swiss/Brutalist set `--radius: 0`; the derived `--radius-sm/md` use `max(0px, …)`
+  so they don't go negative — a deliberate guard in the shared `@theme` calc, not per-theme code.
+- **Dark overrides.** Most groups inherit `:root` into `.dark`; a theme whose dark variant needs a
+  different radius/shadow *adds* `.dark` overrides (still within the swapped `:root`/`.dark` region, so
+  `apply-theme.ts` handles it, but it's more than a one-line value change).
 
 ### Non-goals (theme suite, v1)
 

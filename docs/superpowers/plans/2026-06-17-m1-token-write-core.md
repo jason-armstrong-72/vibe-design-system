@@ -208,6 +208,8 @@ describe("controlForGroup", () => {
     ["color", "color"],
     ["fontFamily", "select"],
     ["fontSize", "length-slider"],
+    ["lineHeight", "length-slider"],
+    ["borderWidth", "length-slider"],
     ["spacing", "length-slider"],
     ["duration", "duration-slider"],
     ["easing", "easing"],
