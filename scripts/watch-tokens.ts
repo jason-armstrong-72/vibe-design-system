@@ -3,15 +3,18 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseTokens } from "../lib/tokens/parse";
 import { buildManifest } from "../lib/tokens/generate";
+import { syncThemeColorMappings } from "../lib/tokens/sync";
 
 const GLOBALS = resolve("app/globals.css");
 
 function regen() {
   try {
-    const { json, markdown } = buildManifest(parseTokens(readFileSync(GLOBALS, "utf8")));
+    const sync = syncThemeColorMappings(readFileSync(GLOBALS, "utf8"));
+    if (sync.changed) writeFileSync(GLOBALS, sync.css, "utf8");
+    const { json, markdown } = buildManifest(parseTokens(sync.css));
     writeFileSync(resolve("design-system.json"), JSON.stringify(json, null, 2) + "\n", "utf8");
     writeFileSync(resolve("design-system.md"), markdown, "utf8");
-    console.log(`tokens: regenerated (${json.tokens.length} tokens)`);
+    console.log(`tokens: regenerated (${json.tokens.length} tokens)${sync.changed ? ` + wired ${sync.added.length} mapping(s)` : ""}`);
   } catch (err) {
     // a transient half-written file (atomic rename should prevent this) — next event recovers
     console.warn("tokens: regen skipped —", (err as Error).message);
