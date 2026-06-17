@@ -79,7 +79,7 @@ export function TokenItem({ token }: { token: ManifestToken }) {
   return (
     <div
       data-token={token.name}
-      className="bg-card hover:bg-muted/50 flex items-center gap-4 px-4 py-3 transition-colors"
+      className="border-border bg-card hover:bg-muted/40 flex items-center gap-4 rounded-lg border px-4 py-3 transition-colors"
     >
       <div className="flex min-h-12 w-16 shrink-0 items-center justify-center">{preview(token)}</div>
       <div className="flex min-w-0 flex-col gap-0.5">

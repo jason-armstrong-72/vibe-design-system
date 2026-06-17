@@ -9,7 +9,7 @@ export default function DesignSystemPage() {
   const sections = groupedSections(manifest);
 
   return (
-    <main className="bg-background text-foreground min-h-screen">
+    <main className="bg-muted/40 text-foreground min-h-screen">
       <header className="border-border bg-background/80 sticky top-0 z-10 border-b backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-col gap-1 px-6 py-5">
           <div className="flex items-baseline gap-3">
@@ -25,11 +25,13 @@ export default function DesignSystemPage() {
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-6xl flex-col gap-16 px-6 py-12">
-        {sections.map((s, i) => (
-          <TokenSection key={s.group} section={s} index={i + 1} />
+      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-10">
+        {sections.map((s) => (
+          <TokenSection key={s.group} section={s} />
         ))}
-        <ComponentShowcase />
+        <div className="border-border bg-card flex flex-col gap-6 rounded-2xl border p-6 shadow-sm sm:p-8">
+          <ComponentShowcase />
+        </div>
       </div>
     </main>
   );
