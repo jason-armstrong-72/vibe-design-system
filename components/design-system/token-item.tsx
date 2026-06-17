@@ -79,13 +79,13 @@ export function TokenItem({ token }: { token: ManifestToken }) {
   return (
     <div
       data-token={token.name}
-      className="flex items-center gap-4 rounded-md border border-border bg-card px-4 py-3"
+      className="bg-card hover:bg-muted/50 flex items-center gap-4 px-4 py-3 transition-colors"
     >
       <div className="flex min-h-12 w-16 shrink-0 items-center justify-center">{preview(token)}</div>
       <div className="flex min-w-0 flex-col gap-0.5">
-        <code className="font-mono text-sm text-foreground">{token.name}</code>
-        <span className="truncate font-mono text-xs text-muted-foreground">{value}</span>
-        {hint ? <span className="truncate text-xs text-muted-foreground">{hint}</span> : null}
+        <code className="text-foreground font-mono text-sm">{token.name}</code>
+        <span className="text-muted-foreground truncate font-mono text-xs">{value}</span>
+        {hint ? <span className="text-muted-foreground truncate text-xs">{hint}</span> : null}
       </div>
     </div>
   );
