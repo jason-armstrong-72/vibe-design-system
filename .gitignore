@@ -47,3 +47,5 @@ next-env.d.ts
 /e2e/__shots__/
 /playwright-report/
 /test-results/
+
+.superpowers/
