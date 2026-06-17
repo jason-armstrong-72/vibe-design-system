@@ -1,0 +1,145 @@
+/* Brutalist — raw, structural, high-impact but controlled. Stark black/white + loud
+   primaries (electric blue, acid yellow, hot red), THICK borders, HARD offset shadows
+   (zero blur), mono type, radius 0. Values only; names are the fixed contract.
+   Applied by `npm run theme brutalist`. */
+:root {
+  /* ---- color: semantic (stark + loud) ---- */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0 0 0);
+  --primary: oklch(0.52 0.25 264);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.95 0 0);
+  --secondary-foreground: oklch(0 0 0);
+  --muted: oklch(0.95 0 0);
+  --muted-foreground: oklch(0.4 0 0);
+  --accent: oklch(0.86 0.18 100);
+  --accent-foreground: oklch(0 0 0);
+  --destructive: oklch(0.54 0.24 25);
+  --destructive-foreground: oklch(0.985 0 0);
+  /* ---- color: status (loud, AA) ---- */
+  --success: oklch(0.53 0.18 150);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.8 0.17 80);
+  --warning-foreground: oklch(0 0 0);
+  --info: oklch(0.54 0.18 250);
+  --info-foreground: oklch(0.985 0 0);
+  /* ---- color: form/border (thick black rules) ---- */
+  --border: oklch(0 0 0);
+  --input: oklch(0 0 0);
+  --ring: oklch(0.52 0.25 264);
+  /* ---- color: brand ramp (electric blue) ---- */
+  --brand-50: oklch(0.97 0.02 264);
+  --brand-100: oklch(0.93 0.05 264);
+  --brand-200: oklch(0.87 0.09 264);
+  --brand-300: oklch(0.79 0.14 264);
+  --brand-400: oklch(0.67 0.2 264);
+  --brand-500: oklch(0.52 0.25 264);
+  --brand-600: oklch(0.46 0.24 264);
+  --brand-700: oklch(0.4 0.21 264);
+  --brand-800: oklch(0.34 0.17 264);
+  --brand-900: oklch(0.29 0.13 264);
+  --brand-950: oklch(0.22 0.09 264);
+  /* ---- color: charts (loud, distinct) ---- */
+  --chart-1: oklch(0.52 0.25 264);
+  --chart-2: oklch(0.8 0.17 80);
+  --chart-3: oklch(0.54 0.24 25);
+  --chart-4: oklch(0.6 0.18 150);
+  --chart-5: oklch(0.55 0.22 320);
+
+  /* ---- typography (mono carries the blunt feel) ---- */
+  --font-sans: var(--font-bundled-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-mono: var(--font-bundled-mono), ui-monospace, SFMono-Regular, monospace;
+  --fs-xs: 0.75rem;   --lh-xs: 1rem;
+  --fs-sm: 0.875rem;  --lh-sm: 1.25rem;
+  --fs-base: 1rem;    --lh-base: 1.5rem;
+  --fs-lg: 1.125rem;  --lh-lg: 1.75rem;
+  --fs-xl: 1.25rem;   --lh-xl: 1.75rem;
+  --fs-2xl: 1.5rem;   --lh-2xl: 2rem;
+  --fs-3xl: 1.875rem; --lh-3xl: 2.25rem;
+  --fs-4xl: 2.25rem;  --lh-4xl: 2.5rem;
+  --fs-5xl: 3rem;     --lh-5xl: 3.25rem;
+  --fs-6xl: 3.75rem;  --lh-6xl: 4rem;
+  --fs-7xl: 4.5rem;   --lh-7xl: 4.75rem;
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* ---- radius (Brutalist: square) ---- */
+  --radius: 0rem;
+
+  /* ---- border widths (THICK — the signature) ---- */
+  --border-width-thin: 2px;
+  --border-width-base: 3px;
+  --border-width-thick: 6px;
+
+  /* ---- shadow (HARD offset, zero blur) ---- */
+  --elevation-sm: 2px 2px 0 0 oklch(0 0 0);
+  --elevation-md: 4px 4px 0 0 oklch(0 0 0);
+  --elevation-lg: 8px 8px 0 0 oklch(0 0 0);
+
+  /* ---- motion ---- */
+  --duration-fast: 100ms;
+  --duration-base: 180ms;
+  --duration-slow: 300ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+
+  /* ---- spacing knob (v4 multiplier) ---- */
+  --spacing-base: 0.25rem;
+
+  /* ---- z-index ---- */
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-modal: 1300;
+  --z-toast: 1400;
+
+  /* ---- opacity ---- */
+  --opacity-disabled: 0.5;
+  --opacity-muted: 0.7;
+  --opacity-overlay: 0.6;
+  --opacity-hover: 0.08;
+
+  /* ---- container widths ---- */
+  --container-sm: 40rem;
+  --container-md: 48rem;
+  --container-lg: 64rem;
+}
+
+.dark {
+  --background: oklch(0.16 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0.21 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.21 0 0);
+  --popover-foreground: oklch(1 0 0);
+  --primary: oklch(0.68 0.19 264);
+  --primary-foreground: oklch(0 0 0);
+  --secondary: oklch(0.28 0 0);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.28 0 0);
+  --muted-foreground: oklch(0.72 0 0);
+  --accent: oklch(0.86 0.18 100);
+  --accent-foreground: oklch(0 0 0);
+  --destructive: oklch(0.65 0.23 25);
+  --destructive-foreground: oklch(0 0 0);
+  --success: oklch(0.72 0.18 150);
+  --success-foreground: oklch(0 0 0);
+  --warning: oklch(0.83 0.17 80);
+  --warning-foreground: oklch(0 0 0);
+  --info: oklch(0.7 0.16 250);
+  --info-foreground: oklch(0 0 0);
+  --border: oklch(1 0 0);
+  --input: oklch(1 0 0);
+  --ring: oklch(0.68 0.19 264);
+  --chart-1: oklch(0.68 0.19 264);
+  --chart-2: oklch(0.83 0.17 80);
+  --chart-3: oklch(0.65 0.23 25);
+  --chart-4: oklch(0.72 0.18 150);
+  --chart-5: oklch(0.7 0.18 320);
+}
