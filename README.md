@@ -14,10 +14,31 @@ token auto-appears on the `/design-system` page, ready to edit.
 
 **Stack:** Next.js (App Router) + TypeScript + Tailwind + shadcn/ui.
 
+## Themes
+
+Pick a look at adoption time, then fine-tune in the editor. Default is **Neutral** (already applied —
+doing nothing is valid).
+
+```bash
+npm run theme neutral    # calm, professional default
+npm run theme swiss      # austere, monochrome, grid + whitespace
+npm run theme brutalist  # raw, thick borders, hard shadows, mono
+```
+
+`npm run theme <name>` swaps the preset's values into `app/globals.css` and regenerates the manifest.
+Token **names** are the fixed contract; only values change — so every consumer (app, editor, lint, the
+manifest) works unchanged. Each theme passes WCAG-AA contrast (light + dark) and renders without overflow.
+
+| Neutral | Swiss | Brutalist |
+|---|---|---|
+| ![Neutral](themes/screenshots/neutral.png) | ![Swiss](themes/screenshots/swiss.png) | ![Brutalist](themes/screenshots/brutalist.png) |
+
+_(Five more — Editorial, Warm, Pastel, Technical, Corporate — are a fast-follow on the same machinery.)_
+
 ## Status
 
-Pre-implementation. Design is complete and approved — see
+In progress. Design is complete and approved — see
 [docs/specs/2026-06-16-design-system-starter-design.md](docs/specs/2026-06-16-design-system-starter-design.md).
 
-Build order: M0 skeleton + naming convention → M1 token write-core → M2 manifest generation →
-M3 design-system page → M4 editor → M5 LLM contract.
+Build order: ✅ M0 skeleton + naming convention → ✅ M1 token write-core → ✅ M2 manifest generation →
+✅ M3 design-system page → ✅ M3a theme preset suite → M4 editor → M5 LLM contract → M6 dogfood.
