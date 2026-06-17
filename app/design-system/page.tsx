@@ -2,6 +2,7 @@ import designSystem from "@/design-system.json";
 import type { Manifest } from "@/lib/tokens/generate";
 import { groupedSections } from "@/lib/design-system/sections";
 import { TokenSection } from "@/components/design-system/token-section";
+import { ComponentShowcase } from "@/components/design-system/component-showcase";
 
 export default function DesignSystemPage() {
   const sections = groupedSections(designSystem as Manifest);
@@ -17,7 +18,7 @@ export default function DesignSystemPage() {
       {sections.map((s) => (
         <TokenSection key={s.group} section={s} />
       ))}
-      {/* component showcase added in Task 4 */}
+      <ComponentShowcase />
     </main>
   );
 }
