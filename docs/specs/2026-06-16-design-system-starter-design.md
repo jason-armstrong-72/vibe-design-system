@@ -137,7 +137,7 @@ write module; only the *color channel* format is fixed to OKLCH.
 
 **Typography**
 - Families: `--font-sans`, `--font-mono` (+ `--font-serif` if the template uses one).
-- Type scale: `--text-xs … --text-4xl`. Weights. Line-heights.
+- Type scale: `--text-xs … --text-7xl` (incl. a 5xl/6xl/7xl display tier for hero/website headings). Weights. Line-heights.
 
 **Spacing — single `--spacing` multiplier (v4-native).** Tailwind v4 generates every numeric spacing
 utility (`p-1 … p-12 … p-N`) from one `--spacing` multiplier via `calc()`; there is no discrete
@@ -168,7 +168,7 @@ so they are visible even though their shape is code-only.
 
 **Z-index** — `--z-dropdown/sticky/modal/toast`.
 
-**Opacity** — `--opacity-disabled/muted`.
+**Opacity** — `--opacity-disabled/muted/overlay/hover`.
 
 **Container/layout widths** — `--container-sm/md/lg` + content gutter. *Note:* container widths and the
 `--breakpoint-*` values below are **intentionally independent** (a content max-width need not equal a

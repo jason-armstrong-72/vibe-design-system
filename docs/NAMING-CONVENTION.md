@@ -17,7 +17,7 @@ name is a breaking change to the design system's API. Pin once; change deliberat
 2. **Ramps** (open-ended scales) use numeric steps: `--<name>-<step>`,
    steps 50,100,200,…,900,950. Ramps in v1: `--brand-*`.
 3. **Charts**: `--chart-1 … --chart-5`.
-4. **Type size**: base name `--fs-<step>` (xs,sm,base,lg,xl,2xl,3xl,4xl), mapped to
+4. **Type size**: base name `--fs-<step>` (xs,sm,base,lg,xl,2xl,3xl,4xl,5xl,6xl,7xl), mapped to
    `--text-<step>`. Each size has a paired line-height `--lh-<step>` mapped to
    `--text-<step>--line-height`.
 5. **Font family**: `--font-sans`, `--font-mono` (mapped 1:1 to the `--font-*` namespace).
@@ -35,7 +35,7 @@ name is a breaking change to the design system's API. Pin once; change deliberat
     There is NO discrete `--space-N`. The whole numeric scale derives from it.
 12. **Z-index**: `--z-<role>` (dropdown,sticky,modal,toast). Plain `:root` vars +
     `@utility` helpers; not a Tailwind namespace.
-13. **Opacity**: `--opacity-<role>` (disabled,muted). Same treatment as z-index.
+13. **Opacity**: `--opacity-<role>` (disabled,muted,overlay,hover). Same treatment as z-index.
 14. **Container**: `--container-<size>` (sm,md,lg) → `--container-<size>` namespace.
 15. **Breakpoints**: `--breakpoint-<size>` in `@theme` — documented reference, NOT
     runtime-editable (CSS media queries can't read runtime vars).
