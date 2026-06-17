@@ -102,6 +102,14 @@ Extended-but-curated. Authored as CSS vars under `:root` (light) and `.dark` (da
 the contract** — the stable API the editor, lint, and LLM all key on; v1 fixes a documented naming
 convention.
 
+**Names are invariant; values are themeable (enables the preset suite — §13).** Because every consumer
+(parse, write, generate, editor, lint, the design-system page) keys on token *names*, the entire token
+*value*-set can be swapped without touching any of them. A "theme" is therefore just a complete
+`:root`/`.dark` value-set under the fixed names — and because the token set spans every visual group
+(radius, borders, shadows, type, motion — not just color), one value-set can express a complete aesthetic
+(Swiss = radius 0 + hairline borders + no shadow; Brutalist = thick borders + hard shadows). v1 ships a
+**gallery of 8 themes** the user picks from at adoption time, then fine-tunes in the editor (§13).
+
 **Color storage format — OKLCH, decided.** Color tokens store a **full `oklch(...)` value**, not bare
 channels and not hex. Rationale: (a) OKLCH is perceptually uniform — the brand ramp and the fast-follow
 WCAG contrast check (§10) both reason about lightness, which OKLCH gives directly; (b) P3 wide-gamut for
@@ -371,6 +379,7 @@ the md guide + lint stand alone for non-Claude agents.
 | Animations | `tw-animate-css` | **replaces** deprecated `tailwindcss-animate` |
 | Lint | stylelint + eslint | the blocking rules (§6.2) |
 | Tests | Vitest + Playwright | unit + browser e2e (§9) |
+| Fonts | `next/font` + bundled Google fonts | a shared font set the themes draw from (§13); `--font-sans`/`--font-mono` are themeable tokens |
 | Node | 20 LTS+ | Next 16 floor |
 
 Exact versions are locked in the committed lockfile at M0; the table is the intent. (Same family this
@@ -394,6 +403,13 @@ tailwind.config.ts       # optional, near-empty (content globs / plugins only �
 AGENTS.md  CLAUDE.md      # LLM contract (+ .cursor/rules)
 <skill dir>              # optional Claude Code skill
 .stylelintrc / eslint     # the blocking lint rules
+themes/                  # the 8 theme presets — each a complete :root/.dark value-set (§13)
+  neutral.css  swiss.css  editorial.css  warm.css  brutalist.css
+  pastel.css  technical.css  corporate.css
+  screenshots/           # one /design-system capture per theme (README gallery)
+lib/fonts.ts             # next/font setup for the bundled shared font set (§13)
+scripts/apply-theme.ts   # `npm run theme <name>` — swap a preset into globals.css + regenerate manifest
+docs/DESIGN-BRIEF.md     # master aesthetic brief + 8 per-theme mini-briefs (drives the visual loop)
 ```
 
 ---
@@ -445,14 +461,23 @@ Each milestone is TDD'd and reviewed, and is independently usable.
   imported. **Pin the exact token naming convention as a written rule** (not just examples): how
   `*-foreground` pairs, scale suffixes (`-sm/md/lg`, `-1..-12`), brand-ramp steps, and status tokens are
   named. Lint, `generate`, `schema`, and the editor all key on names, so the convention must be fixed here
-  to prevent later churn. *Done = `npm run dev` shows a themed shadcn app, `bg-red-500` fails to compile,
-  and the naming convention is documented.*
+  to prevent later churn. M0 ships **one** theme — the **Neutral** preset (§13) — as the canonical default
+  all later fixtures key on; the bundled-font setup (`lib/fonts.ts`, §7/§13) lands here too. *Done =
+  `npm run dev` shows a themed shadcn app, `bg-red-500` fails to compile, and the naming convention is
+  documented.*
 - **M1 — Token write-core (load-bearing).** `lib/tokens/parse|write|schema` with exhaustive TDD. *Done =
   can programmatically change any token in `globals.css` safely, preserving formatting, in either theme.*
 - **M2 — Manifest generation.** `generate.ts` → `design-system.{md,json}` + `npm run tokens` + dev watch.
   Fixture tests. *Done = manifest always reflects the vars.*
 - **M3 — Design-system page.** `/design-system` rendering auto-iterated token sections + hand-authored
   shadcn component showcase, `data-token`-tagged. *Done = living style guide, truthful by construction.*
+- **M3a — Theme preset suite (§13).** Depends on M3 (the page is what gets screenshotted). Author the
+  other 7 presets as complete `:root`/`.dark` value-sets under the fixed names, via the visual loop
+  (per-theme mini-brief → generate value-set → render `/design-system` → screenshot → critique vs brief →
+  revise). Ship `scripts/apply-theme.ts` (`npm run theme <name>`), the `themes/` dir, the bundled shared
+  fonts, and a README gallery of one screenshot per theme. Runs independently of M4/M5 once M3 exists.
+  *Done = `npm run theme swiss` swaps the whole look; 8 themes pass the contrast/coherence bar; the gallery
+  renders in the README.*
 - **M4 — Editor.** Edit toggle, per-group control panels, live preview, dev-only writeback API → M1 core
   (with value-type/injection validation + pre-write re-read), thin highlight overlay. **Token editing only
   — pick-anywhere is cut to fast-follow (§5).** Playwright e2e for the full edit→repaint→writeback→ripple
@@ -481,13 +506,16 @@ Each milestone is TDD'd and reviewed, and is independently usable.
 ## 11. Distribution
 
 **v1: GitHub template repo.** "Use this template" / `npx degit`. Ships the entire value with no extra
-package to own or publish.
+package to own or publish. **Theme selection is part of adoption:** the README gallery (§13) shows one
+screenshot per theme; the user picks a look and runs `npm run theme <name>` to apply it, then fine-tunes
+in the editor. Default is **Neutral** (already applied), so doing nothing is also valid.
 
 **Fast-follow: `npx create-*` CLI.** Thin scaffolder (~1 day once the template is stable): prompts
-(project name, optional seed palette), **`degit`s from the template repo** (so the template stays the
-single source — no bundled copy to drift), runs `npm install`, `git init`. Deferred not because it is
-hard but because building it while the template still churns is wasteful, and it adds a permanent
-maintenance + npm publish/supply-chain surface. The degit approach makes adding it later trivial.
+(project name, **theme choice** from the §13 gallery), **`degit`s from the template repo** (so the
+template stays the single source — no bundled copy to drift), applies the chosen theme, runs
+`npm install`, `git init`. Deferred not because it is hard but because building it while the template
+still churns is wasteful, and it adds a permanent maintenance + npm publish/supply-chain surface. The
+degit approach makes adding it later trivial.
 
 ---
 
@@ -501,3 +529,54 @@ maintenance + npm publish/supply-chain surface. The degit approach makes adding 
   `globals.css`, plus a hand-authored `/design-system` showcase and `save-*` API routes. This project
   adopts its **interaction model** and **rebuilds it properly**: generated (not hardcoded/triplicated)
   token list, robust TDD'd write module (not hex-only regex), theme-aware, all token groups.
+
+---
+
+## 13. Theme preset suite
+
+The starter ships a **gallery of 8 themes**. Each is a complete `:root`/`.dark` value-set under the
+**fixed token names** (§3) — so swapping a theme touches *only values*, and every consumer (parse, write,
+generate, editor, lint, the design-system page) works unchanged. Because the token set spans every visual
+group, a preset expresses a **whole aesthetic**, not just a palette: color, type, radius, border width,
+shadow, and motion all move together.
+
+### The 8 themes
+
+| # | Theme | Signature |
+|---|---|---|
+| 1 | **Neutral** (default) | greys + one accent; restrained; the easiest to re-brand; M0's canonical preset |
+| 2 | **Swiss / Minimal** | near-monochrome, radius 0, hairline borders, generous whitespace, type does the work |
+| 3 | **Editorial** | confident brand hue, expressive serif/sans pairing, magazine hierarchy |
+| 4 | **Warm / Organic** | earthy palette, soft radius, gentle elevation, friendly |
+| 5 | **Brutalist** | thick borders, hard offset shadows, mono type, high contrast |
+| 6 | **Soft / Pastel SaaS** | low-contrast pastels, rounded, approachable product feel |
+| 7 | **Technical / Dark-first** | developer-tool aesthetic, dark base, one bright accent |
+| 8 | **Corporate / Trust** | enterprise blue, conservative, denser spacing |
+
+### Mechanism
+
+- `themes/<name>.css` — a complete `:root`/`.dark` block (token **values** only; names are fixed).
+- `npm run theme <name>` (`scripts/apply-theme.ts`) — swaps the chosen block into `app/globals.css`'s
+  `:root`/`.dark` region (reusing M1's write-core parsing so formatting stays clean), then runs
+  `npm run tokens`. The `@theme inline` mapping and namespace clears are theme-invariant and untouched.
+- **Fonts are bundled and shared.** `lib/fonts.ts` sets up a small set of `next/font` Google fonts (a few
+  faces covering sans / serif / mono / display) that the themes draw from via the `--font-sans` /
+  `--font-mono` (+ optional `--font-serif`) tokens. Themes reference the shared set; no per-theme font
+  download bloat beyond the shared faces.
+- **README gallery** — `themes/screenshots/<name>.png`, one capture of `/design-system` per theme,
+  generated by Playwright in M3a. The user browses, picks, applies, edits.
+
+### How the 8 are produced (contract + brief + loop)
+
+Token *values* are gradable (WCAG contrast, hue harmony) and screenshot-able, so the high-variance visual
+work is made convergent: for each theme, a per-theme **mini-brief** in `docs/DESIGN-BRIEF.md` → generate
+the value-set → apply → render `/design-system` → screenshot → critique against the brief (contrast pass,
+coherence, distinctiveness) → revise. The 8 run in parallel. **Hard gate every theme must pass:** all
+fg/bg pairs meet WCAG AA in both light and dark; no token left at the Neutral default unintentionally; the
+design-system page renders without overflow at every breakpoint.
+
+### Non-goals (theme suite, v1)
+
+- No runtime theme-switcher in the shipped app (themes are an *adoption-time* choice + editor tuning, not
+  an end-user toggle). A runtime multi-theme switcher is a possible fast-follow.
+- No user-contributed theme marketplace.

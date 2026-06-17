@@ -23,6 +23,7 @@
 | `app/layout.tsx`, `app/page.tsx` | minimal themed shell that proves tokens render |
 | `components/ui/*` | shadcn components installed by CLI (token-themed) |
 | `lib/utils.ts` | shadcn `cn()` helper (generated) |
+| `lib/fonts.ts` | bundled next/font setup (shared font set the themes draw from — §13) |
 | `docs/NAMING-CONVENTION.md` | **the written token-naming contract** every later milestone keys on |
 | `tests/compile-gate.test.ts` | asserts `bg-red-500` fails / `bg-primary` succeeds under the real Tailwind build |
 | `tailwind.config.ts` | optional, near-empty (content globs only — NO token mapping) |
@@ -154,6 +155,66 @@ git commit -m "docs(m0): pin token naming convention (the contract)"
 
 ---
 
+## Task 2.5: Bundle the shared fonts (next/font)
+
+M0 introduces the shared bundled-font setup (§13 / DESIGN-BRIEF.md). The Neutral default uses a clean sans + mono; M3a adds serif/display faces for other themes. The `--font-sans`/`--font-mono` tokens reference next/font CSS variables, so a theme swap can repoint them.
+
+**Files:**
+- Create: `lib/fonts.ts`
+- Modify: `app/layout.tsx`
+
+- [ ] **Step 1: Declare the bundled fonts**
+
+Create `lib/fonts.ts` (Inter for sans, Geist Mono — both Google fonts via next/font; expose stable CSS-var names the tokens reference):
+
+```ts
+import { Inter, Geist_Mono } from "next/font/google";
+
+export const fontSans = Inter({
+  subsets: ["latin"],
+  variable: "--font-bundled-sans",
+  display: "swap",
+});
+
+export const fontMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-bundled-mono",
+  display: "swap",
+});
+
+/** className string applied to <html> so the --font-bundled-* vars exist globally. */
+export const fontVars = `${fontSans.variable} ${fontMono.variable}`;
+```
+
+- [ ] **Step 2: Apply the font vars on `<html>`**
+
+In `app/layout.tsx`, import `fontVars` and add it to the `<html>` className (alongside any existing class):
+
+```tsx
+import { fontVars } from "@/lib/fonts";
+// ...
+<html lang="en" className={fontVars}>
+```
+
+- [ ] **Step 3: Verify the font vars resolve**
+
+Run:
+
+```bash
+npm run build
+```
+
+Expected: build succeeds. (Visual font proof comes with the smoke page, Task 5.) If next/font errors on the font name, swap to an available Google font (e.g. `Geist` for sans) and update `lib/fonts.ts` + the token fallback names to match.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add lib/fonts.ts app/layout.tsx
+git commit -m "feat(m0): bundle shared fonts (next/font) — sans + mono"
+```
+
+---
+
 ## Task 3: Author `globals.css` — the source of truth
 
 Replace shadcn's generated token block with the full curated v1 token set, the cleared namespaces, and the `@theme inline` mapping. This is the load-bearing file.
@@ -219,9 +280,9 @@ Set `app/globals.css` to (top of file; mapping/clears added next step). OKLCH va
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
 
-  /* ---- typography ---- */
-  --font-sans: ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, monospace;
+  /* ---- typography (font vars come from next/font, see Task 2.5) ---- */
+  --font-sans: var(--font-bundled-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-bundled-mono), ui-monospace, SFMono-Regular, monospace;
   --fs-xs: 0.75rem;   --lh-xs: 1rem;
   --fs-sm: 0.875rem;  --lh-sm: 1.25rem;
   --fs-base: 1rem;    --lh-base: 1.5rem;
