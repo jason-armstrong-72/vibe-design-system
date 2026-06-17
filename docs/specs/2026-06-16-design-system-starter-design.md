@@ -329,12 +329,19 @@ coders use Claude Code. Contains:
 
 - The token table + usage rules: *use Tailwind utilities / CSS vars; never hardcode color / px / font /
   duration.*
-- **The extension procedure (the crux):**
-  > Need a value the system lacks? **Add a token** to `globals.css` — for a **color, add it to BOTH
-  > `:root` and `.dark`** (other groups: the relevant block) → run `npm run tokens` (regenerates the
-  > manifest) → use it via its Tailwind utility. **Never hardcode.** The new token auto-appears on
+- **The extension procedure (the crux) — one step, auto-wired:**
+  > Need a value the system lacks? For a **color** (the common case): **add it to BOTH `:root` and
+  > `.dark`** in `globals.css` with an `oklch(...)` value (+ a `-foreground` partner if needed) → run
+  > `npm run tokens`. That command **auto-wires the Tailwind utility for you** (`bg-<name>`/`text-<name>`/
+  > `border-<name>`) and refreshes the manifest. Use it. **Never hardcode.** The token auto-appears on
   > `/design-system` and becomes editable. *(CI enforces both-theme presence and a fresh manifest — §6.2.)*
-- A pointer to the generated `design-system.md` (the always-current token reference).
+  >
+  > **Why one step:** a token is classified `color` by its *value* (any `oklch(...)`), so no allowlist or
+  > config edit is needed; and `npm run tokens` runs a **sync pass** that inserts the missing
+  > `@theme inline` `--color-<name>: var(--<name>)` mapping automatically (`lib/tokens/sync.ts`). This was
+  > validated by the M2.5 dogfood — a fresh LLM added a color and shipped it with the single command.
+- A pointer to the generated `design-system.md` (the always-current token reference; it embeds these
+  usage rules + extension procedure + a component pointer so the LLM needs nothing else).
 
 ### 6.2 Enforcement — blocking lint (the teeth)
 
@@ -344,11 +351,14 @@ that flag hardcoded colors / raw px where a token exists / literal hex / arbitra
 
 Three enforcement mechanisms, layered (the first is the strongest):
 
-- **Compile-time (strongest, cleared namespaces only).** Because `@theme` *clears* the default color,
-  font-size, shadow, radius (etc.) namespaces (§3), `bg-red-500` and off-scale type don't exist → build
-  error, no lint needed. **Exception — spacing:** v4's `--spacing` multiplier can't be cleared to an enum,
-  so `p-13` compiles; spacing off-scale falls to lint (next bullet). Lint also catches arbitrary-value
-  escapes everywhere (`bg-[#abc]`, `p-[13px]`) and raw values in CSS.
+- **Cleared namespaces (makes off-token classes inert).** Because `@theme` *clears* the default color,
+  font-size, shadow, radius (etc.) namespaces (§3), an off-token class like `bg-red-500` generates **no
+  CSS** — the utility simply does not exist. Honest scope (surfaced by the M2.5 dogfood): in a `className`
+  this is a **silent no-op** (the element renders unstyled), and `next build` does **not** fail on its own;
+  only `@apply bg-red-500` hard-errors at build. So namespace-clearing prevents an off-token class from
+  ever *appearing to work* — but the **lint below is what fails the build.** Don't over-promise "won't
+  compile" to the user; say "produces no styles, and the lint rejects it." (Spacing is exempt anyway — v4's
+  `--spacing` multiplier can't be cleared to an enum, so `p-13` does generate; lint is its only guard.)
 - **Spacing scale (lint, since compile can't).** A rule flags numeric spacing utilities outside the
   curated step list (e.g. `p-13`, `gap-7` if 7 isn't a step) and arbitrary `p-[13px]`. This is spacing's
   only guard — the compile-gate above explicitly does not cover it.
@@ -483,8 +493,12 @@ Each milestone is TDD'd and reviewed, and is independently usable.
   documented.*
 - **M1 — Token write-core (load-bearing).** `lib/tokens/parse|write|schema` with exhaustive TDD. *Done =
   can programmatically change any token in `globals.css` safely, preserving formatting, in either theme.*
-- **M2 — Manifest generation.** `generate.ts` → `design-system.{md,json}` + `npm run tokens` + dev watch.
-  Fixture tests. *Done = manifest always reflects the vars.*
+- **M2 — Manifest generation + one-step extension.** `generate.ts` → `design-system.{md,json}` +
+  `npm run tokens` + dev watch. `npm run tokens` also runs a **sync pass** (`lib/tokens/sync.ts`) that
+  auto-wires `@theme inline` color mappings for any newly-added color, and `groupForName` classifies a
+  color by its value — so adding a token is genuinely one step (add to `:root`/`.dark` → `npm run tokens`).
+  Fixture tests. *Done = manifest always reflects the vars; a hand-added color is usable as `bg-<name>`
+  after a single command (proven by M2.5).*
 - **M2.5 — Manifest dogfood (informal, de-risks the headline early).** Before building the page/editor/lint,
   hand `design-system.md` *alone* (no lint, no editor) to a fresh LLM and ask it to build one component +
   follow the extension procedure by hand. The manifest is the LLM's actual input and exists now — if it's
