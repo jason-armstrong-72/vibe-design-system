@@ -6,12 +6,18 @@ import { controlKindForGroup } from "@/lib/editor/control-map";
 import { useEditor } from "@/components/editor/editor-provider";
 import { NumberField } from "@/components/editor/controls/number-field";
 import { ColorOklch } from "@/components/editor/controls/color-oklch";
+import { LengthSlider } from "@/components/editor/controls/length-slider";
+import { OpacitySlider } from "@/components/editor/controls/opacity-slider";
+import { DurationSlider } from "@/components/editor/controls/duration-slider";
+import { SelectField } from "@/components/editor/controls/select-field";
+import { EasingField } from "@/components/editor/controls/easing-field";
+import { TextField } from "@/components/editor/controls/text-field";
 
 const MANIFEST = designSystem as Manifest;
 
 /**
  * Resolves the control component for the selected token's group.
- * Task 5 wires only the `number` control; every other kind renders a stub.
+ * Every ControlKind maps to a real control (Task 10).
  */
 export function ControlHost() {
   const { selectedToken, editingBlock, perToken, editValue } = useEditor();
@@ -49,7 +55,56 @@ export function ControlHost() {
           editingBlock={editingBlock}
         />
       );
-    default:
-      return <p className="ed-stub">{kind} control coming soon</p>;
+    case "length":
+      return (
+        <LengthSlider
+          token={token.name}
+          value={value}
+          onChange={(v) => editValue(token.name, v)}
+        />
+      );
+    case "opacity":
+      return (
+        <OpacitySlider
+          token={token.name}
+          value={value}
+          onChange={(v) => editValue(token.name, v)}
+        />
+      );
+    case "duration":
+      return (
+        <DurationSlider
+          token={token.name}
+          value={value}
+          onChange={(v) => editValue(token.name, v)}
+        />
+      );
+    case "select":
+      return (
+        <SelectField
+          token={token.name}
+          group={token.group}
+          value={value}
+          onChange={(v) => editValue(token.name, v)}
+          tokens={MANIFEST.tokens}
+        />
+      );
+    case "easing":
+      return (
+        <EasingField
+          token={token.name}
+          value={value}
+          onChange={(v) => editValue(token.name, v)}
+          tokens={MANIFEST.tokens}
+        />
+      );
+    case "text":
+      return (
+        <TextField
+          token={token.name}
+          value={value}
+          onChange={(v) => editValue(token.name, v)}
+        />
+      );
   }
 }

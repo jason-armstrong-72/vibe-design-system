@@ -64,4 +64,29 @@ test.describe("editor seam", () => {
       writeFileSync(GLOBALS, before, "utf8"); // restore
     }
   });
+
+  test("edit --radius length → globals.css rewritten with the new length", async ({
+    page,
+  }) => {
+    const before = readFileSync(GLOBALS, "utf8");
+    try {
+      await page.goto("/design-system");
+      await page.getByRole("button", { name: /edit/i }).click(); // enable edit mode
+      await page.locator('[data-token="--radius"]').first().click(); // select
+
+      const num = page.getByLabel(/--radius value/i);
+      await expect(num).toBeVisible();
+      await num.fill("1");
+      await num.dispatchEvent("input");
+      await num.dispatchEvent("change");
+      await num.blur();
+
+      // Persisted (debounced) → poll the file for the rewritten length.
+      await expect
+        .poll(() => readFileSync(GLOBALS, "utf8"), { timeout: 5000 })
+        .toMatch(/--radius:\s*1rem/);
+    } finally {
+      writeFileSync(GLOBALS, before, "utf8"); // restore
+    }
+  });
 });

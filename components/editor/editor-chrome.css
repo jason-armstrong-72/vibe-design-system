@@ -171,6 +171,30 @@
   min-width: 0;
   color: var(--ed-text);
 }
+.ed-row select {
+  all: unset;
+  flex: 1;
+  min-width: 0;
+  color: var(--ed-text);
+  cursor: pointer;
+}
+
+/* Length / opacity / duration: slider stacked over a numeric+unit row */
+.ed-length {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ed-length .ed-slider .ed-label {
+  font-family: ui-monospace, monospace;
+}
+.ed-unit {
+  all: unset;
+  flex: 0 0 auto;
+  color: var(--ed-muted);
+  font-size: 10px;
+  cursor: pointer;
+}
 
 /* Color (OKLCH) control */
 .ed-color {
