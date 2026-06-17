@@ -1,0 +1,143 @@
+/* Neutral — the M0 canonical default. Values only; names are the fixed contract
+   (docs/NAMING-CONVENTION.md). Applied by `npm run theme neutral`. */
+:root {
+  /* ---- color: semantic (OKLCH) ---- */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  /* ---- color: status (fills shadcn gap) ---- */
+  --success: oklch(0.62 0.17 145);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.79 0.16 80);
+  --warning-foreground: oklch(0.205 0 0);
+  --info: oklch(0.62 0.17 250);
+  --info-foreground: oklch(0.985 0 0);
+  /* ---- color: form/border ---- */
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  /* ---- color: brand ramp ---- */
+  --brand-50: oklch(0.97 0.02 250);
+  --brand-100: oklch(0.93 0.04 250);
+  --brand-200: oklch(0.88 0.07 250);
+  --brand-300: oklch(0.81 0.1 250);
+  --brand-400: oklch(0.72 0.14 250);
+  --brand-500: oklch(0.62 0.17 250);
+  --brand-600: oklch(0.54 0.16 250);
+  --brand-700: oklch(0.46 0.14 250);
+  --brand-800: oklch(0.39 0.11 250);
+  --brand-900: oklch(0.33 0.08 250);
+  --brand-950: oklch(0.24 0.05 250);
+  /* ---- color: charts ---- */
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+
+  /* ---- typography (font vars come from next/font, lib/fonts.ts) ---- */
+  --font-sans: var(--font-bundled-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-bundled-mono), ui-monospace, SFMono-Regular, monospace;
+  --fs-xs: 0.75rem;   --lh-xs: 1rem;
+  --fs-sm: 0.875rem;  --lh-sm: 1.25rem;
+  --fs-base: 1rem;    --lh-base: 1.5rem;
+  --fs-lg: 1.125rem;  --lh-lg: 1.75rem;
+  --fs-xl: 1.25rem;   --lh-xl: 1.75rem;
+  --fs-2xl: 1.5rem;   --lh-2xl: 2rem;
+  --fs-3xl: 1.875rem; --lh-3xl: 2.25rem;
+  --fs-4xl: 2.25rem;  --lh-4xl: 2.5rem;
+  --fs-5xl: 3rem;     --lh-5xl: 3.25rem;
+  --fs-6xl: 3.75rem;  --lh-6xl: 4rem;
+  --fs-7xl: 4.5rem;   --lh-7xl: 4.75rem;
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* ---- radius (single knob; sm/md/lg/xl derived in @theme) ---- */
+  --radius: 0.625rem;
+
+  /* ---- border widths ---- */
+  --border-width-thin: 1px;
+  --border-width-base: 2px;
+  --border-width-thick: 4px;
+
+  /* ---- shadow ---- */
+  --elevation-sm: 0 1px 2px 0 oklch(0 0 0 / 0.05);
+  --elevation-md: 0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.1);
+  --elevation-lg: 0 10px 15px -3px oklch(0 0 0 / 0.1), 0 4px 6px -4px oklch(0 0 0 / 0.1);
+
+  /* ---- motion ---- */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+
+  /* ---- spacing knob (v4 multiplier) ---- */
+  --spacing-base: 0.25rem;
+
+  /* ---- z-index ---- */
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-modal: 1300;
+  --z-toast: 1400;
+
+  /* ---- opacity ---- */
+  --opacity-disabled: 0.5;
+  --opacity-muted: 0.7;
+  --opacity-overlay: 0.6;
+  --opacity-hover: 0.08;
+
+  /* ---- container widths ---- */
+  --container-sm: 40rem;
+  --container-md: 48rem;
+  --container-lg: 64rem;
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
+  --success: oklch(0.7 0.16 145);
+  --success-foreground: oklch(0.205 0 0);
+  --warning: oklch(0.83 0.15 80);
+  --warning-foreground: oklch(0.205 0 0);
+  --info: oklch(0.7 0.15 250);
+  --info-foreground: oklch(0.205 0 0);
+  --border: oklch(1 0 0 / 0.1);
+  --input: oklch(1 0 0 / 0.15);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+}

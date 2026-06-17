@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { applyTheme } from "@/lib/tokens/apply-theme";
 import { parseTokens } from "@/lib/tokens/parse";
 
@@ -46,5 +48,15 @@ describe("applyTheme", () => {
     const selfTheme = `:root {\n  --primary: oklch(0.2 0 0);\n  --radius: 0.625rem;\n}\n.dark {\n  --primary: oklch(0.9 0 0);\n}\n`;
     const after = parseTokens(applyTheme(GLOBALS, selfTheme));
     expect(after).toEqual(before);
+  });
+
+  it("applying themes/neutral.css to globals.css is a token-set identity", () => {
+    const globals = readFileSync(resolve("app/globals.css"), "utf8");
+    const neutral = readFileSync(resolve("themes/neutral.css"), "utf8");
+    const applied = applyTheme(globals, neutral);
+    expect(parseTokens(applied)).toEqual(parseTokens(globals));
+    // utility layer survives untouched
+    const themeBlock = (s: string) => s.slice(s.indexOf("@theme inline"));
+    expect(themeBlock(applied)).toEqual(themeBlock(globals));
   });
 });
