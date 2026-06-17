@@ -118,7 +118,10 @@ attribute, `controlForGroup`/`foregroundFor`.
    - **Validate** with `lib/tokens/validate.ts` (`validateValue(groupForName(name,value), value)`):
      type-correct for the token's group, and reject `;`/`}`/`{`/comment delimiters (CSS injection).
      Reject any `token` not already present in `globals.css` (the editor edits; it does not create —
-     creation is the LLM/human extension path).
+     creation is the LLM/human extension path). *Mechanism (two layers, both already in M1):*
+     `groupForName` throws for an unknown non-color name, and `writeToken` throws `token … not found`
+     when the declaration is absent from the target block — so an unknown/absent token can never be
+     written. The route surfaces either as a 4xx.
    - **Write** with `lib/tokens/write.ts` `writeToken` (re-reads the file first, updates exactly one
      declaration in the correct block, preserves formatting/comments/order, atomic temp+rename).
    - **Regenerate** the manifest via `lib/tokens/regenerate.ts` `syncAndGenerate`. Write-then-regenerate
@@ -155,6 +158,11 @@ Docked right, ~312px, dark-or-light chrome. Page reflows to the remaining width.
   | shadow | layered shadow builder (offset-x/y, blur, spread, color, inset; add/remove layers) |
 - **Active-group siblings** — compact rows for the other tokens in the selected token's group, so related
   values can be nudged without returning to the page. No other groups are listed in the panel.
+
+> **Note on `shadow`:** `schema.ts` maps `shadow` to `ControlType: "text"` (the serialization shape).
+> The editor's UI component for it is the richer **`shadow-builder.tsx`** — `control-map.ts` (the UI map)
+> is allowed to be richer than the bare `ControlType`. The two maps serve different layers: `ControlType`
+> describes the value shape; `control-map.ts` picks the component. Keep them distinct in the plan.
 - **Empty state** — when edit mode is on but nothing is selected, a centered muted instruction (Part A A4).
 
 ### Control-map completeness (Part A #3, mirrors M3's page test)
