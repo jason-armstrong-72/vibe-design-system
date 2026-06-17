@@ -141,6 +141,29 @@ test.describe("editor seam", () => {
     }
   });
 
+  test("panel-appearance toggle flips data-editor-theme and persists across reload", async ({
+    page,
+  }) => {
+    // Cosmetic-only: this touches no tokens and no globals.css, so there's nothing to restore.
+    await page.goto("/design-system");
+    await page.getByRole("button", { name: /edit/i }).click(); // enable edit mode
+
+    const root = page.locator("[data-editor-root]");
+    const before = await root.getAttribute("data-editor-theme");
+    expect(before).toBe("dark"); // default
+
+    await page.getByRole("button", { name: /panel appearance/i }).click();
+    await expect(root).toHaveAttribute("data-editor-theme", "light");
+
+    // Reload → the (persisted) appearance must survive.
+    await page.reload();
+    await page.getByRole("button", { name: /edit/i }).click();
+    await expect(page.locator("[data-editor-root]")).toHaveAttribute(
+      "data-editor-theme",
+      "light",
+    );
+  });
+
   test("edit --radius length → globals.css rewritten with the new length", async ({
     page,
   }) => {

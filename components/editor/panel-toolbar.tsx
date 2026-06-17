@@ -11,8 +11,10 @@ import { useEditor } from "@/components/editor/editor-provider";
  * stop the two theme ideas getting confused (spec §4).
  */
 export function PanelToolbar() {
-  const { disable, editingBlock, setEditingBlock } = useEditor();
+  const { disable, editingBlock, setEditingBlock, panelAppearance, setPanelAppearance } =
+    useEditor();
   const isDark = editingBlock === "dark";
+  const isPanelDark = panelAppearance === "dark";
 
   return (
     <div className="ed-toolbar">
@@ -33,10 +35,12 @@ export function PanelToolbar() {
           <button
             type="button"
             className="ed-iconbtn"
-            aria-label="Panel appearance (coming soon)"
-            disabled
+            aria-label="Panel appearance"
+            title={`Panel appearance: ${isPanelDark ? "Dark" : "Light"}`}
+            data-appearance={panelAppearance}
+            onClick={() => setPanelAppearance(isPanelDark ? "light" : "dark")}
           >
-            ◐
+            <span aria-hidden="true">{isPanelDark ? "☾" : "☀"}</span>
           </button>
           <button
             type="button"

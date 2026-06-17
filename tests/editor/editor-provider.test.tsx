@@ -8,6 +8,7 @@ afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
   vi.useRealTimers();
+  localStorage.clear();
   document.documentElement.classList.remove("dark");
   document.documentElement.removeAttribute("style");
 });
@@ -32,6 +33,9 @@ function Probe() {
       <button onClick={() => e.reset("--primary")}>do-reset-primary</button>
       <button onClick={() => e.setEditingBlock("dark")}>do-dark</button>
       <button onClick={() => e.setEditingBlock("light")}>do-light</button>
+      <span data-testid="appearance">{e.panelAppearance}</span>
+      <button onClick={() => e.setPanelAppearance("light")}>do-appear-light</button>
+      <button onClick={() => e.setPanelAppearance("dark")}>do-appear-dark</button>
     </div>
   );
 }
@@ -129,6 +133,24 @@ describe("EditorProvider", () => {
     expect(document.documentElement.style.getPropertyValue("--primary")).toBe(
       original,
     );
+  });
+
+  it("panelAppearance defaults to 'dark' when localStorage is empty", () => {
+    localStorage.clear();
+    setup();
+    expect(screen.getByTestId("appearance").textContent).toBe("dark");
+  });
+
+  it("setPanelAppearance persists to localStorage and a fresh provider reads it back", () => {
+    localStorage.clear();
+    setup();
+    fireEvent.click(screen.getByText("do-appear-light"));
+    expect(screen.getByTestId("appearance").textContent).toBe("light");
+    expect(localStorage.getItem("ds-editor-appearance")).toBe("light");
+    // A fresh provider (re-mount) must read the stored value back.
+    cleanup();
+    setup();
+    expect(screen.getByTestId("appearance").textContent).toBe("light");
   });
 
   it("switching blocks clears inline preview vars set during editing", () => {

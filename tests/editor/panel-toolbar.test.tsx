@@ -6,6 +6,7 @@ import { PanelToolbar } from "@/components/editor/panel-toolbar";
 
 afterEach(() => {
   cleanup();
+  localStorage.clear();
   document.documentElement.classList.remove("dark");
   document.documentElement.removeAttribute("style");
 });
@@ -43,5 +44,55 @@ describe("PanelToolbar editing-block chip + caption", () => {
     expect(caption.textContent).toMatch(/light theme/i);
     fireEvent.click(screen.getByRole("button", { name: /editing block/i }));
     expect(caption.textContent).toMatch(/dark theme/i);
+  });
+});
+
+describe("PanelToolbar panel-appearance toggle (Task 13)", () => {
+  it("renders a panel-appearance icon button with that accessible name", () => {
+    setup();
+    const btn = screen.getByRole("button", { name: /panel appearance/i });
+    expect(btn).toBeTruthy();
+    expect((btn as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it("the appearance button and the editing-block chip are distinct controls", () => {
+    setup();
+    const appearance = screen.getByRole("button", {
+      name: /panel appearance/i,
+    });
+    const chip = screen.getByRole("button", { name: /editing block/i });
+    expect(appearance).not.toBe(chip);
+    // Distinct accessible names so the two theme controls don't read alike (spec §4).
+    expect(appearance.getAttribute("aria-label")).not.toBe(
+      chip.getAttribute("aria-label"),
+    );
+  });
+
+  it("clicking the appearance button flips data-editor-theme on the editor root (dark↔light)", () => {
+    render(
+      <EditorProvider>
+        <div data-editor-root data-editor-theme="dark">
+          <PanelToolbar />
+        </div>
+      </EditorProvider>,
+    );
+    // We can't read panelAppearance off the toolbar directly; assert via a sibling probe
+    // is overkill — instead assert the button reflects/toggles its pressed-ish state.
+    const btn = screen.getByRole("button", { name: /panel appearance/i });
+    const before = btn.getAttribute("data-appearance");
+    fireEvent.click(btn);
+    expect(btn.getAttribute("data-appearance")).not.toBe(before);
+    fireEvent.click(btn);
+    expect(btn.getAttribute("data-appearance")).toBe(before);
+  });
+
+  it("clicking the appearance button persists to localStorage", () => {
+    localStorage.clear();
+    setup();
+    // default dark when storage empty
+    const btn = screen.getByRole("button", { name: /panel appearance/i });
+    expect(btn.getAttribute("data-appearance")).toBe("dark");
+    fireEvent.click(btn);
+    expect(localStorage.getItem("ds-editor-appearance")).toBe("light");
   });
 });

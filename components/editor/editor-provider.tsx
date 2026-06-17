@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 import designSystem from "@/design-system.json";
 import type { Manifest, ManifestToken } from "@/lib/tokens/generate";
 import type { Theme } from "@/lib/tokens/types";
@@ -10,6 +16,21 @@ import {
 } from "@/lib/editor/use-token-writeback";
 
 export type PanelAppearance = "dark" | "light";
+
+/** localStorage key for the persisted (cosmetic) editor-chrome appearance. */
+const APPEARANCE_KEY = "ds-editor-appearance";
+
+/**
+ * Initial chrome appearance. SSR-safe: returns the default on the server (no window).
+ * On the client, a stored value wins; otherwise default to "dark" (deterministic — we
+ * deliberately don't seed from prefers-color-scheme so the default is predictable).
+ */
+function initialAppearance(): PanelAppearance {
+  if (typeof window === "undefined") return "dark";
+  const stored = window.localStorage.getItem(APPEARANCE_KEY);
+  if (stored === "dark" || stored === "light") return stored;
+  return "dark";
+}
 
 export interface PerTokenState {
   original: string;
@@ -53,8 +74,9 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
   const [enabled, setEnabled] = useState(false);
   const [selectedToken, setSelectedToken] = useState<string | null>(null);
   const [editingBlock, setEditingBlockState] = useState<Theme>("light");
+  // Lazy initializer is SSR-safe (guards window) and reads the persisted value on mount.
   const [panelAppearance, setPanelAppearanceState] =
-    useState<PanelAppearance>("dark");
+    useState<PanelAppearance>(initialAppearance);
   const [perToken, setPerToken] = useState<Record<string, PerTokenState>>({});
 
   const onStatus = useCallback(
@@ -110,6 +132,11 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
 
   const setPanelAppearance = useCallback((appearance: PanelAppearance) => {
     setPanelAppearanceState(appearance);
+    // Cosmetic-only: persist the chrome appearance. Guard SSR — only touch localStorage
+    // on the client. This never affects the design-system tokens or what gets written.
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(APPEARANCE_KEY, appearance);
+    }
   }, []);
 
   const select = useCallback(

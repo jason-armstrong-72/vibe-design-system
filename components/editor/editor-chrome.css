@@ -12,7 +12,8 @@
   --ed-field-hover: #303030;
   --ed-border: #333;
   --ed-text: #e6e6e6;
-  --ed-muted: #8a8a8a;
+  /* nudged lighter (#8a8a8a → #959595) to clear the §A6 4.5:1 gate on --ed-field (4.16→4.79) */
+  --ed-muted: #959595;
   --ed-accent: #4f9cf9;
   --ed-accent-soft: #26344a;
   --ed-warn: #f5b454;
@@ -25,7 +26,8 @@
   --ed-field-hover: #e9ecef;
   --ed-border: #e2e5e9;
   --ed-text: #1a1a1a;
-  --ed-muted: #6b7280;
+  /* nudged darker (#6b7280 → #686d75) to clear the §A6 4.5:1 gate on --ed-field (4.35→4.68) */
+  --ed-muted: #686d75;
   --ed-accent: #2563eb;
   --ed-accent-soft: #dbeafe;
   --ed-warn: #b45309;
