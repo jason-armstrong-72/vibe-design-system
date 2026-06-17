@@ -11,7 +11,8 @@
     "tokens": "tsx scripts/generate-tokens.ts",
     "tokens:watch": "tsx scripts/watch-tokens.ts",
     "theme": "tsx scripts/apply-theme.ts",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "gallery": "GALLERY=1 playwright test e2e/gallery.spec.ts"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
