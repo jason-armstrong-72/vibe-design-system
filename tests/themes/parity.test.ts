@@ -21,6 +21,12 @@ describe("theme parity: neutral reference", () => {
       expect(lightRef.has(core), `missing ${core}`).toBe(true);
     }
   });
+
+  it("all 3 v1 themes are present on disk", () => {
+    for (const n of ["neutral", "swiss", "brutalist"]) {
+      expect(existsSync(resolve(`themes/${n}.css`)), `themes/${n}.css missing`).toBe(true);
+    }
+  });
 });
 
 describe.each(OTHERS)("theme parity: %s", (name) => {
