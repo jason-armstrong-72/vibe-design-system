@@ -1,0 +1,101 @@
+# Design System — token reference
+
+> **Generated from `app/globals.css`. Do not edit by hand — run `npm run tokens`.**
+
+## Usage rules
+- Style with Tailwind utilities that map to tokens (`bg-primary`, `text-lg`, `p-4`, `rounded-lg`).
+- **Never hardcode** a color / size / font / duration. Off-token color & type utilities won't compile; off-scale spacing is flagged by lint.
+
+## Extension procedure
+Need a value the system lacks? **Add a token** to `app/globals.css` — for a color, add it to BOTH `:root` and `.dark` — then run `npm run tokens` and use it via its Tailwind utility. **Never hardcode.** The new token auto-appears on `/design-system` and becomes editable.
+
+## Tokens
+
+| Token | Group | Value (light / dark) | Utilities |
+|---|---|---|---|
+| `--accent` | color | `oklch(0.97 0 0)` / `oklch(0.269 0 0)` | bg-accent text-accent border-accent |
+| `--accent-foreground` | color | `oklch(0.205 0 0)` / `oklch(0.985 0 0)` | text-accent-foreground |
+| `--background` | color | `oklch(1 0 0)` / `oklch(0.145 0 0)` | bg-background text-background border-background |
+| `--border` | color | `oklch(0.922 0 0)` / `oklch(1 0 0 / 0.1)` | border-border |
+| `--brand-100` | color | `oklch(0.93 0.04 250)` | bg-brand-100 text-brand-100 border-brand-100 |
+| `--brand-200` | color | `oklch(0.88 0.07 250)` | bg-brand-200 text-brand-200 border-brand-200 |
+| `--brand-300` | color | `oklch(0.81 0.1 250)` | bg-brand-300 text-brand-300 border-brand-300 |
+| `--brand-400` | color | `oklch(0.72 0.14 250)` | bg-brand-400 text-brand-400 border-brand-400 |
+| `--brand-50` | color | `oklch(0.97 0.02 250)` | bg-brand-50 text-brand-50 border-brand-50 |
+| `--brand-500` | color | `oklch(0.62 0.17 250)` | bg-brand-500 text-brand-500 border-brand-500 |
+| `--brand-600` | color | `oklch(0.54 0.16 250)` | bg-brand-600 text-brand-600 border-brand-600 |
+| `--brand-700` | color | `oklch(0.46 0.14 250)` | bg-brand-700 text-brand-700 border-brand-700 |
+| `--brand-800` | color | `oklch(0.39 0.11 250)` | bg-brand-800 text-brand-800 border-brand-800 |
+| `--brand-900` | color | `oklch(0.33 0.08 250)` | bg-brand-900 text-brand-900 border-brand-900 |
+| `--brand-950` | color | `oklch(0.24 0.05 250)` | bg-brand-950 text-brand-950 border-brand-950 |
+| `--card` | color | `oklch(1 0 0)` / `oklch(0.205 0 0)` | bg-card text-card border-card |
+| `--card-foreground` | color | `oklch(0.145 0 0)` / `oklch(0.985 0 0)` | text-card-foreground |
+| `--chart-1` | color | `oklch(0.646 0.222 41.116)` / `oklch(0.488 0.243 264.376)` | bg-chart-1 text-chart-1 border-chart-1 |
+| `--chart-2` | color | `oklch(0.6 0.118 184.704)` / `oklch(0.696 0.17 162.48)` | bg-chart-2 text-chart-2 border-chart-2 |
+| `--chart-3` | color | `oklch(0.398 0.07 227.392)` / `oklch(0.769 0.188 70.08)` | bg-chart-3 text-chart-3 border-chart-3 |
+| `--chart-4` | color | `oklch(0.828 0.189 84.429)` / `oklch(0.627 0.265 303.9)` | bg-chart-4 text-chart-4 border-chart-4 |
+| `--chart-5` | color | `oklch(0.769 0.188 70.08)` / `oklch(0.645 0.246 16.439)` | bg-chart-5 text-chart-5 border-chart-5 |
+| `--destructive` | color | `oklch(0.577 0.245 27.325)` / `oklch(0.704 0.191 22.216)` | bg-destructive text-destructive border-destructive |
+| `--destructive-foreground` | color | `oklch(0.985 0 0)` / `oklch(0.985 0 0)` | text-destructive-foreground |
+| `--foreground` | color | `oklch(0.145 0 0)` / `oklch(0.985 0 0)` | bg-foreground text-foreground border-foreground |
+| `--info` | color | `oklch(0.62 0.17 250)` / `oklch(0.7 0.15 250)` | bg-info text-info border-info |
+| `--info-foreground` | color | `oklch(0.985 0 0)` / `oklch(0.205 0 0)` | text-info-foreground |
+| `--input` | color | `oklch(0.922 0 0)` / `oklch(1 0 0 / 0.15)` | border-input |
+| `--muted` | color | `oklch(0.97 0 0)` / `oklch(0.269 0 0)` | bg-muted text-muted border-muted |
+| `--muted-foreground` | color | `oklch(0.556 0 0)` / `oklch(0.708 0 0)` | text-muted-foreground |
+| `--popover` | color | `oklch(1 0 0)` / `oklch(0.205 0 0)` | bg-popover text-popover border-popover |
+| `--popover-foreground` | color | `oklch(0.145 0 0)` / `oklch(0.985 0 0)` | text-popover-foreground |
+| `--primary` | color | `oklch(0.205 0 0)` / `oklch(0.922 0 0)` | bg-primary text-primary border-primary |
+| `--primary-foreground` | color | `oklch(0.985 0 0)` / `oklch(0.205 0 0)` | text-primary-foreground |
+| `--ring` | color | `oklch(0.708 0 0)` / `oklch(0.556 0 0)` | ring-ring outline-ring |
+| `--secondary` | color | `oklch(0.97 0 0)` / `oklch(0.269 0 0)` | bg-secondary text-secondary border-secondary |
+| `--secondary-foreground` | color | `oklch(0.205 0 0)` / `oklch(0.985 0 0)` | text-secondary-foreground |
+| `--success` | color | `oklch(0.62 0.17 145)` / `oklch(0.7 0.16 145)` | bg-success text-success border-success |
+| `--success-foreground` | color | `oklch(0.985 0 0)` / `oklch(0.205 0 0)` | text-success-foreground |
+| `--warning` | color | `oklch(0.79 0.16 80)` / `oklch(0.83 0.15 80)` | bg-warning text-warning border-warning |
+| `--warning-foreground` | color | `oklch(0.205 0 0)` / `oklch(0.205 0 0)` | text-warning-foreground |
+| `--font-mono` | fontFamily | `var(--font-bundled-mono), ui-monospace, SFMono-Regular, monospace` | font-mono |
+| `--font-sans` | fontFamily | `var(--font-bundled-sans), ui-sans-serif, system-ui, sans-serif` | font-sans |
+| `--fs-2xl` | fontSize | `1.5rem` | text-2xl |
+| `--fs-3xl` | fontSize | `1.875rem` | text-3xl |
+| `--fs-4xl` | fontSize | `2.25rem` | text-4xl |
+| `--fs-base` | fontSize | `1rem` | text-base |
+| `--fs-lg` | fontSize | `1.125rem` | text-lg |
+| `--fs-sm` | fontSize | `0.875rem` | text-sm |
+| `--fs-xl` | fontSize | `1.25rem` | text-xl |
+| `--fs-xs` | fontSize | `0.75rem` | text-xs |
+| `--lh-2xl` | lineHeight | `2rem` | applied with text-2xl |
+| `--lh-3xl` | lineHeight | `2.25rem` | applied with text-3xl |
+| `--lh-4xl` | lineHeight | `2.5rem` | applied with text-4xl |
+| `--lh-base` | lineHeight | `1.5rem` | applied with text-base |
+| `--lh-lg` | lineHeight | `1.75rem` | applied with text-lg |
+| `--lh-sm` | lineHeight | `1.25rem` | applied with text-sm |
+| `--lh-xl` | lineHeight | `1.75rem` | applied with text-xl |
+| `--lh-xs` | lineHeight | `1rem` | applied with text-xs |
+| `--fw-bold` | fontWeight | `700` | font-bold |
+| `--fw-medium` | fontWeight | `500` | font-medium |
+| `--fw-normal` | fontWeight | `400` | font-normal |
+| `--fw-semibold` | fontWeight | `600` | font-semibold |
+| `--spacing-base` | spacing | `0.25rem` | p-<n>/m-<n>/gap-<n> — whole numeric scale derives from --spacing-base |
+| `--radius` | radius | `0.625rem` | rounded-sm rounded-md rounded-lg rounded-xl |
+| `--border-width-base` | borderWidth | `2px` | border-base |
+| `--border-width-thick` | borderWidth | `4px` | border-thick |
+| `--border-width-thin` | borderWidth | `1px` | border-thin |
+| `--elevation-lg` | shadow | `0 10px 15px -3px oklch(0 0 0 / 0.1), 0 4px 6px -4px oklch(0 0 0 / 0.1)` | shadow-lg |
+| `--elevation-md` | shadow | `0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.1)` | shadow-md |
+| `--elevation-sm` | shadow | `0 1px 2px 0 oklch(0 0 0 / 0.05)` | shadow-sm |
+| `--duration-base` | duration | `250ms` | transition-duration via var(--duration-base) |
+| `--duration-fast` | duration | `150ms` | transition-duration via var(--duration-fast) |
+| `--duration-slow` | duration | `400ms` | transition-duration via var(--duration-slow) |
+| `--ease-in` | easing | `cubic-bezier(0.4, 0, 1, 1)` | ease-in |
+| `--ease-out` | easing | `cubic-bezier(0, 0, 0.2, 1)` | ease-out |
+| `--ease-standard` | easing | `cubic-bezier(0.2, 0, 0, 1)` | ease-standard |
+| `--z-dropdown` | zIndex | `1000` | z-dropdown |
+| `--z-modal` | zIndex | `1300` | z-modal |
+| `--z-sticky` | zIndex | `1100` | z-sticky |
+| `--z-toast` | zIndex | `1400` | z-toast |
+| `--opacity-disabled` | opacity | `0.5` | opacity-disabled |
+| `--opacity-muted` | opacity | `0.7` | opacity-muted |
+| `--container-lg` | container | `64rem` | max-w-lg |
+| `--container-md` | container | `48rem` | max-w-md |
+| `--container-sm` | container | `40rem` | max-w-sm |
