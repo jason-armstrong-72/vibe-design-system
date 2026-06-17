@@ -5,6 +5,7 @@ import type { Manifest } from "@/lib/tokens/generate";
 import { controlKindForGroup } from "@/lib/editor/control-map";
 import { useEditor } from "@/components/editor/editor-provider";
 import { NumberField } from "@/components/editor/controls/number-field";
+import { ColorOklch } from "@/components/editor/controls/color-oklch";
 
 const MANIFEST = designSystem as Manifest;
 
@@ -36,6 +37,16 @@ export function ControlHost() {
           token={token.name}
           value={value}
           onChange={(v) => editValue(token.name, v)}
+        />
+      );
+    case "color":
+      return (
+        <ColorOklch
+          token={token.name}
+          value={value}
+          onChange={(v) => editValue(token.name, v)}
+          tokens={MANIFEST.tokens}
+          editingBlock={editingBlock}
         />
       );
     default:

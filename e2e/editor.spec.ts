@@ -24,4 +24,44 @@ test.describe("editor seam", () => {
       writeFileSync(GLOBALS, before, "utf8"); // restore
     }
   });
+
+  test("edit --primary color → live ripple to a second bound element + globals.css rewritten", async ({
+    page,
+  }) => {
+    const before = readFileSync(GLOBALS, "utf8");
+    try {
+      await page.goto("/design-system");
+      await page.getByRole("button", { name: /edit/i }).click(); // enable edit mode
+
+      // A second element bound to --primary: the default Button uses bg-primary.
+      const rippleTarget = page.getByRole("button", { name: "Default" }).first();
+      const beforeBg = await rippleTarget.evaluate(
+        (el) => getComputedStyle(el).backgroundColor,
+      );
+
+      await page.locator('[data-token="--primary"]').first().click(); // select
+
+      const lightness = page.getByLabel(/--primary lightness/i);
+      await expect(lightness).toBeVisible();
+      // Drag the slider well away from its seeded ~0.205 so the repaint is unmistakable.
+      await lightness.fill("0.6");
+      await lightness.dispatchEvent("input");
+      await lightness.dispatchEvent("change");
+
+      // Ripple: the Button's computed background must change.
+      await expect
+        .poll(
+          () => rippleTarget.evaluate((el) => getComputedStyle(el).backgroundColor),
+          { timeout: 5000 },
+        )
+        .not.toBe(beforeBg);
+
+      // Persisted (debounced) → poll the file.
+      await expect
+        .poll(() => readFileSync(GLOBALS, "utf8"), { timeout: 5000 })
+        .toMatch(/--primary:\s*oklch\(0\.6 /);
+    } finally {
+      writeFileSync(GLOBALS, before, "utf8"); // restore
+    }
+  });
 });
