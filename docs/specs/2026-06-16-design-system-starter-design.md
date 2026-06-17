@@ -420,9 +420,8 @@ tailwind.config.ts       # optional, near-empty (content globs / plugins only �
 AGENTS.md  CLAUDE.md      # LLM contract (+ .cursor/rules)
 <skill dir>              # optional Claude Code skill
 .stylelintrc / eslint     # the blocking lint rules
-themes/                  # the 8 theme presets — each a complete :root/.dark value-set (§13)
-  neutral.css  swiss.css  editorial.css  warm.css  brutalist.css
-  pastel.css  technical.css  corporate.css
+themes/                  # theme presets — each a complete :root/.dark value-set (§13)
+  neutral.css  swiss.css  brutalist.css   # v1; +editorial/warm/pastel/technical/corporate fast-follow
   screenshots/           # one /design-system capture per theme (README gallery)
 lib/fonts.ts             # next/font setup for the bundled shared font set (§13)
 scripts/apply-theme.ts   # `npm run theme <name>` — swap a preset into globals.css + regenerate manifest
@@ -495,13 +494,14 @@ Each milestone is TDD'd and reviewed, and is independently usable.
   hand-holding, or the manifest/procedure is reworded until it can.*
 - **M3 — Design-system page.** `/design-system` rendering auto-iterated token sections + hand-authored
   shadcn component showcase, `data-token`-tagged. *Done = living style guide, truthful by construction.*
-- **M3a — Theme preset suite (§13).** Depends on M3 (the page is what gets screenshotted). Author the
-  other 7 presets as complete `:root`/`.dark` value-sets under the fixed names, via the visual loop
-  (per-theme mini-brief → generate value-set → render `/design-system` → screenshot → critique vs brief →
-  revise). Ship `scripts/apply-theme.ts` (`npm run theme <name>`), the `themes/` dir, the bundled shared
-  fonts, and a README gallery of one screenshot per theme. Runs independently of M4/M5 once M3 exists.
-  *Done = `npm run theme swiss` swaps the whole look; 8 themes pass the contrast/coherence bar; the gallery
-  renders in the README.*
+- **M3a — Theme preset suite (§13), v1 = 3 themes.** Depends on M3 (the page is what gets screenshotted).
+  Author the other **2 v1 presets** (Swiss, Brutalist — Neutral already ships from M0) as complete
+  `:root`/`.dark` value-sets under the fixed names, via the visual loop (per-theme mini-brief → generate
+  value-set → render `/design-system` → screenshot → critique vs brief → revise). Ship
+  `scripts/apply-theme.ts` (`npm run theme <name>`), the `themes/` dir, and a README gallery of one
+  screenshot per theme. Runs independently of M4/M5 once M3 exists. The other 5 themes are a fast-follow on
+  the same machinery. *Done = `npm run theme swiss` / `brutalist` swaps the whole look; the 3 v1 themes
+  pass the contrast/coherence bar; the gallery renders in the README.*
 - **M4 — Editor.** Edit toggle, per-group control panels, live preview, dev-only writeback API → M1 core
   (with value-type/injection validation + pre-write re-read), thin highlight overlay. **Token editing only
   — pick-anywhere is cut to fast-follow (§5).** Playwright e2e for the full edit→repaint→writeback→ripple
@@ -521,6 +521,8 @@ Each milestone is TDD'd and reviewed, and is independently usable.
 
 - **Contrast check** in the editor (fg/bg already paired in the schema; OKLCH lightness makes it cheap) —
   warn on WCAG failures.
+- **The other 5 themes** (Editorial, Warm, Pastel, Technical, Corporate — §13) on the same machinery once
+  the 3-theme loop is proven.
 - **Pick-anywhere** (reverse-resolution, cut from v1 M4) — exact/candidate-list/flag behaviour per §5.
 - **Gradient editing** (gradients shippable as tokens now; a gradient-builder control is later).
 - **`npx create-*` CLI** (§11).
@@ -568,18 +570,25 @@ generate, editor, lint, the design-system page) works unchanged. Because the tok
 group, a preset expresses a **whole aesthetic**, not just a palette: color, type, radius, border width,
 shadow, and motion all move together.
 
-### The 8 themes
+### The themes — 3 in v1, 5 fast-follow
 
-| # | Theme | Signature |
-|---|---|---|
-| 1 | **Neutral** (default) | greys + one accent; restrained; the easiest to re-brand; M0's canonical preset |
-| 2 | **Swiss / Minimal** | near-monochrome, radius 0, hairline borders, generous whitespace, type does the work |
-| 3 | **Editorial** | confident brand hue, expressive serif/sans pairing, magazine hierarchy |
-| 4 | **Warm / Organic** | earthy palette, soft radius, gentle elevation, friendly |
-| 5 | **Brutalist** | thick borders, hard offset shadows, mono type, high contrast |
-| 6 | **Soft / Pastel SaaS** | low-contrast pastels, rounded, approachable product feel |
-| 7 | **Technical / Dark-first** | developer-tool aesthetic, dark base, one bright accent |
-| 8 | **Corporate / Trust** | enterprise blue, conservative, denser spacing |
+**v1 ships 3** (chosen for maximum visual spread, so the gallery reads as a real range from 3 thumbnails);
+the other 5 are a fast-follow built on the identical machinery. This keeps M3a small so the editor (M4),
+LLM contract (M5), and dogfood (M6) aren't delayed behind 8 visual loops.
+
+| # | Theme | v1? | Signature |
+|---|---|---|---|
+| 1 | **Neutral** (default) | **v1** | greys + one accent; restrained; the easiest to re-brand; M0's canonical preset |
+| 2 | **Swiss / Minimal** | **v1** | near-monochrome, radius 0, hairline borders, generous whitespace, type does the work |
+| 5 | **Brutalist** | **v1** | thick borders, hard offset shadows, mono type, high contrast |
+| 3 | **Editorial** | fast-follow | confident brand hue, expressive serif/sans pairing, magazine hierarchy |
+| 4 | **Warm / Organic** | fast-follow | earthy palette, soft radius, gentle elevation, friendly |
+| 6 | **Soft / Pastel SaaS** | fast-follow | low-contrast pastels, rounded, approachable product feel |
+| 7 | **Technical / Dark-first** | fast-follow | developer-tool aesthetic, dark base, one bright accent |
+| 8 | **Corporate / Trust** | fast-follow | enterprise blue, conservative, denser spacing |
+
+The three v1 themes are deliberately far apart — safe/neutral, austere/minimal, loud/raw — so they
+demonstrate the *range* the token system covers, not three variations on one look.
 
 ### Mechanism
 

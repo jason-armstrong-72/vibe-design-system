@@ -43,6 +43,10 @@ graded.
 Each theme is a complete token value-set under the fixed names. The fields below are *direction*, not
 exact values — the agent authors values to hit the mood and pass the gates.
 
+> **v1 builds 3 of these:** **Neutral** (1), **Swiss** (2), **Brutalist** (5) — chosen for maximum spread.
+> The other five are fast-follow on the same machinery. All eight briefs are kept here as the standing
+> contract, so whoever builds them later has the target.
+
 ### 1. Neutral (default, M0 canonical)
 - **Mood:** calm, professional, unobtrusive. The "safe start" you can brand into anything.
 - **Color:** true greys (near-zero chroma) + a single restrained accent (cool blue-ish). Status colors
