@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+:root {
+  /* color: semantic */
+  --background: oklch(1 0 0);
+  --primary: oklch(0.205 0 0); /* trailing comment kept */
+  --primary-foreground: oklch(0.985 0 0);
+  --success: oklch(0.62 0.17 145);
+  /* type */
+  --fs-base: 1rem;
+  --lh-base: 1.5rem;
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --fw-bold: 700;
+  /* geometry + motion */
+  --radius: 0.625rem;
+  --border-width-base: 2px;
+  --elevation-md: 0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.1);
+  --duration-base: 250ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --spacing-base: 0.25rem;
+  --z-modal: 1300;
+  --opacity-muted: 0.7;
+  --container-md: 48rem;
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+}
+
+@theme inline {
+  /* MUST NOT be parsed as runtime tokens or written to */
+  --color-primary: var(--primary);
+  --spacing: var(--spacing-base);
+}
