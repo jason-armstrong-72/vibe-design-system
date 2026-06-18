@@ -1,0 +1,503 @@
+/*
+ * Editor chrome token kit (figma Part A §A7).
+ * NAMESPACED under [data-editor-root] and prefixed --ed-* so these can NEVER collide
+ * with — or be repainted by — the design-system tokens the editor mutates. Editing
+ * --primary must not restyle the editor. Light + dark sets switch via [data-editor-theme].
+ */
+
+[data-editor-root][data-editor-theme="dark"] {
+  --ed-panel: #1e1e1e;
+  --ed-panel-raised: #252525;
+  --ed-field: #2a2a2a;
+  --ed-field-hover: #303030;
+  --ed-border: #333;
+  --ed-text: #e6e6e6;
+  /* nudged lighter (#8a8a8a → #959595) to clear the §A6 4.5:1 gate on --ed-field (4.16→4.79) */
+  --ed-muted: #959595;
+  --ed-accent: #4f9cf9;
+  --ed-accent-soft: #26344a;
+  --ed-warn: #f5b454;
+}
+
+[data-editor-root][data-editor-theme="light"] {
+  --ed-panel: #fff;
+  --ed-panel-raised: #f7f8fa;
+  --ed-field: #f1f3f5;
+  --ed-field-hover: #e9ecef;
+  --ed-border: #e2e5e9;
+  --ed-text: #1a1a1a;
+  /* nudged darker (#6b7280 → #686d75) to clear the §A6 4.5:1 gate on --ed-field (4.35→4.68) */
+  --ed-muted: #686d75;
+  --ed-accent: #2563eb;
+  --ed-accent-soft: #dbeafe;
+  --ed-warn: #b45309;
+}
+
+/* Edit toggle dock button */
+.ed-toggle {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2147483000;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--ed-border);
+  background: var(--ed-panel-raised);
+  color: var(--ed-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.25);
+}
+.ed-toggle[data-on="true"] {
+  background: var(--ed-accent);
+  border-color: var(--ed-accent);
+  color: #fff;
+}
+
+/* Highlight overlay box */
+.ed-highlight {
+  position: fixed;
+  pointer-events: none;
+  z-index: 2147482000;
+  border: 1px solid var(--ed-accent);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ed-accent) 8%, transparent);
+}
+/* Token-name tag pinned to the top-left of the hover box */
+.ed-highlight-label {
+  position: absolute;
+  bottom: 100%;
+  left: -1px;
+  margin-bottom: 2px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--ed-accent);
+  color: #fff;
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* Docked-right panel */
+.ed-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 312px;
+  z-index: 2147483100;
+  display: flex;
+  flex-direction: column;
+  background: var(--ed-panel);
+  color: var(--ed-text);
+  border-left: 1px solid var(--ed-border);
+  font-size: 12px;
+  overflow-y: auto;
+}
+
+.ed-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--ed-border);
+  background: var(--ed-panel-raised);
+}
+.ed-toolbar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.ed-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.ed-toolbar .ed-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ed-text);
+}
+
+/* Editing-block chip: which theme block of the SITE is being edited (light/dark) */
+.ed-chip {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--ed-border);
+  background: var(--ed-field);
+  color: var(--ed-text);
+  font-size: 11px;
+  cursor: pointer;
+}
+.ed-chip:hover {
+  background: var(--ed-field-hover);
+}
+.ed-chip[data-block="dark"] {
+  border-color: var(--ed-accent);
+  background: var(--ed-accent-soft);
+}
+.ed-chip .ed-chip-label {
+  color: var(--ed-muted);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+.ed-chip .ed-chip-value {
+  font-weight: 600;
+}
+
+.ed-caption {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--ed-muted);
+}
+.ed-preview-width {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--ed-muted);
+  cursor: help;
+}
+.ed-preview-width .ed-preview-width-val {
+  font-family: ui-monospace, monospace;
+  color: var(--ed-text);
+}
+.ed-iconbtn {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--ed-muted);
+  cursor: pointer;
+}
+.ed-iconbtn:hover {
+  background: var(--ed-field-hover);
+  color: var(--ed-text);
+}
+
+.ed-context {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ed-border);
+}
+.ed-context .ed-name {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--ed-text);
+}
+.ed-context .ed-group {
+  font-size: 10px;
+  color: var(--ed-muted);
+}
+.ed-context-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+/* Undo / Redo sit to the LEFT of Reset in the context bar. */
+.ed-history-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.ed-history-btn {
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--ed-border);
+  background: var(--ed-field);
+  color: var(--ed-text);
+  font-size: 12px;
+}
+.ed-history-btn:hover:not(:disabled) {
+  background: var(--ed-field-hover);
+}
+.ed-history-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.ed-reset {
+  all: unset;
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--ed-border);
+  background: var(--ed-field);
+  color: var(--ed-text);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+.ed-reset:hover:not(:disabled) {
+  background: var(--ed-field-hover);
+}
+.ed-reset:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Save-state indicator (Task 12) */
+.ed-savestate {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--ed-muted);
+  min-height: 14px;
+}
+.ed-savestate-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ed-muted);
+  flex: 0 0 auto;
+}
+.ed-savestate[data-status="idle"] .ed-savestate-dot {
+  opacity: 0.35;
+}
+.ed-savestate[data-status="saved"] .ed-savestate-dot {
+  background: var(--ed-accent);
+}
+.ed-savestate[data-status="dirty"] .ed-savestate-dot,
+.ed-savestate[data-status="error"] .ed-savestate-dot {
+  background: var(--ed-warn);
+}
+.ed-savestate[data-status="dirty"] .ed-savestate-label,
+.ed-savestate[data-status="error"] .ed-savestate-label,
+.ed-savestate[data-status="error"] .ed-savestate-msg {
+  color: var(--ed-warn);
+}
+.ed-savestate-msg {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
+}
+
+.ed-body {
+  padding: 11px 12px;
+}
+
+/* Group sibling rows (Task 14): the OTHER tokens in the focused token's group */
+.ed-siblings {
+  padding: 4px 12px 12px;
+  border-top: 1px solid var(--ed-border);
+}
+.ed-siblings-head {
+  margin: 6px 0;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ed-muted);
+}
+.ed-siblings-empty {
+  margin: 0;
+  font-size: 11px;
+  color: var(--ed-muted);
+  opacity: 0.75;
+}
+.ed-siblings-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ed-sibling {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 3px 6px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.ed-sibling:hover {
+  background: var(--ed-field);
+  border-color: var(--ed-border);
+}
+.ed-sibling-swatch {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid var(--ed-border);
+}
+.ed-sibling-value {
+  flex: 0 0 auto;
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--ed-muted);
+}
+.ed-sibling-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--ed-text);
+}
+.ed-empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--ed-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.ed-stub {
+  color: var(--ed-muted);
+  font-size: 12px;
+}
+
+/* Field row (figma A3) */
+.ed-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--ed-field);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+.ed-row:hover {
+  border-color: var(--ed-border);
+}
+.ed-row .ed-label {
+  color: var(--ed-muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+.ed-row input {
+  all: unset;
+  flex: 1;
+  min-width: 0;
+  color: var(--ed-text);
+}
+.ed-row select {
+  all: unset;
+  flex: 1;
+  min-width: 0;
+  color: var(--ed-text);
+  cursor: pointer;
+}
+
+/* Length / opacity / duration: slider stacked over a numeric+unit row */
+.ed-length {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ed-length .ed-slider .ed-label {
+  font-family: ui-monospace, monospace;
+}
+.ed-unit {
+  all: unset;
+  flex: 0 0 auto;
+  color: var(--ed-muted);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+/* Color (OKLCH) control */
+.ed-color {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ed-color-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ed-color-swatch {
+  flex: 1;
+  height: 40px;
+  border-radius: 6px;
+  border: 1px solid var(--ed-border);
+}
+.ed-slider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ed-slider .ed-label {
+  width: 58px;
+  color: var(--ed-muted);
+  font-size: 10px;
+}
+.ed-slider input[type="range"] {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--ed-accent);
+}
+.ed-slider .ed-slider-val {
+  width: 40px;
+  text-align: right;
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--ed-text);
+}
+.ed-contrast {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--ed-field);
+  font-size: 11px;
+  color: var(--ed-text);
+}
+.ed-contrast[data-pass="false"] {
+  color: var(--ed-warn);
+}
+.ed-reuse {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ed-reuse-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.ed-reuse-swatch {
+  all: unset;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid var(--ed-border);
+  cursor: pointer;
+}
+.ed-reuse-swatch:hover {
+  outline: 2px solid var(--ed-accent);
+  outline-offset: 1px;
+}

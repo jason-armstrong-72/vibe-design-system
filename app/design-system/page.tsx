@@ -3,12 +3,14 @@ import type { Manifest } from "@/lib/tokens/generate";
 import { groupedSections } from "@/lib/design-system/sections";
 import { TokenSection } from "@/components/design-system/token-section";
 import { ComponentShowcase } from "@/components/design-system/component-showcase";
+import { EditorMount } from "@/components/editor/editor-mount";
 
 export default function DesignSystemPage() {
   const manifest = designSystem as Manifest;
   const sections = groupedSections(manifest);
 
   return (
+    <EditorMount>
     <main className="bg-muted/40 text-foreground min-h-screen">
       <header className="border-border bg-background/80 sticky top-0 z-10 border-b backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-col gap-1 px-6 py-5">
@@ -34,5 +36,6 @@ export default function DesignSystemPage() {
         </div>
       </div>
     </main>
+    </EditorMount>
   );
 }
