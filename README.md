@@ -35,10 +35,19 @@ manifest) works unchanged. Each theme passes WCAG-AA contrast (light + dark) and
 
 _(Five more — Editorial, Warm, Pastel, Technical, Corporate — are a fast-follow on the same machinery.)_
 
+## Visual editor (dev-only)
+
+Run `npm run dev` and open `/design-system`. Click **Edit** (bottom-right) → click any swatch, type
+sample, or component → a docked panel edits that token point-and-click (OKLCH color picker, sliders,
+eyedropper, reuse-a-token swatches, contrast badge). Changes preview instantly and persist to
+`app/globals.css`, so they ripple everywhere the token is used. Light/dark block toggle, undo/redo
+(⌘Z / ⌘⇧Z), and reset included. The editor and its write API are **dev-only** — stripped from production
+builds.
+
 ## Status
 
 In progress. Design is complete and approved — see
 [docs/specs/2026-06-16-design-system-starter-design.md](docs/specs/2026-06-16-design-system-starter-design.md).
 
 Build order: ✅ M0 skeleton + naming convention → ✅ M1 token write-core → ✅ M2 manifest generation →
-✅ M3 design-system page → ✅ M3a theme preset suite → M4 editor → M5 LLM contract → M6 dogfood.
+✅ M3 design-system page → ✅ M3a theme preset suite → ✅ M4 visual editor → M5 LLM contract → M6 dogfood.

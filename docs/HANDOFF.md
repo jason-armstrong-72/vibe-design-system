@@ -19,9 +19,17 @@ The full design is the spec: **[docs/specs/2026-06-16-design-system-starter-desi
 - ✅ **M2.5** — informal LLM dogfood of the manifest. **Found + fixed** that the extension procedure was broken (see "B-fixes" below).
 - ✅ **M3** — `/design-system` page (living style guide). Auto-iterates all tokens, each `data-token`-tagged; reference-guided visual pass.
 - ✅ **M3a** — theme preset suite. 3 v1 themes (`themes/{neutral,swiss,brutalist}.css`), each a complete `:root`/`.dark` value-set under the fixed names. `npm run theme <name>` swaps a preset into `globals.css` (atomic write, reuses M1 parse via `lib/tokens/apply-theme.ts`) + regenerates the manifest (`lib/tokens/regenerate.ts`, shared with `npm run tokens`). Gates: WCAG-AA contrast (`lib/tokens/contrast.ts` via `culori`, light+dark, body 4.5 / muted 3:1), theme parity (same name-set as Neutral), no-overflow (`e2e/themes.spec.ts`). README screenshot gallery via `npm run gallery` (`e2e/gallery.spec.ts`, GALLERY=1-guarded). **Neutral status colors (success/info/destructive) were nudged darker to pass AA** — was failing on shadcn defaults.
-- **Status: 164 vitest + 7 Playwright e2e passing (+1 gallery, skipped without GALLERY=1). 94 tokens.** Run `npm test` (vitest) and `npx playwright test` (e2e).
+- ✅ **M4** — dev-only visual token editor over `/design-system`. Click a `data-token` → docked panel edits it; live preview (`setProperty`) + per-token-debounced persist to `globals.css` via a **dev-only, write-only** `POST /api/ds/token` (`NODE_ENV`-guarded; validates + allowlist + `writeToken`; **does NOT regenerate** — the watcher owns regen). Editor is a client island (`components/editor/*`) tree-shaken out of prod (verified). Controls: OKLCH color (L/C/H + hex + eyedropper + reuse-a-token swatches + read-only contrast badge), length/opacity/duration/number/select sliders, easing (preset + `cubic-bezier()` text), shadow/font text. Editor chrome = own namespaced `--ed-*` tokens (light+dark, `@untitled-ui/icons-react` icons). Two toolbar toggles: **panel appearance** (cosmetic) + **editing block** (which DS light/dark block writes land in, forces a truthful dark preview). Reset + save-state + **undo/redo** (buttons + ⌘Z/⌘⇧Z). Typed fields commit on blur/Enter; hover overlay tracks on scroll. Control-map is disjoint+exhaustive over all 14 groups.
+- **Status: 290 vitest + 16 Playwright e2e passing (+1 gallery, skipped without GALLERY=1). 94 tokens.** Run `npm test` (vitest) and `npx playwright test` (e2e).
 
-Plans for executed milestones live in `docs/superpowers/plans/` (M0–M3). **M3a/M4/M5/M6 are NOT yet planned.**
+Plans for executed milestones live in `docs/superpowers/plans/` (M0–M4). Specs in `docs/superpowers/specs/` (M4). **M5/M6 are NOT yet planned.**
+
+### M4 fast-follows (deferred, all on the same machinery)
+- Draggable **cubic-bezier curve editor** (easing is preset+text now) + **layered shadow builder** (shadow is text now).
+- **Pick-anywhere** (reverse-resolution) + **gradient builder**.
+- Contrast **warning** workflow beyond the read-only badge.
+- 3 review nits (non-blocking): block-switch resets a same-token in-flight save-state to idle (cosmetic; write still lands); writeback debounce keys by token name not `token|theme` (very narrow cross-block race); contrast badge hides for `var()`-indirected colors.
+- ⚠️ **Lint debt for M5:** `npm run lint` has a large pre-existing error baseline (mostly test files / react-hooks rules). `next build` passes (its own gate), but **M5 wires blocking lint** — clean this baseline first or it'll fail the new gate.
 
 ## Load-bearing decisions & conventions (non-obvious — don't relearn the hard way)
 - **Tailwind v4, CSS-first.** Config lives in `app/globals.css` via `@theme`, NOT `tailwind.config.ts`. Two layers: runtime token vars in `:root`/`.dark` (the editable source of truth) + `@theme inline` that **clears default namespaces** (`--color-*: initial` …) and maps tokens through `var()` so runtime edits repaint with no rebuild.
@@ -52,11 +60,10 @@ Plans for executed milestones live in `docs/superpowers/plans/` (M0–M3). **M3a
 - VSCode shows "Unknown at rule @theme/@utility/@apply" warnings on `globals.css` — harmless (stock CSS linter doesn't know Tailwind v4).
 
 ## Next steps (pick with the user)
-1. **M4 — The editor (recommended next; biggest milestone).** Dev-only visual token editor over the page. Primary visual input: **[docs/figma-style-sidebar-design-language.md](figma-style-sidebar-design-language.md)** (Part A = adopt; Part B = skip, it's for the QA-Restyle tool). Editor chrome uses its OWN dark UI tokens, separate from the design-system tokens it edits. Token editing only — pick-anywhere is cut to fast-follow. Consumes `data-token` + `lib/tokens/write.ts` behind a dev-only `NODE_ENV`-guarded API route.
-2. **M5 — LLM contract + blocking lint.** `AGENTS.md`/`CLAUDE.md`/`.cursor/rules` + stylelint/eslint that FAIL the build on hardcoded values / off-token classes / one-theme colors / stale manifest. This is the "real teeth" the page/manifest currently only gesture at. (The both-theme-completeness rule now has natural fixtures — the theme files.)
-3. **M6 — Dogfood gate.** Drive an LLM to build a real feature end-to-end through the finished template.
+1. **M5 — LLM contract + blocking lint (recommended next).** `AGENTS.md`/`CLAUDE.md`/`.cursor/rules` + stylelint/eslint that FAIL the build on hardcoded values / off-token classes / one-theme colors / stale manifest. This is the "real teeth" the page/manifest currently only gesture at. (The both-theme-completeness rule now has natural fixtures — the theme files.) **First clean the lint baseline** (see M4 fast-follows) so the new blocking gate starts green.
+2. **M6 — Dogfood gate.** Drive an LLM to build a real feature end-to-end through the finished template.
 
-**Recommended order: M4 → M5 → M6.** Each is plan → review → TDD-execute → merge.
+**Recommended order: M5 → M6.** Each is plan → review → TDD-execute → merge. (M4 spec lives in `docs/superpowers/specs/`; M4 input was `docs/figma-style-sidebar-design-language.md` Part A.)
 
 ### M3a follow-ups (fast, deferred)
 - **5 more themes** (Editorial, Warm, Pastel, Technical, Corporate) on the same machinery — Editorial needs a serif face added to `lib/fonts.ts` (the only non-value coupling).
