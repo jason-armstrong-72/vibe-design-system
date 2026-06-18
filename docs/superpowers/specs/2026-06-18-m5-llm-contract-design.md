@@ -35,6 +35,11 @@
   partners (`lib/tokens/schema.ts` `COLOR_ROLES`). Non-color tokens (radius/spacing/type/…) and the
   `--brand-*` / `--chart-*` ramps legitimately live in `:root` only — a naive "every token in both blocks"
   rule false-positives on committed `globals.css` (11 `--brand-*` are `:root`-only). Verified.
+  - **Implementation notes (from spec review):** `COLOR_ROLES` is currently a **module-private** const in
+    `schema.ts` — the plan must **`export`** it (don't duplicate the set). `parseTokens` emits a row per
+    `:root`/`.dark` declaration, so a role missing from `.dark` yields *no dark row* — the check keys on
+    **presence-of-row** (role ∈ COLOR_ROLES has a light row but no dark row, or vice-versa), not on an
+    empty value.
 - **arbitrary-tailwind flags by KIND, allows token/layout arbitraries.** Flag: literal-color
   `bg-[#abc]`/`text-[rgb(...)]`, raw type/spacing literals `text-[10px]`/`p-[13px]`, **and off-scale
   numeric spacing `p-13`/`gap-7`** (spacing is the one group with no compile-gate — this is its only
@@ -42,6 +47,17 @@
   (`bg-[color-mix(... var(--secondary))]`, `rounded-[min(var(--radius-md),…)]`) and layout arbitraries
   (`grid-cols-[…]`, `w-[…]`, `aspect-[…]`). **Exclude** vendored `components/ui/**` (shadcn) and the editor
   (see exclusions) — both legitimately use arbitraries. Verified the repo has these today (`components/ui/button.tsx`, `components/design-system/*`).
+  - **Off-scale spacing — the rule, made concrete (the v4 `--spacing` multiplier has no enum, so we author
+    one).** A curated, **adopter-editable** `ALLOWED_SPACING_STEPS` set lives in `lib/check/spacing-steps.ts`
+    (the conventional Tailwind scale: `0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14,
+    16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 72, 80, 96`). Scope the **bare-numeric** off-scale
+    check to the **padding/margin/gap/space** prefixes only (`p,px,py,pt,pr,pb,pl,ps,pe, m,mx,my,mt,mr,mb,ml,ms,me,
+    gap,gap-x,gap-y, space-x,space-y`) — flag `p-<n>`/`gap-<n>` whose `<n>` ∉ the set. Do **not** bare-numeric-
+    check `w/h/size/min-*/max-*/inset` (they share the spacing scale but commonly use large/legit values like
+    `max-w-40`, `size-12`, `h-8` → false-positive minefield); those are still covered for **arbitrary literals**
+    (`w-[10px]` flagged; `w-[var(--container-md)]` allowed). The dogfood self-pass (§6) constrains the set to
+    cover everything the repo uses (`gap-1.5`, `px-2.5`, `py-3`, `gap-4`, …). Arbitrary `p-[13px]` is always
+    flagged regardless of the set. Document that adopters tune `ALLOWED_SPACING_STEPS`.
 - **hardcoded-color exempts variable-valued inline styles.** `style={{ background: v }}` where `v` is a
   `var(--token)` reference is legitimate (the token previews do this) — flag only **literal** color values
   (`#hex`, `rgb(`, `hsl(`, named). Guard `#` false-positives: ignore `href=`, `url(`, `id=`/anchors.
@@ -164,7 +180,8 @@ scripts/check.ts      # CLI entry: calls run(), prints, process.exit(code)
   - manifest-fresh: a hand-edited token without regen **fails**; after regen **passes**; covers `.json`+`.md`.
   - ds-disable: a `/* ds-disable: reason */` suppresses the next-line finding; a **bare** `ds-disable`
     (no reason) **fails**; suppression is reported/counted.
-  - **Message text** is asserted (the recovery UX is load-bearing — §6.2).
+  - **Message text** is asserted (the recovery UX is load-bearing — §6.2). The §2 message strings are the
+    single source — export them as constants and have tests import them (don't re-type literals → no drift).
 - **Dogfood self-pass** (`tests/check/self.test.ts` or an e2e-style node test): the template's **own**
   source passes `npm run check` with zero findings. (This is the gate's own correctness proof and forces
   the exclusions/exemptions to be right.)
