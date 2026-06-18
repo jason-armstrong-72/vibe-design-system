@@ -31,6 +31,12 @@ Plans for executed milestones live in `docs/superpowers/plans/` (M0–M5). Specs
 - Off-scale checks on `w/h/size`; off-token palette detection beyond the curated family list.
 - Lint nit: arbitrary-color catches `#/rgb(a)/hsl(a)/oklch/oklab` brackets but not `bg-[red]` named colors (no named-color list yet).
 
+### M6 fast-follows (pre-registered in the M6 spec §9 — do NOT lose these)
+- **⚠️ Gate hole — invented color tokens skip both-theme + contrast (found this session).** `lib/check/both-theme.ts` iterates only the fixed `COLOR_ROLES` allowlist, and `contrast` is NOT in `npm run check` (only tested over `themes/*.css`, never `app/globals.css`). So an LLM-**invented** color (e.g. `--highlight`) added to `:root` only — or below WCAG-AA in dark — **ships green**. Today the human visual checkpoint is the only catch. **Fix:** extend `both-theme` to require ANY `:root` color token in `.dark`, and fold `contrast` into `npm run check` over `globals.css`. M6 *confirms* this hole; the fix is the fast-follow.
+- **Multi-model portability.** v1 M6 proves the loop for **Claude only**. Re-run with non-Claude (Cursor+GPT / Gemini) + add a portable rules surface if `AGENTS.md` (Claude/Cursor-shaped) isn't read.
+- **Brownfield adoption.** M6 *observes* the "install template → whole app is red" experience; the *fix* (baseline / incremental check = enforce only new/changed code) is later. Audience clones the template (greenfield) so it's lower priority.
+- **New non-color token extension.** One-step procedure is **color-only**; adding a new shadow level / spacing step is undocumented. Document or make it one-step like color.
+
 ### M4 fast-follows (deferred, all on the same machinery)
 - Draggable **cubic-bezier curve editor** (easing is preset+text now) + **layered shadow builder** (shadow is text now).
 - **Pick-anywhere** (reverse-resolution) + **gradient builder**.
