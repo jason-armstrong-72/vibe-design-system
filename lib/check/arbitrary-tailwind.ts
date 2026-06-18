@@ -23,7 +23,7 @@ export function checkArbitrary(path: string, content: string): Finding[] {
       if (arb) {
         const inner = arb[1];
         if (/var\(|color-mix\(|calc\(|min\(|max\(|clamp\(/.test(inner)) continue; // token/computed → allowed
-        if (reArbColorPrefix.test(cls) && /^(#|rgb\(|hsl\()/.test(inner))
+        if (reArbColorPrefix.test(cls) && /^(#|rgba?\(|hsla?\(|oklch\(|oklab\()/.test(inner))
           out.push({ file: path, line, rule: "arbitrary-color", message: MSG.arbitraryColor(cls) });
         else if (reArbLengthPrefix.test(cls) && /^\d*\.?\d+(px|rem|em|%)$/.test(inner))
           out.push({ file: path, line, rule: "arbitrary-length", message: MSG.arbitraryLength(cls) });
