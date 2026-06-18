@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ChevronDown, Moon01, Sun, X } from "@untitled-ui/icons-react";
 import { useEditor } from "@/components/editor/editor-provider";
 
 /** Width of the docked panel; mirrors PANEL_WIDTH in editor-mount.tsx. */
@@ -45,7 +46,7 @@ export function PanelToolbar() {
           >
             <span className="ed-chip-label">Editing</span>
             <span className="ed-chip-value">{isDark ? "Dark" : "Light"}</span>
-            <span aria-hidden="true">▾</span>
+            <ChevronDown aria-hidden="true" width={14} height={14} />
           </button>
           <button
             type="button"
@@ -55,7 +56,11 @@ export function PanelToolbar() {
             data-appearance={panelAppearance}
             onClick={() => setPanelAppearance(isPanelDark ? "light" : "dark")}
           >
-            <span aria-hidden="true">{isPanelDark ? "☾" : "☀"}</span>
+            {isPanelDark ? (
+              <Moon01 aria-hidden="true" width={16} height={16} />
+            ) : (
+              <Sun aria-hidden="true" width={16} height={16} />
+            )}
           </button>
           <button
             type="button"
@@ -63,7 +68,7 @@ export function PanelToolbar() {
             aria-label="Close editor"
             onClick={disable}
           >
-            ✕
+            <X aria-hidden="true" width={16} height={16} />
           </button>
         </div>
       </div>

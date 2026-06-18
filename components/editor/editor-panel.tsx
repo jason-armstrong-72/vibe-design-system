@@ -1,5 +1,6 @@
 "use client";
 
+import { ReverseLeft, ReverseRight } from "@untitled-ui/icons-react";
 import designSystem from "@/design-system.json";
 import type { Manifest } from "@/lib/tokens/generate";
 import { useEditor } from "@/components/editor/editor-provider";
@@ -61,7 +62,7 @@ export function EditorPanel() {
                   disabled={!canUndo}
                   onClick={() => undo()}
                 >
-                  <span aria-hidden="true">↶</span>
+                  <ReverseLeft aria-hidden="true" width={15} height={15} />
                 </button>
                 <button
                   type="button"
@@ -71,7 +72,7 @@ export function EditorPanel() {
                   disabled={!canRedo}
                   onClick={() => redo()}
                 >
-                  <span aria-hidden="true">↷</span>
+                  <ReverseRight aria-hidden="true" width={15} height={15} />
                 </button>
                 <button
                   type="button"
