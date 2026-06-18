@@ -117,7 +117,7 @@ non-trivial, it is a **fast-follow** (§9), not M6 scope.
 
 ## 3. Run setup (per subagent)
 
-- **Runs:** Brief A × 2 fresh subagents, Brief B × 2 fresh subagents (≈4), + 1 brownfield run. Each
+- **Runs:** Brief A × 2 fresh subagents, Brief B × 2 fresh subagents (4 total), + 1 brownfield run. Each
   subagent is **independent** (fresh context, no memory of prior runs).
 - **Context given to each building subagent = ONLY:** (a) a clean checkout of the template on the M6
   throwaway branch, (b) the verbatim frozen brief from §2. **Nothing else.** No `AGENTS.md`/`design-system.md`
