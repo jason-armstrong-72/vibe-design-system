@@ -39,7 +39,9 @@ function ColorSwatch({ token }: { token: ManifestToken }) {
         {/* hang-tag notch — reads as a punched hole */}
         <span className="bg-background border-border absolute right-2 top-2 size-2.5 rounded-full border" />
       </div>
+      {/* ds-disable: dense token label, below --fs-xs */}
       <code className="text-foreground truncate font-mono text-[11px] leading-tight">{label}</code>
+      {/* ds-disable: dense token label, below --fs-xs */}
       <span className="text-muted-foreground truncate font-mono text-[10px] leading-tight">
         {token.values.light}
       </span>
