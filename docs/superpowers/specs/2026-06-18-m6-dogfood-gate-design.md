@@ -87,20 +87,31 @@ extension procedure. **Gap must be proven before running — §6.**
 *Intended forcing functions:* (a) focus ring / hover / disabled / validation-error coloring exercise the
 interactive-state tokens (`--ring`, `--opacity-*`, `--destructive`) where LLMs reach for `focus:ring-blue-500`
 out of training-data habit — the off-token classes the gate exists to catch; (b) "softer / more rounded
-than default" forces a **non-color** extension (the single `--radius` knob). This is the high-value risk:
-the documented one-step procedure is **color-only** (HANDOFF: spacing/radius/shadow are "single-knob /
-fixed / rare"). If the radius path isn't followable from the docs, **that is a real, expected M6 finding**
-(the manifest oversells "extend the system"). **Gap must be proven before running — §6.**
+than default" exercises the **single-knob radius path**.
+
+**Be precise about what the radius leg tests (review correction G3).** Radius is **one knob**
+(`app/globals.css`: `--radius: 0.625rem`; sm/md/lg/xl derived via `calc()` in `@theme`). "Softer / more
+rounded" = the LLM must find that knob and *edit one line*, then `npm run tokens` — NOT add a new token. So
+this leg tests **"does the LLM discover and edit the radius knob in `globals.css` instead of hardcoding
+`rounded-[12px]`"** — a real risk (the temptation is an arbitrary class the gate rejects), but it is the
+*easy, documented single-knob* path, not the hard one. **Adding a genuinely-new non-color token** (a new
+shadow level, a new spacing step) is procedure-**undocumented** (the one-step procedure is color-only —
+HANDOFF: spacing/radius/shadow are "single-knob / fixed / rare") and is an **explicit non-goal / fast-follow
+(§9)**, not something M6 must prove. **Gap must be proven before running — §6** (confirm the default radius
+isn't already soft, else even the knob-edit doesn't fire).
 
 ### 2.3 Brownfield run (OBSERVATIONAL — not a pass/fail gate)
 
-Drop the finished template's contract into a small repo seeded with pre-existing hardcoded styles
-(`bg-[#3b82f6]`, inline `style={{color:'red'}}`, `p-[13px]`, Tailwind default palette classes). Run
-`npm run check`. **Observe and record** the adoption experience — the "I installed your design system and
-now my whole app is red" first impression: how many violations fire on code the user didn't just write, how
-legible the output is at that volume, whether there's any path to adopt incrementally. **This run does not
-pass or fail M6**; it produces a finding. If the finding warrants a fix (a baseline / incremental-check
-mode) and that fix is non-trivial, it is a **fast-follow** (§9), not M6 scope.
+Simulate adopting the contract onto an existing messy app. **Concretely (review G5):** on the throwaway
+branch, add seeded "legacy" code a migrating user would already have — e.g. `app/legacy/page.tsx` + a
+`components/legacy-card.tsx` containing `bg-[#3b82f6]`, inline `style={{ color: "red" }}`, `p-[13px]`,
+`text-gray-500` (Tailwind default palette). These land in the **scanned** dirs (`run.ts` walks `app` +
+`components`, excludes `components/ui`). Run `npm run check`. **Observe and record** the adoption experience
+— the "I installed your design system and now my whole app is red" first impression: how many violations
+fire on code the user didn't just write, how legible the output is at that volume, whether there's any path
+to adopt incrementally. **Revert the seeded files after observing.** **This run does not pass or fail M6**;
+it produces a finding. If the finding warrants a fix (a baseline / incremental-check mode) and that fix is
+non-trivial, it is a **fast-follow** (§9), not M6 scope.
 
 ---
 
@@ -123,9 +134,17 @@ mode) and that fix is non-trivial, it is a **fast-follow** (§9), not M6 scope.
 
 ## 4. Pre-registered PASS/FAIL event table
 
-Pass/fail is read **mechanically off each run's transcript** against this table — not off the observer's
-judgment. Each building run is a PASS iff it ends with `/pricing` (or `/settings`) shipped and
+Pass/fail is read off each run's transcript against this table. Almost all events are **mechanical** (a
+file was/wasn't edited; a command was/wasn't green; the observer did/didn't send a message). Exactly **one**
+event needs a judgment — "hardcode-and-`ds-disable` to *dodge* a gap vs. a legitimate one-off" — and the
+rule for it is pre-registered below so the judgment is bounded, not free.
+
+Each building run is a PASS iff it ends with `/pricing` (or `/settings`) shipped and
 `npm run check && npm test && npm run lint && npm run build` all green, **and** no FAIL event occurred.
+
+**Minimum for a PASS verdict (review G4):** **2 green runs per brief (4 total)** with no FAIL event, plus
+the brownfield observation (§2.3) recorded. A fix→re-run (§8) *replaces* a failed run — the failed run
+becomes a finding, and the 2-green-per-brief minimum still must be met after any fix.
 
 **PASS-preserving subagent actions (expected, healthy — NOT failures):**
 - Reading any repo file, including discovering `AGENTS.md` / `design-system.md` / `CLAUDE.md` itself.
@@ -139,9 +158,17 @@ judgment. Each building run is a PASS iff it ends with `/pricing` (or `/settings
 - The subagent edits any **contract machinery**: `lib/check/**`, `lib/tokens/**`, `AGENTS.md`,
   `CLAUDE.md`, `.cursor/rules/**`, the manifest generator, or `design-system.{md,json}` by hand (the
   manifest is regenerated by `npm run tokens`, never hand-edited).
-- The subagent **hardcodes a value and `ds-disable`s it to *dodge* a genuine gap** instead of running the
-  extension procedure (dodging the test vs. a legitimate one-off — judged by whether the value *should* be a
-  token per the brief's design need).
+- The subagent **hardcodes a value and `ds-disable`s it to *dodge* a genuine gap** instead of extending.
+  **Pre-registered rule for this one judged call:** it is a FAIL (dodge) iff the brief's *core design need*
+  demanded that value and the system's documented affordance was to extend — i.e. **(a) color:** the brief
+  needed a promo color, no existing token fits, and instead of running the extension procedure the subagent
+  hardcoded + suppressed; **(b) radius:** the brief asked for softer corners and instead of editing the
+  `--radius` knob the subagent hardcoded `rounded-[Npx]` + suppressed. It is **NOT** a FAIL (legitimate
+  one-off, PASS-preserving) when the `ds-disable` is on a genuine incidental that the brief's core need did
+  not call for (e.g. a 1px hairline, a sub-12px label like the template's own 4 justified disables) with a
+  real reason. *A run that simply leaves the default (ignores the "softer" ask) ships green but misses the
+  brief's intent — that is recorded as a `brief-intent-not-met` note, not a gate FAIL; the run still counts
+  for its interactive-states purpose.*
 - Any **human edit** to the subagent's produced files during the run.
 - The subagent gives up / declares it cannot proceed.
 
@@ -154,21 +181,34 @@ report, or M6 is **incomplete** even if every run went green:
 
 1. **Extension procedure works unaided** — at least one run adds a **color** token via the procedure
    (`:root`+`.dark` → `npm run tokens` → `bg-<name>` compiles) with no observer help, **and** at least one
-   run attempts a **non-color** (radius) extension. If the non-color path is *not* followable from the docs,
-   that is recorded as a **finding** (the procedure/manifest only covers color) — and the report says so
-   plainly rather than papering over it.
+   run edits the **single `--radius` knob** (the documented single-knob path) rather than hardcoding a
+   radius. *Note (G3): the radius leg tests the knob-edit path, not adding a new non-color token — that
+   harder, procedure-undocumented case is an explicit non-goal / fast-follow (§9), not required here.*
 2. **Red-gate self-recovery (the genuinely-new M5 machinery)** — at least one run **hits a red
    `npm run check`** and **recovers using only the gate's own output** (the failure→fix recovery table /
    error message), with **zero observer hints**. M2.5 proved the manifest is buildable-from; this proves the
    *blocking gate guides recovery* — which has never been tested by anyone but the contract's author. If no
-   run naturally trips the gate, the observer may (per protocol, logged) seed one hardcoded value in a fresh
-   run's starting brief context to force the recovery path — *seeding the failure is allowed; hinting the
-   fix is not.*
-3. **New token is theme-complete + accessible** — any token the subagent adds is present in **both**
-   `:root` and `.dark` (passes `both-theme`) and its light+dark values meet WCAG AA where it carries text
-   (the M3a contrast bar). A subagent that adds a one-theme or low-contrast token and **the gate catches it
-   and the subagent fixes it** is assertion #2 firing — healthy. A token that lands one-theme/low-contrast
-   *and ships green anyway* is a **contract hole** (finding against M5's `both-theme`/contrast coverage).
+   run naturally trips the gate, the observer may (per protocol, logged) **seed** the failure — *not by
+   editing the frozen brief (§2)*, but by adding one pre-existing hardcoded value to the **checkout the fresh
+   subagent inherits** (a file already present when it starts; `hardcoded-color` will trip on it in `app/`).
+   The subagent then meets the red gate naturally while building. *Seeding the failure is allowed; hinting
+   the fix is not.*
+3. **Invented-token theme-completeness + contrast — PREDICTED GAP, confirmed as an M6 finding (review
+   E1/E2).** This is **not** a coverage the gate has — verified against `lib/check/`:
+   - `both-theme` (`lib/check/both-theme.ts`) iterates **only `COLOR_ROLES`** (a fixed shadcn/status
+     allowlist in `lib/tokens/schema.ts`). A subagent-**invented** color like `--highlight` is **not** in
+     that set, so adding it to `:root` only **passes the gate**.
+   - **Contrast is not in `npm run check` at all** (`run.ts` imports only hardcoded-color / arbitrary /
+     both-theme / manifest-fresh). It runs as a test over the **3 shipped preset `themes/*.css`**, never over
+     `app/globals.css` (parent spec §10 lists editor contrast-warning as a *post-v1 fast-follow*).
+
+   So the gate does **not** enforce that an LLM-invented color is theme-complete or AA-accessible. M6's job
+   here is to **confirm this hole**: a run that adds a one-theme or low-contrast promo color and **ships
+   green** is the **expected, recorded finding** — and the **human visual checkpoint (§7) is the only thing
+   that catches it today**. Required observation = *what actually happens* when an invented token is
+   one-theme/low-contrast (does it ship green? does dark mode look broken?). Fast-follow (§9): extend
+   `both-theme`/contrast to cover invented color tokens. *(This corrects the earlier draft, which falsely
+   asserted the gate catches these.)*
 
 ---
 
@@ -192,7 +232,8 @@ Record the gap-proof in the report (§7) so the test's validity is auditable.
 
 ## 7. Deliverables & commit order
 
-1. **`docs/M6-DOGFOOD.md` — lands regardless of outcome (PASS, BLOCKED, or partial).** Contains: the frozen
+1. **`docs/M6-DOGFOOD.md`** (repo-root `docs/`, alongside `HANDOFF.md`) **— lands regardless of outcome
+   (PASS, BLOCKED, or partial).** Contains: the frozen
    briefs (§2), the gap-proof (§6), the PASS/FAIL table (§4), **per-run transcripts/summaries** (what the
    subagent did, where it stalled, every FAIL event), the **findings ledger** (§8), which required
    assertions were witnessed (§5), the brownfield observation (§2.3), and final green evidence
@@ -205,8 +246,9 @@ Record the gap-proof in the report (§7) so the test's validity is auditable.
    Any new token the user chooses to keep goes through the **section-by-section token review** the other 94
    tokens got (the user "has strong design opinions" — a subagent-invented color does not bypass that). Kept
    route + token land in their **own commit, after** checkpoint approval.
-4. **HANDOFF + parent spec §10 M6 marked done** only when the verdict is **PASS** under this protocol (all
-   required runs green, all §5 assertions witnessed), citing the run count and the findings ledger.
+4. **`docs/HANDOFF.md` + parent spec §10 M6 marked done** only when the verdict is **PASS** under this
+   protocol (4/4 required runs green, all §5 assertions witnessed/recorded), citing the run count and the
+   findings ledger.
 5. Merge `--no-ff` to `main`, delete branch (project convention).
 
 ---
@@ -237,7 +279,12 @@ it was missed."
 - **Brownfield adoption fix.** If §2.3's observation shows the "all red" experience is bad, build a
   baseline / incremental-check mode (enforce only on new/changed code). Observed in M6; *fixed* later.
 - **Non-color extension procedure**, if §5 assertion #1 shows radius/spacing/shadow extension isn't
-  followable from the docs — either document the path or make it one-step like color.
+  followable from the docs — either document the path or make it one-step like color. Covers **adding a new
+  non-color token** (new shadow level / spacing step), which the color-only one-step procedure does not.
+- **Gate coverage of invented color tokens (from §5 #3 / E1-E2).** Today `both-theme` only enforces the
+  fixed `COLOR_ROLES`, and contrast isn't in `npm run check` — so an LLM-invented color can ship one-theme
+  or below-AA and pass the gate. Fast-follow: extend `both-theme` to **any** color token present in `:root`
+  (require it in `.dark`), and fold the `contrast` check into `npm run check` over `app/globals.css`.
 
 ---
 
