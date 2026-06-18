@@ -6,7 +6,7 @@
     "dev": "concurrently -n next,tokens -c blue,green \"next dev\" \"tsx scripts/watch-tokens.ts\"",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint app components lib scripts",
     "check": "tsx scripts/check.ts",
     "test": "vitest run",
     "tokens": "tsx scripts/generate-tokens.ts",
