@@ -450,11 +450,13 @@ import { checkArbitrary } from "./arbitrary-tailwind";
 import { checkBothTheme } from "./both-theme";
 import { checkManifestFresh } from "./manifest-fresh";
 
-const SOURCE_ROOTS = ["app", "components", "lib"];
+const SOURCE_ROOTS = ["app", "components"]; // product/UI surface. NOT lib/ (template machinery that
+// legitimately handles color strings — e.g. lib/tokens/generate.ts's doc example `text-[#abc]`,
+// lib/editor/oklch.ts's "#000000" fallback — would false-flag; the realistic drift is in app/components JSX).
 const EXTS = [".ts", ".tsx", ".css"];
 const EXCLUDE_DIRS = ["ui"]; // components/ui/** (vendored shadcn) — by dir name under components
 const EXCLUDE_FILES = ["app/globals.css", "components/editor/editor-chrome.css"];
-// themes/*.css aren't under SOURCE_ROOTS, so not walked.
+// themes/*.css aren't under SOURCE_ROOTS, so not walked. both-theme/manifest read globals directly.
 
 export function run(): { findings: Finding[]; disableCount: number } {
   const all: Finding[] = [];
@@ -498,7 +500,7 @@ process.exit(1);
 
 - [ ] **Step 3: Add scripts** to `package.json`: `"check": "tsx scripts/check.ts"`.
 
-- [ ] **Step 4: Run `npm run check` against the real repo.** Expect: it surfaces any real violations in the template's own source. **Fix them** (or add a justified `/* ds-disable: <reason> */`) until the template passes. Likely-clean given the exclusions, but the design-system showcase / editor TSX may surface a stray case — fix per the recovery messages. Capture the final state.
+- [ ] **Step 4: Run `npm run check` against the real repo + clear the KNOWN violations.** With `app`+`components` scanned, the gate flags exactly **4 deliberate sub-12px token labels** (no token reproduces 10/11px — the smallest type token `--fs-xs` is 12px): `components/design-system/color-swatch.tsx` (`text-[11px]`, `text-[10px]`) and `components/design-system/token-section.tsx` (`text-[11px]`, `text-[10px]`). These are intentional → add `/* ds-disable: dense token label, below --fs-xs */` on the line above each (this also demonstrates the escape hatch in the real repo). Re-run `npm run check` → clean. (Dropping `lib` from SOURCE_ROOTS already removed the `generate.ts` doc-example + `oklch.ts` fallback edge cases.) If anything else surfaces, fix per the recovery message — don't broaden exclusions.
 
 - [ ] **Step 5: Write the dogfood self-pass test** `tests/check/self.test.ts`
 ```ts
@@ -521,8 +523,8 @@ describe("dogfood", () => {
 **Files:** Modify `eslint.config.mjs`, `package.json`
 
 - [ ] **Step 1:** In `eslint.config.mjs` `globalIgnores([...])` add `"**/.next/**"` and `".claude/**"` (keep existing entries).
-- [ ] **Step 2:** Pin `package.json` `"lint": "eslint app components lib scripts tests"`.
-- [ ] **Step 3: Run** `npm run lint` → expect **0 errors** (real source is clean; verified pre-plan). If `tests/**` surfaces warnings/errors, address or scope them out.
+- [ ] **Step 2:** Pin `package.json` `"lint": "eslint app components lib scripts"`. (NOT `tests` — verified that `tests/**` adds 3 `react-hooks` errors from mock-reassignment in the editor test files; the source dirs are clean.)
+- [ ] **Step 3: Run** `npm run lint` → expect **0 errors** (`eslint app components lib scripts` verified clean pre-plan).
 - [ ] **Step 4: Commit** `fix(m5): eslint ignores nested .next/.claude; pin lint to source globs`
 
 ---
