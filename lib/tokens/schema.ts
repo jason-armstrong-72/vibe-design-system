@@ -1,7 +1,7 @@
 import type { TokenGroup, ControlType } from "./types";
 
 // Semantic color roles (shadcn + status). Ramp/chart handled by prefix below.
-const COLOR_ROLES = new Set([
+export const COLOR_ROLES = new Set([
   "background", "foreground", "card", "card-foreground",
   "popover", "popover-foreground", "primary", "primary-foreground",
   "secondary", "secondary-foreground", "muted", "muted-foreground",
