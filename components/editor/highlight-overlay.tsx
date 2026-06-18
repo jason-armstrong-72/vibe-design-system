@@ -27,6 +27,8 @@ export function HighlightOverlay() {
   const [box, setBox] = useState<Box | null>(null);
   // The element currently under the pointer (drives scroll/resize repositioning).
   const hoveredRef = useRef<HTMLElement | null>(null);
+  // The rendered box node — positioned imperatively on scroll to avoid React-render lag.
+  const boxRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     // SSR guard: only touch document/window in the effect (client-only).
@@ -65,15 +67,18 @@ export function HighlightOverlay() {
       reposition();
     };
 
-    // rAF-throttled reposition for scroll/resize bursts.
-    let frame = 0;
+    // Reposition by writing straight to the box's DOM style — synchronous, in the same
+    // frame as the scroll, so the outline stays glued instead of trailing by a React
+    // re-render (which caused a ~10-20px lag). No setState here on purpose.
     const onScrollOrResize = () => {
-      if (!hoveredRef.current) return;
-      if (frame) return;
-      frame = window.requestAnimationFrame(() => {
-        frame = 0;
-        reposition();
-      });
+      const el = hoveredRef.current;
+      const node = boxRef.current;
+      if (!el || !node) return;
+      const r = el.getBoundingClientRect();
+      node.style.top = `${r.top}px`;
+      node.style.left = `${r.left}px`;
+      node.style.width = `${r.width}px`;
+      node.style.height = `${r.height}px`;
     };
 
     const onClick = (e: MouseEvent) => {
@@ -102,7 +107,6 @@ export function HighlightOverlay() {
       document.removeEventListener("click", onClick, true);
       window.removeEventListener("scroll", onScrollOrResize, true);
       window.removeEventListener("resize", onScrollOrResize);
-      if (frame) window.cancelAnimationFrame(frame);
       // Edit mode disabled / unmount → drop any stale highlight.
       hoveredRef.current = null;
       setBox(null);
@@ -113,6 +117,7 @@ export function HighlightOverlay() {
 
   return (
     <div
+      ref={boxRef}
       className="ed-highlight"
       style={{
         top: box.top,
