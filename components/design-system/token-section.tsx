@@ -28,7 +28,9 @@ function RadiusBody({ tokens }: { tokens: ManifestToken[] }) {
           {RADIUS_STEPS.map((s) => (
             <div key={s.util} className="flex w-20 flex-col gap-1.5">
               <div className={`border-foreground/30 bg-muted size-16 border-2 ${s.cls}`} />
+              {/* ds-disable: dense token label, below --fs-xs */}
               <code className="text-foreground font-mono text-[11px] leading-tight">{s.util}</code>
+              {/* ds-disable: dense token label, below --fs-xs */}
               <span className="text-muted-foreground font-mono text-[10px] leading-tight">{s.note}</span>
             </div>
           ))}

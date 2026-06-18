@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Nested build output (git worktrees) + local agent dirs — the cwd-anchored ".next/**"
+    // above misses ".claude/worktrees/*/.next/", which otherwise floods eslint with build chunks.
+    "**/.next/**",
+    ".claude/**",
   ]),
 ]);
 

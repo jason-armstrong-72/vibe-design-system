@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - name: manifest is committed fresh
+        run: npm run tokens && git diff --exit-code design-system.json design-system.md
+
+  e2e:
+    runs-on: ubuntu-latest
+    continue-on-error: true # non-blocking — browser tests are slower/flakier; promote to required later
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps
+      - run: npx playwright test --workers=1
+      - if: always()
+        run: git checkout -- app/globals.css # editor specs write+restore; guard a crashed run

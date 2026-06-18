@@ -1,0 +1,10 @@
+---
+description: Design system token contract
+alwaysApply: true
+---
+
+Style only with the design system's token utilities / CSS vars — never hardcode color, size, font, or duration. Off-token classes produce no styles and fail `npm run check`.
+
+The authoritative, always-current token reference + one-step extension procedure is in `design-system.md`. To add a value: follow that procedure (`npm run tokens`), don't hardcode.
+
+See `AGENTS.md` (Design system contract) for the failure→fix table and the `/* ds-disable: <reason> */` escape hatch.
