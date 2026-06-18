@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
 import { wcagContrast } from "culori";
 import type { ManifestToken } from "@/lib/tokens/generate";
 import type { Theme } from "@/lib/tokens/types";
 import { foregroundFor } from "@/lib/tokens/schema";
+import { useDraftField } from "@/lib/editor/use-draft-field";
 import {
   parseOklch,
   formatOklch,
@@ -57,16 +58,6 @@ export function ColorOklch({
   const lch = parseOklch(value) ?? FALLBACK;
   const hex = oklchToHex(lch);
 
-  // Local hex draft so a user can type a partial/invalid hex without it being clobbered.
-  // Sync to the derived hex during render (no effect) whenever the upstream value changes —
-  // React's documented "adjust state during render" pattern (prev held in state, not a ref).
-  const [hexDraft, setHexDraft] = useState(hex);
-  const [lastHex, setLastHex] = useState(hex);
-  if (lastHex !== hex) {
-    setLastHex(hex);
-    setHexDraft(hex);
-  }
-
   // EyeDropper is a client-only capability; useSyncExternalStore gives a stable SSR
   // snapshot (false) and the real client value without a sync effect.
   const hasEyeDropper = useSyncExternalStore(
@@ -77,16 +68,24 @@ export function ColorOklch({
 
   const emit = (next: Lch) => onChange(formatOklch(next));
 
-  const onHex = (raw: string) => {
-    setHexDraft(raw);
-    const parsed = hexToOklch(raw);
-    if (parsed) onChange(formatOklch(parsed));
-  };
-
-  const onOklchText = (raw: string) => {
-    const parsed = parseOklch(raw);
-    if (parsed) onChange(formatOklch(parsed));
-  };
+  // TEXT fields commit on blur / Enter (Bug 1) and never move the page on blur (Bug 2).
+  // The L/C/H sliders, eyedropper, and reuse swatches stay live.
+  const oklchField = useDraftField(
+    value,
+    (draft) => {
+      const parsed = parseOklch(draft);
+      if (parsed) onChange(formatOklch(parsed));
+    },
+    (draft) => parseOklch(draft) !== null,
+  );
+  const hexField = useDraftField(
+    hex,
+    (draft) => {
+      const parsed = hexToOklch(draft);
+      if (parsed) onChange(formatOklch(parsed));
+    },
+    (draft) => hexToOklch(draft) !== null,
+  );
 
   const onEyedropper = async () => {
     if (typeof window === "undefined") return;
@@ -195,8 +194,10 @@ export function ColorOklch({
         <input
           type="text"
           aria-label={`${token} oklch value`}
-          value={value}
-          onChange={(e) => onOklchText(e.target.value)}
+          value={oklchField.draft}
+          onChange={oklchField.onChange}
+          onBlur={oklchField.onBlur}
+          onKeyDown={oklchField.onKeyDown}
         />
       </div>
 
@@ -207,8 +208,10 @@ export function ColorOklch({
         <input
           type="text"
           aria-label={`${token} hex value`}
-          value={hexDraft}
-          onChange={(e) => onHex(e.target.value)}
+          value={hexField.draft}
+          onChange={hexField.onChange}
+          onBlur={hexField.onBlur}
+          onKeyDown={hexField.onKeyDown}
         />
       </div>
 

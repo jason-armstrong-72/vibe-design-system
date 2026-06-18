@@ -1,5 +1,7 @@
 "use client";
 
+import { useDraftField } from "@/lib/editor/use-draft-field";
+
 interface OpacitySliderProps {
   token: string;
   value: string;
@@ -12,10 +14,22 @@ function emitValue(raw: number): string {
   return String(Number(clamped.toFixed(2)));
 }
 
-/** Slider 0..1 (step 0.01) + numeric field for opacity tokens. Emits a bare number string. */
+/** Valid draft: any parseable number (it gets clamped to 0..1 on commit). */
+const isNumber = (v: string) => v.trim().length > 0 && Number.isFinite(Number(v.trim()));
+
+/**
+ * Slider 0..1 (step 0.01) + numeric field for opacity tokens. Emits a bare number string.
+ * The slider stays live; the typed NUMERIC field commits only on blur / Enter.
+ */
 export function OpacitySlider({ token, value, onChange }: OpacitySliderProps) {
   const n = Number(value);
   const current = Number.isFinite(n) ? Math.min(Math.max(n, 0), 1) : 0;
+
+  const numField = useDraftField(
+    String(current),
+    (draft) => onChange(emitValue(Number(draft))),
+    isNumber,
+  );
 
   return (
     <div className="ed-length">
@@ -41,8 +55,10 @@ export function OpacitySlider({ token, value, onChange }: OpacitySliderProps) {
           min={0}
           max={1}
           step={0.01}
-          value={current}
-          onChange={(e) => onChange(emitValue(Number(e.target.value)))}
+          value={numField.draft}
+          onChange={numField.onChange}
+          onBlur={numField.onBlur}
+          onKeyDown={numField.onKeyDown}
         />
       </div>
     </div>

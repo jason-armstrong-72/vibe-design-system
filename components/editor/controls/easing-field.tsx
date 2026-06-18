@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import type { ManifestToken } from "@/lib/tokens/generate";
+import { useDraftField } from "@/lib/editor/use-draft-field";
 
 interface EasingFieldProps {
   token: string;
@@ -19,14 +19,16 @@ function tokenValue(t: ManifestToken): string {
   return t.values.light ?? t.values.dark ?? "";
 }
 
+const isValidEasing = (v: string) => VALID.test(v.trim());
+
 /**
  * Preset `<select>` of named curves (seeded from the manifest's `--ease-*` tokens + CSS keywords)
  * plus a validated `cubic-bezier()` text input for custom values. Emits validator-passing easings.
+ *
+ * The preset select stays live; the custom TEXT input commits only on blur / Enter.
  * (A draggable curve editor is fast-follow.)
  */
 export function EasingField({ token, value, onChange, tokens }: EasingFieldProps) {
-  const [custom, setCustom] = useState(value);
-
   const manifestCurves = tokens
     .filter((t) => t.group === "easing")
     .map(tokenValue)
@@ -35,11 +37,11 @@ export function EasingField({ token, value, onChange, tokens }: EasingFieldProps
     (v) => v.length > 0,
   );
 
-  const onCustom = (raw: string) => {
-    setCustom(raw);
-    const v = raw.trim();
-    if (VALID.test(v)) onChange(v);
-  };
+  const custom = useDraftField(
+    value,
+    (draft) => onChange(draft.trim()),
+    isValidEasing,
+  );
 
   return (
     <div className="ed-length">
@@ -67,8 +69,10 @@ export function EasingField({ token, value, onChange, tokens }: EasingFieldProps
           type="text"
           aria-label={`${token} custom cubic-bezier`}
           placeholder="cubic-bezier(0.2, 0, 0, 1)"
-          value={custom}
-          onChange={(e) => onCustom(e.target.value)}
+          value={custom.draft}
+          onChange={custom.onChange}
+          onBlur={custom.onBlur}
+          onKeyDown={custom.onKeyDown}
         />
       </div>
     </div>

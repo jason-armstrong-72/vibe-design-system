@@ -48,6 +48,30 @@ function renderControl(overrides: Partial<React.ComponentProps<typeof ColorOklch
   return { onChange };
 }
 
+function renderRerenderable() {
+  const onChange = vi.fn();
+  const { rerender: rr } = render(
+    <ColorOklch
+      token="--primary"
+      value="oklch(0.205 0 0)"
+      onChange={onChange}
+      tokens={TOKENS}
+      editingBlock="light"
+    />,
+  );
+  const rerender = (value: string) =>
+    rr(
+      <ColorOklch
+        token="--primary"
+        value={value}
+        onChange={onChange}
+        tokens={TOKENS}
+        editingBlock="light"
+      />,
+    );
+  return { onChange, rerender };
+}
+
 describe("ColorOklch", () => {
   it("renders L/C/H sliders + hex field + swatch seeded from oklch(0.205 0 0)", () => {
     renderControl();
@@ -75,16 +99,43 @@ describe("ColorOklch", () => {
     expect(onChange).toHaveBeenCalledWith("oklch(0.5 0 0)");
   });
 
-  it("typing a hex updates → onChange with the converted oklch", () => {
+  it("typing a hex does NOT persist while typing; it commits the converted oklch on blur", () => {
     const { onChange } = renderControl();
     const hex = screen.getByLabelText(/hex/i) as HTMLInputElement;
     fireEvent.change(hex, { target: { value: "#ffffff" } });
-    expect(onChange).toHaveBeenCalled();
+    expect(onChange).not.toHaveBeenCalled();
+    expect(hex.value).toBe("#ffffff"); // draft reflects typed text
+    fireEvent.blur(hex);
     const arg = onChange.mock.calls.at(-1)![0] as string;
     expect(arg).toMatch(/^oklch\(/);
     // white → lightness ~1
     const l = Number(arg.match(/oklch\(([\d.]+)/)![1]);
     expect(l).toBeGreaterThan(0.99);
+  });
+
+  it("typing into the oklch text field commits on Enter", () => {
+    const { onChange } = renderControl();
+    const text = screen.getByLabelText(/oklch value/i) as HTMLInputElement;
+    fireEvent.change(text, { target: { value: "oklch(0.7 0.1 120)" } });
+    expect(onChange).not.toHaveBeenCalled();
+    fireEvent.keyDown(text, { key: "Enter" });
+    expect(onChange).toHaveBeenCalledWith("oklch(0.7 0.1 120)");
+  });
+
+  it("does not commit an invalid oklch string on blur", () => {
+    const { onChange } = renderControl();
+    const text = screen.getByLabelText(/oklch value/i) as HTMLInputElement;
+    fireEvent.change(text, { target: { value: "not-a-color" } });
+    fireEvent.blur(text);
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("re-seeds the oklch + hex drafts when the external value changes", () => {
+    const { rerender } = renderRerenderable();
+    const text = screen.getByLabelText(/oklch value/i) as HTMLInputElement;
+    fireEvent.change(text, { target: { value: "oklch(0.1 0.1 10)" } }); // uncommitted draft
+    rerender("oklch(0.8 0 0)");
+    expect(text.value).toBe("oklch(0.8 0 0)");
   });
 
   it("renders reuse-a-token swatches and clicking one calls onChange with that token's value", () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useDraftField } from "@/lib/editor/use-draft-field";
 
 interface TextFieldProps {
   token: string;
@@ -11,21 +11,17 @@ interface TextFieldProps {
 // Mirrors the server-side injection screen for nicer UX (the route validates again).
 const INJECTION = /[;{}]|\/\*|\*\//;
 
-/** Validated free-text input for shadow strings / font stacks. Emits the raw (non-empty) string. */
-export function TextField({ token, value, onChange }: TextFieldProps) {
-  const [draft, setDraft] = useState(value);
-  const [lastValue, setLastValue] = useState(value);
-  // Keep the draft in sync if the upstream value changes (adjust-state-during-render pattern).
-  if (lastValue !== value) {
-    setLastValue(value);
-    setDraft(value);
-  }
+const isSafe = (raw: string) => {
+  const v = raw.trim();
+  return v.length > 0 && !INJECTION.test(v);
+};
 
-  const onInput = (raw: string) => {
-    setDraft(raw);
-    const v = raw.trim();
-    if (v.length > 0 && !INJECTION.test(v)) onChange(raw);
-  };
+/**
+ * Validated free-text input for shadow strings / font stacks. Emits the raw (non-empty) string.
+ * Typed-field semantics: commits only on blur / Enter (never per keystroke).
+ */
+export function TextField({ token, value, onChange }: TextFieldProps) {
+  const field = useDraftField(value, onChange, isSafe);
 
   return (
     <div className="ed-row">
@@ -35,8 +31,10 @@ export function TextField({ token, value, onChange }: TextFieldProps) {
       <input
         type="text"
         aria-label={`${token} value`}
-        value={draft}
-        onChange={(e) => onInput(e.target.value)}
+        value={field.draft}
+        onChange={field.onChange}
+        onBlur={field.onBlur}
+        onKeyDown={field.onKeyDown}
       />
     </div>
   );

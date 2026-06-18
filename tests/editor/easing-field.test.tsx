@@ -18,7 +18,7 @@ describe("EasingField", () => {
     expect(select.value).toBe("cubic-bezier(0.2, 0, 0, 1)");
   });
 
-  it("emits a validator-passing easing on preset change", () => {
+  it("emits a validator-passing easing on preset change (selects stay live)", () => {
     const onChange = vi.fn();
     render(<EasingField token="--ease-standard" value="cubic-bezier(0.2, 0, 0, 1)" onChange={onChange} tokens={EASING_TOKENS} />);
     const select = screen.getByLabelText(/--ease-standard preset/i) as HTMLSelectElement;
@@ -26,13 +26,41 @@ describe("EasingField", () => {
     expect(onChange).toHaveBeenCalledWith("cubic-bezier(0.4, 0, 1, 1)");
   });
 
-  it("emits a valid custom cubic-bezier from the text input but not an invalid one", () => {
+  it("the custom field does NOT persist while typing; it commits a valid cubic-bezier on blur", () => {
+    const onChange = vi.fn();
+    render(<EasingField token="--ease-standard" value="cubic-bezier(0.2, 0, 0, 1)" onChange={onChange} tokens={EASING_TOKENS} />);
+    const text = screen.getByLabelText(/--ease-standard custom/i) as HTMLInputElement;
+    fireEvent.change(text, { target: { value: "cubic-bezier(0.1, 0.2, 0.3, 0.4)" } });
+    expect(onChange).not.toHaveBeenCalled();
+    fireEvent.blur(text);
+    expect(onChange).toHaveBeenCalledWith("cubic-bezier(0.1, 0.2, 0.3, 0.4)");
+  });
+
+  it("does not commit an invalid custom curve on blur", () => {
     const onChange = vi.fn();
     render(<EasingField token="--ease-standard" value="cubic-bezier(0.2, 0, 0, 1)" onChange={onChange} tokens={EASING_TOKENS} />);
     const text = screen.getByLabelText(/--ease-standard custom/i) as HTMLInputElement;
     fireEvent.change(text, { target: { value: "not a curve" } });
+    fireEvent.blur(text);
     expect(onChange).not.toHaveBeenCalled();
-    fireEvent.change(text, { target: { value: "cubic-bezier(0.1, 0.2, 0.3, 0.4)" } });
-    expect(onChange).toHaveBeenCalledWith("cubic-bezier(0.1, 0.2, 0.3, 0.4)");
+  });
+
+  it("commits the custom curve on Enter", () => {
+    const onChange = vi.fn();
+    render(<EasingField token="--ease-standard" value="cubic-bezier(0.2, 0, 0, 1)" onChange={onChange} tokens={EASING_TOKENS} />);
+    const text = screen.getByLabelText(/--ease-standard custom/i) as HTMLInputElement;
+    fireEvent.change(text, { target: { value: "ease-in-out" } });
+    fireEvent.keyDown(text, { key: "Enter" });
+    expect(onChange).toHaveBeenCalledWith("ease-in-out");
+  });
+
+  it("re-seeds the custom draft when the external value changes", () => {
+    const { rerender } = render(
+      <EasingField token="--ease-standard" value="cubic-bezier(0.2, 0, 0, 1)" onChange={() => {}} tokens={EASING_TOKENS} />,
+    );
+    const text = screen.getByLabelText(/--ease-standard custom/i) as HTMLInputElement;
+    fireEvent.change(text, { target: { value: "linear" } }); // uncommitted draft
+    rerender(<EasingField token="--ease-standard" value="cubic-bezier(0.4, 0, 1, 1)" onChange={() => {}} tokens={EASING_TOKENS} />);
+    expect(text.value).toBe("cubic-bezier(0.4, 0, 1, 1)");
   });
 });

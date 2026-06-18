@@ -1,5 +1,7 @@
 "use client";
 
+import { useDraftField } from "@/lib/editor/use-draft-field";
+
 interface DurationSliderProps {
   token: string;
   value: string;
@@ -22,7 +24,16 @@ function parseDuration(value: string): { n: number; unit: DurationUnit } {
   return { n: Number.isFinite(n) ? n : 0, unit: "ms" };
 }
 
-/** Numeric field + slider + unit select (ms default, s allowed) for duration tokens. */
+/** The typed numeric draft is valid if it parses to a finite, non-negative number. */
+const isNonNegNumber = (v: string) => {
+  const n = Number(v.trim());
+  return v.trim().length > 0 && Number.isFinite(n) && n >= 0;
+};
+
+/**
+ * Numeric field + slider + unit select (ms default, s allowed) for duration tokens.
+ * Slider + unit select stay live; the typed NUMERIC field commits only on blur / Enter.
+ */
 export function DurationSlider({ token, value, onChange }: DurationSliderProps) {
   const { n, unit } = parseDuration(value);
   const range = RANGE[unit];
@@ -31,6 +42,12 @@ export function DurationSlider({ token, value, onChange }: DurationSliderProps) 
     const num = Number.isFinite(nextN) && nextN >= 0 ? nextN : 0;
     onChange(`${num}${nextUnit}`);
   };
+
+  const numField = useDraftField(
+    String(n),
+    (draft) => emit(Number(draft), unit),
+    isNonNegNumber,
+  );
 
   return (
     <div className="ed-length">
@@ -54,8 +71,10 @@ export function DurationSlider({ token, value, onChange }: DurationSliderProps) 
           aria-label={`${token} value`}
           min={0}
           step={range.step}
-          value={n}
-          onChange={(e) => emit(Number(e.target.value), unit)}
+          value={numField.draft}
+          onChange={numField.onChange}
+          onBlur={numField.onBlur}
+          onKeyDown={numField.onKeyDown}
         />
         <select
           className="ed-unit"

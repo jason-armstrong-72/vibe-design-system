@@ -1,5 +1,7 @@
 "use client";
 
+import { useDraftField } from "@/lib/editor/use-draft-field";
+
 interface LengthSliderProps {
   token: string;
   value: string;
@@ -27,9 +29,15 @@ function parseLength(value: string): { n: number; unit: LengthUnit } {
   return { n: Number.isFinite(n) ? n : 0, unit: "rem" };
 }
 
+/** The typed numeric draft is valid if it parses to a finite number. */
+const isFiniteNumber = (v: string) => Number.isFinite(Number(v.trim())) && v.trim().length > 0;
+
 /**
  * Numeric field + slider + unit select for length tokens (fontSize/lineHeight/radius/
  * borderWidth/spacing/container). Emits validator-passing `${n}${unit}` strings.
+ *
+ * The slider and unit select stay LIVE (they preview+persist immediately; the writeback
+ * debounce coalesces drags). The typed NUMERIC field commits only on blur / Enter.
  */
 export function LengthSlider({ token, value, onChange }: LengthSliderProps) {
   const { n, unit } = parseLength(value);
@@ -39,6 +47,13 @@ export function LengthSlider({ token, value, onChange }: LengthSliderProps) {
     const num = Number.isFinite(nextN) ? nextN : 0;
     onChange(`${num}${nextUnit}`);
   };
+
+  // Typed numeric field: local draft (the bare number) → commit on blur/Enter as `${n}${unit}`.
+  const numField = useDraftField(
+    String(n),
+    (draft) => emit(Number(draft), unit),
+    isFiniteNumber,
+  );
 
   return (
     <div className="ed-length">
@@ -61,8 +76,10 @@ export function LengthSlider({ token, value, onChange }: LengthSliderProps) {
           type="number"
           aria-label={`${token} value`}
           step={range.step}
-          value={n}
-          onChange={(e) => emit(Number(e.target.value), unit)}
+          value={numField.draft}
+          onChange={numField.onChange}
+          onBlur={numField.onBlur}
+          onKeyDown={numField.onKeyDown}
         />
         <select
           className="ed-unit"

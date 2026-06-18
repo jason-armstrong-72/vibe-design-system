@@ -194,6 +194,81 @@ test.describe("editor seam", () => {
     await expect(page.getByTestId("ed-preview-width")).toBeVisible();
   });
 
+  test("editing a field then tabbing/blurring out does NOT scroll the page (Bug 2)", async ({
+    page,
+  }) => {
+    const before = readFileSync(GLOBALS, "utf8");
+    try {
+      await page.goto("/design-system");
+      await page.getByRole("button", { name: /edit/i }).click(); // enable edit mode
+
+      // Select a token whose row is mid-page, then put the page at a known scroll offset.
+      await page.locator('[data-token="--z-modal"]').first().click();
+      await page.evaluate(() => window.scrollTo(0, 600));
+
+      const num = page.getByLabel(/--z-modal value/i);
+      await expect(num).toBeVisible();
+      await num.click();
+      await num.fill("1500");
+
+      // Before blur: the edit must NOT have persisted (commit-on-blur, not per keystroke).
+      expect(readFileSync(GLOBALS, "utf8")).not.toContain("--z-modal: 1500");
+
+      const yBefore = await page.evaluate(() => window.scrollY);
+
+      // Leaving the field moves focus to the next element in DOM tab order. The panel is mounted
+      // LAST in the document, so focus wraps to the page's first real focusable — far down the
+      // design-system page (its first focusable is the components gallery near the bottom). The
+      // browser scrolls that into view, yanking the page to the bottom. We assert the page holds.
+      //
+      // We drive the exact transition (a panel control losing focus to that far page control) so
+      // the assertion is deterministic and not perturbed by the dev-overlay's own tab stop.
+      const firstPageFocusableTop = await page.evaluate(() => {
+        const sel = 'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
+        const el = Array.from(document.querySelectorAll(sel)).find(
+          (n) => !n.closest(".ed-panel") && !n.closest("[data-editor-root] > nextjs-portal"),
+        ) as HTMLElement | undefined;
+        return el ? Math.round(el.getBoundingClientRect().top + window.scrollY) : -1;
+      });
+      // Sanity: the first page focusable really is far below our current scroll (the jump source).
+      expect(firstPageFocusableTop).toBeGreaterThan(yBefore + 1000);
+
+      // Tab to a sibling control inside the panel first (commits + blurs the field), then drive
+      // the wrap: a panel control losing focus to the far page control. (Doing it from a sibling
+      // rather than the field itself proves the panel-level guard — not just the field's own
+      // blur handler — keeps the page put.)
+      await page.keyboard.press("Tab");
+      await page.waitForTimeout(40);
+      expect(
+        await page.evaluate(() => !!document.activeElement?.closest(".ed-panel")),
+      ).toBe(true); // still in the panel (moved to a sibling control)
+
+      await page.evaluate(() => {
+        const sel = 'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
+        const target = Array.from(document.querySelectorAll(sel)).find(
+          (n) => !n.closest(".ed-panel"),
+        ) as HTMLElement | undefined;
+        target?.focus();
+      });
+      await page.waitForTimeout(120);
+
+      const yAfter = await page.evaluate(() => window.scrollY);
+      // The page must NOT have slid to the focused (far-down) control.
+      expect(Math.abs(yAfter - yBefore)).toBeLessThan(40);
+      // And focus did genuinely leave the panel.
+      expect(
+        await page.evaluate(() => !document.activeElement?.closest(".ed-panel")),
+      ).toBe(true);
+
+      // And on blur the edit DID persist (debounced) → poll the file.
+      await expect
+        .poll(() => readFileSync(GLOBALS, "utf8"), { timeout: 5000 })
+        .toContain("--z-modal: 1500");
+    } finally {
+      writeFileSync(GLOBALS, before, "utf8"); // restore
+    }
+  });
+
   test("edit --radius length → globals.css rewritten with the new length", async ({
     page,
   }) => {
