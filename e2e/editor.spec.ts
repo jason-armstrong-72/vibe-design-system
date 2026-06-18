@@ -269,6 +269,67 @@ test.describe("editor seam", () => {
     }
   });
 
+  test("undo/redo history: two commits, Undo/Redo buttons walk globals.css back and forward", async ({
+    page,
+  }) => {
+    // Use --z-toast (not --z-modal) so this test never collides with the other --z-modal tests that
+    // run concurrently against the same dev server + globals.css.
+    const before = readFileSync(GLOBALS, "utf8");
+    const origMatch = before.match(/--z-toast:\s*([^;]+);/);
+    const original = origMatch?.[1].trim();
+    expect(original).toBeTruthy();
+    try {
+      await page.goto("/design-system");
+      await page.getByRole("button", { name: /edit/i }).click(); // enable edit mode
+      await page.locator('[data-token="--z-toast"]').click(); // select
+
+      const input = page.getByLabel(/--z-toast value/i);
+
+      // First committed edit → 2400.
+      await input.fill("2400");
+      await input.blur();
+      await expect
+        .poll(() => readFileSync(GLOBALS, "utf8"), { timeout: 5000 })
+        .toContain("--z-toast: 2400");
+
+      // Second committed edit → 2500.
+      await input.fill("2500");
+      await input.blur();
+      await expect
+        .poll(() => readFileSync(GLOBALS, "utf8"), { timeout: 5000 })
+        .toContain("--z-toast: 2500");
+
+      // Undo (button) → back to 2400.
+      await page.getByRole("button", { name: "Undo" }).click();
+      await expect
+        .poll(() => readFileSync(GLOBALS, "utf8"), { timeout: 5000 })
+        .toContain("--z-toast: 2400");
+
+      // Undo again → back to the original.
+      await page.getByRole("button", { name: "Undo" }).click();
+      await expect
+        .poll(() => readFileSync(GLOBALS, "utf8"), { timeout: 5000 })
+        .toContain(`--z-toast: ${original}`);
+
+      // Redo (button) → forward to 2400.
+      await page.getByRole("button", { name: "Redo" }).click();
+      await expect
+        .poll(() => readFileSync(GLOBALS, "utf8"), { timeout: 5000 })
+        .toContain("--z-toast: 2400");
+
+      // Keyboard assertion: ⌘Z / Ctrl+Z undoes the redo (focus is NOT in a text field — click the
+      // panel name to ensure focus is off the number input so we exercise the document listener).
+      await page.locator(".ed-context .ed-name").click();
+      const mod = process.platform === "darwin" ? "Meta" : "Control";
+      await page.keyboard.press(`${mod}+z`);
+      await expect
+        .poll(() => readFileSync(GLOBALS, "utf8"), { timeout: 5000 })
+        .toContain(`--z-toast: ${original}`);
+    } finally {
+      writeFileSync(GLOBALS, before, "utf8"); // restore
+    }
+  });
+
   test("edit --radius length → globals.css rewritten with the new length", async ({
     page,
   }) => {

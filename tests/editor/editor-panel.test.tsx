@@ -88,6 +88,52 @@ describe("EditorPanel group sibling rows", () => {
     );
   });
 
+  it("renders Undo/Redo buttons to the LEFT of Reset, disabled when stacks are empty", () => {
+    const { container } = setup();
+    act(() => api!.enable());
+    act(() => api!.select("--primary"));
+
+    const head = container.querySelector(".ed-context-head") as HTMLElement;
+    expect(head).toBeTruthy();
+    const scope = within(head);
+    const undo = scope.getByRole("button", { name: "Undo" });
+    const redo = scope.getByRole("button", { name: "Redo" });
+    const reset = scope.getByRole("button", { name: /reset/i });
+
+    // Order: Undo, Redo, then Reset (DOM order = left-to-right).
+    const buttons = Array.from(head.querySelectorAll("button"));
+    expect(buttons.indexOf(undo)).toBeLessThan(buttons.indexOf(reset));
+    expect(buttons.indexOf(redo)).toBeLessThan(buttons.indexOf(reset));
+    expect(buttons.indexOf(undo)).toBeLessThan(buttons.indexOf(redo));
+
+    // Empty stacks → both disabled.
+    expect((undo as HTMLButtonElement).disabled).toBe(true);
+    expect((redo as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("Undo/Redo buttons enable and invoke undo/redo on click", () => {
+    const { container } = setup();
+    act(() => api!.enable());
+    act(() => api!.select("--primary"));
+
+    act(() => api!.editValue("--primary", "oklch(0.5 0 0)"));
+
+    const head = container.querySelector(".ed-context-head") as HTMLElement;
+    const undo = within(head).getByRole("button", { name: "Undo" });
+    expect((undo as HTMLButtonElement).disabled).toBe(false);
+
+    act(() => fireEvent.click(undo));
+    // Undo applied the prev value → current is back at original.
+    expect(api!.perToken["--primary"].current).toBe(
+      api!.perToken["--primary"].original,
+    );
+
+    const redo = within(head).getByRole("button", { name: "Redo" });
+    expect((redo as HTMLButtonElement).disabled).toBe(false);
+    act(() => fireEvent.click(redo));
+    expect(api!.perToken["--primary"].current).toBe("oklch(0.5 0 0)");
+  });
+
   it("renders a faint 'no other tokens' note for a single-member group", () => {
     // 'spacing' has exactly one member in the manifest.
     const lone = MANIFEST.tokens.find((t) => t.group === "spacing");

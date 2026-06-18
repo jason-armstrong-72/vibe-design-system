@@ -11,8 +11,40 @@ const PANEL_WIDTH = 312;
 
 /** Inner shell: reads editor state to set the chrome theme + reflow the page. */
 function EditorShell({ children }: { children: React.ReactNode }) {
-  const { enabled, panelAppearance } = useEditor();
+  const { enabled, panelAppearance, undo, redo } = useEditor();
   const rootRef = useRef<HTMLDivElement>(null);
+
+  // Keyboard history: ⌘Z / Ctrl+Z → undo, ⌘⇧Z / Ctrl+Shift+Z → redo. Document-level and active
+  // ONLY while edit mode is enabled (effect-only, so it's inherently SSR-safe — no window access on
+  // the server). We deliberately do NOT hijack native text-field undo: if focus is in a text input
+  // or textarea inside the panel (the user mid-typing a draft value), we let the browser handle ⌘Z
+  // (native field undo) and only apply TOKEN undo/redo when focus is NOT in such a field. A token
+  // edit isn't committed until blur/Enter anyway, so deferring to the field's own undo here is the
+  // correct, least-surprising behavior.
+  useEffect(() => {
+    if (!enabled || typeof document === "undefined") return;
+    const isEditableField = (el: EventTarget | null): boolean => {
+      const node = el as HTMLElement | null;
+      if (!node) return false;
+      const tag = node.tagName;
+      return (
+        tag === "TEXTAREA" ||
+        (tag === "INPUT" && node.getAttribute("type") !== "range") ||
+        node.isContentEditable
+      );
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod || e.key.toLowerCase() !== "z") return;
+      // Mid-typing a draft in a text field → leave ⌘Z to the browser's native field undo.
+      if (isEditableField(document.activeElement)) return;
+      e.preventDefault();
+      if (e.shiftKey) redo();
+      else undo();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [enabled, undo, redo]);
   // Apply data-editor-theme imperatively so it always tracks panelAppearance. React's
   // hydration is lenient about attribute mismatches on the SSR'd root, so a value set by
   // the provider's mount effect (reading persisted localStorage) wouldn't otherwise repaint

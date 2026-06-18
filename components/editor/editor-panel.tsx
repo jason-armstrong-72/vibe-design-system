@@ -11,8 +11,18 @@ const MANIFEST = designSystem as Manifest;
 
 /** Docked-right panel, visible only when edit mode is enabled. */
 export function EditorPanel() {
-  const { enabled, selectedToken, editingBlock, perToken, reset, select } =
-    useEditor();
+  const {
+    enabled,
+    selectedToken,
+    editingBlock,
+    perToken,
+    reset,
+    select,
+    canUndo,
+    canRedo,
+    undo,
+    redo,
+  } = useEditor();
   if (!enabled) return null;
 
   const token = selectedToken
@@ -42,15 +52,37 @@ export function EditorPanel() {
           <div className="ed-context">
             <div className="ed-context-head">
               <span className="ed-name">{selectedToken}</span>
-              <button
-                type="button"
-                className="ed-reset"
-                aria-label={`Reset ${selectedToken} to original`}
-                disabled={!canReset}
-                onClick={() => reset(selectedToken)}
-              >
-                Reset
-              </button>
+              <div className="ed-history-actions">
+                <button
+                  type="button"
+                  className="ed-iconbtn ed-history-btn"
+                  aria-label="Undo"
+                  title="Undo"
+                  disabled={!canUndo}
+                  onClick={() => undo()}
+                >
+                  <span aria-hidden="true">↶</span>
+                </button>
+                <button
+                  type="button"
+                  className="ed-iconbtn ed-history-btn"
+                  aria-label="Redo"
+                  title="Redo"
+                  disabled={!canRedo}
+                  onClick={() => redo()}
+                >
+                  <span aria-hidden="true">↷</span>
+                </button>
+                <button
+                  type="button"
+                  className="ed-reset"
+                  aria-label={`Reset ${selectedToken} to original`}
+                  disabled={!canReset}
+                  onClick={() => reset(selectedToken)}
+                >
+                  Reset
+                </button>
+              </div>
             </div>
             <span className="ed-group">{token?.group ?? "unknown group"}</span>
             {state && <SaveState status={state.status} error={state.error} />}

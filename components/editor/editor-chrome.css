@@ -211,6 +211,27 @@
   justify-content: space-between;
   gap: 8px;
 }
+/* Undo / Redo sit to the LEFT of Reset in the context bar. */
+.ed-history-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.ed-history-btn {
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--ed-border);
+  background: var(--ed-field);
+  color: var(--ed-text);
+  font-size: 12px;
+}
+.ed-history-btn:hover:not(:disabled) {
+  background: var(--ed-field-hover);
+}
+.ed-history-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
 .ed-reset {
   all: unset;
   flex: 0 0 auto;

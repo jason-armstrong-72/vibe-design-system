@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import designSystem from "@/design-system.json";
@@ -39,6 +40,18 @@ export interface PerTokenState {
   error?: string;
 }
 
+/**
+ * One committed token change. `prev` is the token+theme value *before* this commit; `next` is the
+ * committed value. Stored chronologically (global history across all tokens/blocks) so undo/redo
+ * walk the full edit timeline, not a per-token stack.
+ */
+export interface HistoryEntry {
+  token: string;
+  theme: Theme;
+  prev: string;
+  next: string;
+}
+
 export interface EditorContextValue {
   enabled: boolean;
   selectedToken: string | null;
@@ -53,6 +66,10 @@ export interface EditorContextValue {
   setPanelAppearance: (appearance: PanelAppearance) => void;
   editValue: (name: string, value: string) => void;
   reset: (name: string) => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  undo: () => void;
+  redo: () => void;
 }
 
 const EditorContext = createContext<EditorContextValue | null>(null);
@@ -78,6 +95,33 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
   const [panelAppearance, setPanelAppearanceState] =
     useState<PanelAppearance>(initialAppearance);
   const [perToken, setPerToken] = useState<Record<string, PerTokenState>>({});
+
+  // Global, chronological history of committed edits. `undoStack` holds applied edits (top = most
+  // recent); `redoStack` holds undone edits ready to re-apply. Booleans are state so the toolbar
+  // re-renders; the entry arrays live in refs so synchronous undo/redo can read+mutate them without
+  // racing React's batched state (and so a fresh edit can truncate redo immediately).
+  const undoStackRef = useRef<HistoryEntry[]>([]);
+  const redoStackRef = useRef<HistoryEntry[]>([]);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+  const syncHistoryFlags = useCallback(() => {
+    setCanUndo(undoStackRef.current.length > 0);
+    setCanRedo(redoStackRef.current.length > 0);
+  }, []);
+
+  // Last committed value per `${token}|${theme}` — the baseline for the NEXT edit's `prev`. Keyed by
+  // theme because the same token has independent values in the light vs dark block. Seeded lazily
+  // from the manifest the first time a token+theme is edited (see committedBaseline).
+  const committedRef = useRef<Map<string, string>>(new Map());
+  const committedBaseline = useCallback((name: string, theme: Theme): string => {
+    const key = `${name}|${theme}`;
+    const known = committedRef.current.get(key);
+    if (known !== undefined) return known;
+    return currentValue(name, theme);
+  }, []);
+  const setCommitted = useCallback((name: string, theme: Theme, value: string) => {
+    committedRef.current.set(`${name}|${theme}`, value);
+  }, []);
 
   const onStatus = useCallback(
     (name: string, status: EditStatus, error?: string) => {
@@ -155,9 +199,16 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     [editingBlock, queue],
   );
 
-  const editValue = useCallback(
-    (name: string, value: string) => {
-      queue.edit({ name, value, theme: editingBlock });
+  /**
+   * Persist a value to a token in a specific block (preview via setVar + debounced write) and
+   * reflect it in `perToken`. This is the shared commit primitive — it does NOT touch history, so
+   * undo/redo can reuse it to move the pointer without creating new forward history. `status` lets
+   * reset pin "idle" (back to baseline, nothing pending) vs. a normal edit's "dirty".
+   */
+  const applyValue = useCallback(
+    (name: string, theme: Theme, value: string, status: EditStatus) => {
+      queue.edit({ name, value, theme });
+      setCommitted(name, theme, value);
       setPerToken((prev) => {
         const existing = prev[name];
         const original = existing?.original ?? value;
@@ -166,13 +217,27 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
           [name]: {
             original,
             current: value,
-            status: "dirty",
+            status,
             error: undefined,
           },
         };
       });
     },
-    [editingBlock, queue],
+    [queue, setCommitted],
+  );
+
+  const editValue = useCallback(
+    (name: string, value: string) => {
+      const prev = committedBaseline(name, editingBlock);
+      // Skip no-ops: an unchanged value neither persists meaningfully nor earns a history step.
+      if (prev === value) return;
+      applyValue(name, editingBlock, value, "dirty");
+      // A new committed edit extends the timeline and invalidates any redo branch (linear history).
+      undoStackRef.current.push({ token: name, theme: editingBlock, prev, next: value });
+      redoStackRef.current = [];
+      syncHistoryFlags();
+    },
+    [editingBlock, applyValue, committedBaseline, syncHistoryFlags],
   );
 
   const reset = useCallback(
@@ -180,27 +245,59 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       const existing = perToken[name];
       if (!existing) return;
       const { original } = existing;
-      // Persist the revert: setVar(name, original) (inside edit) + queue a write so the file
-      // reverts too. queue.edit() synchronously flips status to 'dirty' via onStatus; we then
-      // pin it back to 'idle' so the reset reads as "back to the original, nothing pending".
-      // On the queue's successful write it will transition to 'saved'.
-      queue.edit({ name, value: original, theme: editingBlock });
-      setPerToken((prev) => {
-        const cur = prev[name];
-        if (!cur) return prev;
-        return {
-          ...prev,
-          [name]: {
-            ...cur,
-            current: original,
-            status: "idle",
-            error: undefined,
-          },
-        };
-      });
+      const prev = committedBaseline(name, editingBlock);
+      // Persist the revert: setVar(name, original) (inside edit) + queue a write so the file reverts
+      // too. We pin status 'idle' so the reset reads as "back to the original, nothing pending"; the
+      // queue's successful write then transitions it to 'saved'.
+      applyValue(name, editingBlock, original, "idle");
+      // Reset is itself an undoable step (prev = current value, next = original) so it can be undone.
+      // Skip the history push only if it changed nothing.
+      if (prev !== original) {
+        undoStackRef.current.push({
+          token: name,
+          theme: editingBlock,
+          prev,
+          next: original,
+        });
+        redoStackRef.current = [];
+        syncHistoryFlags();
+      }
     },
-    [editingBlock, queue, perToken],
+    [editingBlock, perToken, applyValue, committedBaseline, syncHistoryFlags],
   );
+
+  /**
+   * Undo/redo move the history pointer WITHOUT creating new forward history: they call applyValue
+   * (preview + persist) directly and shuffle the entry between stacks, never going through editValue
+   * (which would push a fresh entry and truncate redo). We select the affected token so the panel
+   * reflects what changed; if it lives in another block, switch to that block first so the preview
+   * is truthful. Both apply with status 'idle' — the change is "settled", not a pending draft.
+   */
+  const applyHistory = useCallback(
+    (entry: HistoryEntry, value: string) => {
+      if (entry.theme !== editingBlock) setEditingBlock(entry.theme);
+      setSelectedToken(entry.token);
+      queue.seed(entry.token, value);
+      applyValue(entry.token, entry.theme, value, "idle");
+    },
+    [editingBlock, setEditingBlock, queue, applyValue],
+  );
+
+  const undo = useCallback(() => {
+    const entry = undoStackRef.current.pop();
+    if (!entry) return;
+    redoStackRef.current.push(entry);
+    applyHistory(entry, entry.prev);
+    syncHistoryFlags();
+  }, [applyHistory, syncHistoryFlags]);
+
+  const redo = useCallback(() => {
+    const entry = redoStackRef.current.pop();
+    if (!entry) return;
+    undoStackRef.current.push(entry);
+    applyHistory(entry, entry.next);
+    syncHistoryFlags();
+  }, [applyHistory, syncHistoryFlags]);
 
   const value = useMemo<EditorContextValue>(
     () => ({
@@ -217,6 +314,10 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       setPanelAppearance,
       editValue,
       reset,
+      canUndo,
+      canRedo,
+      undo,
+      redo,
     }),
     [
       enabled,
@@ -232,6 +333,10 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       setPanelAppearance,
       editValue,
       reset,
+      canUndo,
+      canRedo,
+      undo,
+      redo,
     ],
   );
 

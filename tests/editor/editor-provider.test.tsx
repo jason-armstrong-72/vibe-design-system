@@ -24,13 +24,20 @@ function Probe() {
       <span data-testid="pt-original">{pt?.original ?? "none"}</span>
       <span data-testid="pt-current">{pt?.current ?? "none"}</span>
       <span data-testid="pt-status">{pt?.status ?? "none"}</span>
+      <span data-testid="can-undo">{String(e.canUndo)}</span>
+      <span data-testid="can-redo">{String(e.canRedo)}</span>
       <button onClick={() => e.enable()}>do-enable</button>
       <button onClick={() => e.select("--z-modal")}>do-select</button>
       <button onClick={() => e.select("--primary")}>do-select-primary</button>
       <button onClick={() => e.editValue("--primary", "oklch(0.5 0 0)")}>
         do-edit-primary
       </button>
+      <button onClick={() => e.editValue("--primary", "oklch(0.6 0 0)")}>
+        do-edit-primary-2
+      </button>
       <button onClick={() => e.reset("--primary")}>do-reset-primary</button>
+      <button onClick={() => e.undo()}>do-undo</button>
+      <button onClick={() => e.redo()}>do-redo</button>
       <button onClick={() => e.setEditingBlock("dark")}>do-dark</button>
       <button onClick={() => e.setEditingBlock("light")}>do-light</button>
       <span data-testid="appearance">{e.panelAppearance}</span>
@@ -151,6 +158,73 @@ describe("EditorProvider", () => {
     cleanup();
     setup();
     expect(screen.getByTestId("appearance").textContent).toBe("light");
+  });
+
+  describe("undo/redo history", () => {
+    it("two committed edits then undo() walks back through the values; redo re-applies", () => {
+      setup();
+      fireEvent.click(screen.getByText("do-enable"));
+      fireEvent.click(screen.getByText("do-select-primary"));
+      const original = screen.getByTestId("pt-original").textContent;
+
+      // No history yet.
+      expect(screen.getByTestId("can-undo").textContent).toBe("false");
+      expect(screen.getByTestId("can-redo").textContent).toBe("false");
+
+      // First committed edit.
+      fireEvent.click(screen.getByText("do-edit-primary"));
+      expect(screen.getByTestId("pt-current").textContent).toBe("oklch(0.5 0 0)");
+      expect(screen.getByTestId("can-undo").textContent).toBe("true");
+      expect(screen.getByTestId("can-redo").textContent).toBe("false");
+
+      // Second committed edit.
+      fireEvent.click(screen.getByText("do-edit-primary-2"));
+      expect(screen.getByTestId("pt-current").textContent).toBe("oklch(0.6 0 0)");
+
+      // First undo → back to the first edit's value; redo now available.
+      fireEvent.click(screen.getByText("do-undo"));
+      expect(screen.getByTestId("pt-current").textContent).toBe("oklch(0.5 0 0)");
+      expect(screen.getByTestId("can-redo").textContent).toBe("true");
+
+      // Second undo → back to the original.
+      fireEvent.click(screen.getByText("do-undo"));
+      expect(screen.getByTestId("pt-current").textContent).toBe(original);
+      expect(screen.getByTestId("can-undo").textContent).toBe("false");
+
+      // Redo → re-applies the first edit.
+      fireEvent.click(screen.getByText("do-redo"));
+      expect(screen.getByTestId("pt-current").textContent).toBe("oklch(0.5 0 0)");
+    });
+
+    it("a new edit after undo clears the redo stack (linear history)", () => {
+      setup();
+      fireEvent.click(screen.getByText("do-enable"));
+      fireEvent.click(screen.getByText("do-select-primary"));
+
+      fireEvent.click(screen.getByText("do-edit-primary")); // 0.5
+      fireEvent.click(screen.getByText("do-edit-primary-2")); // 0.6
+      fireEvent.click(screen.getByText("do-undo")); // back to 0.5
+      expect(screen.getByTestId("can-redo").textContent).toBe("true");
+
+      // A brand-new edit clears redo.
+      fireEvent.click(screen.getByText("do-edit-primary-2")); // 0.6 again, fresh branch
+      expect(screen.getByTestId("can-redo").textContent).toBe("false");
+    });
+
+    it("a reset is undoable (prev=current, next=original)", () => {
+      setup();
+      fireEvent.click(screen.getByText("do-enable"));
+      fireEvent.click(screen.getByText("do-select-primary"));
+      const original = screen.getByTestId("pt-original").textContent;
+
+      fireEvent.click(screen.getByText("do-edit-primary")); // 0.5
+      fireEvent.click(screen.getByText("do-reset-primary")); // back to original
+      expect(screen.getByTestId("pt-current").textContent).toBe(original);
+
+      // Undo the reset → back to the edited value.
+      fireEvent.click(screen.getByText("do-undo"));
+      expect(screen.getByTestId("pt-current").textContent).toBe("oklch(0.5 0 0)");
+    });
   });
 
   it("switching blocks clears inline preview vars set during editing", () => {
