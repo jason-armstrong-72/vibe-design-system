@@ -13,7 +13,8 @@
     "tokens:watch": "tsx scripts/watch-tokens.ts",
     "theme": "tsx scripts/apply-theme.ts",
     "e2e": "playwright test",
-    "gallery": "GALLERY=1 playwright test e2e/gallery.spec.ts"
+    "gallery": "GALLERY=1 playwright test e2e/gallery.spec.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "@untitled-ui/icons-react": "^0.1.4",
@@ -44,6 +45,7 @@
     "culori": "^4.0.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "husky": "^9.1.7",
     "jsdom": "^29.1.1",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
