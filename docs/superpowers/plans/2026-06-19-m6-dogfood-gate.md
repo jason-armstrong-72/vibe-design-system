@@ -16,10 +16,22 @@
 
 - **The orchestrator NEVER messages a building run beyond the frozen brief** (spec §4 — doing so FAILS that run). Setup, observation, recording, fixing-the-product-between-runs all happen *outside* a run.
 - **Frozen briefs** live in spec §2.1 (A — pricing) and §2.2 (B — settings). Copy them **verbatim**; do not paraphrase or add hints.
-- **Building-run subagent context = ONLY the clean checkout + the verbatim brief.** Do NOT pass AGENTS.md / design-system.md / HANDOFF / this plan / the spec / any gap hint. It must discover the contract itself.
+- **Building-run subagent task = ONLY the verbatim brief.** Do NOT pass HANDOFF / this plan / the spec / any gap hint / any coaching toward the contract or the fix. **The contract (`AGENTS.md` via root `CLAUDE.md`) auto-loads into the subagent via the harness — this is INTENTIONAL and realistic** (spec §3, user decision "test the real first day"): it is how a real Claude Code user receives the contract. So a run starting with the contract available is correct; M6 tests whether it *builds with it*, not whether it *finds it*. **Do not** try to hide/blind the contract. (Self-discovery is a multi-model fast-follow, §9.)
 - **PASS/FAIL table** = spec §4. **Required assertions** = spec §5. **Findings + termination bound** = spec §8.
 - **Minimum PASS verdict** = 4/4 building runs green (2 per brief) + brownfield observation recorded + all 3 §5 assertions witnessed/recorded.
 - **Termination bound:** >2 fixes to contract machinery (`lib/check`/`lib/tokens`/`AGENTS.md`/manifest) ⇒ M6 **BLOCKED**, stop and surface to user.
+
+---
+
+## On a FAIL event (any building run) — the fix→re-run loop (spec §8)
+
+A building run can FAIL (a FAIL event in spec §4, or the 4 commands not green). When it does, **do NOT hand-fix the run's output and do NOT message the running subagent.** Follow this loop — it is the most consequential part of the protocol:
+
+1. **Classify the cause** (record in the findings ledger §6): is it a **product/contract** cause (contract-discovery, extension-procedure, manifest-legibility, gate-error-message, both-theme/contrast, brownfield) or a **subagent-coding** cause (bad JSX/React/layout the contract had nothing to do with)?
+2. **Subagent-coding cause** → that run is a wash; discard its output, **re-dispatch a fresh subagent** with the same verbatim brief. It does not count against the termination bound. (A model that simply codes badly is noise, not a contract finding.)
+3. **Product/contract cause** → log it against the milestone that should have caught it (M2/M2.5/M5) with a one-line "why missed", then **fix the PRODUCT** (docs/manifest/check) *outside* a run, **increment the contract-machinery fix counter** if the fix touched `lib/check`/`lib/tokens`/`AGENTS.md`/manifest, commit the fix, then **re-dispatch a fresh subagent** on the same brief.
+4. **Check the bound after every contract-machinery fix:** if the counter exceeds **2**, STOP → verdict **BLOCKED** → surface to user (see end of plan). Do not keep polishing.
+5. A fresh re-run **replaces** the failed run. The **2-green-per-brief** minimum (spec §4) must still be met by passing runs after any fix.
 
 ---
 
@@ -32,7 +44,7 @@
 - [ ] **Step 1: Confirm green baseline on main**
 
 Run: `npm run check && npm test && npm run lint`
-Expected: check ✓ (4 ds-disable), 312 vitest passing, lint 0 errors.
+Expected: all green — check ✓ (4 ds-disable), vitest all passing (~312), lint 0 errors. (Counts are sanity checks, not load-bearing; "all green" is the gate.)
 
 - [ ] **Step 2: Create throwaway branch**
 
@@ -131,7 +143,7 @@ Do NOT add anything about tokens, the contract, AGENTS.md, `npm run check`, or a
 - [ ] **Step 2: Observe — capture the run for grading**
 
 While/after it runs, note against spec §4 + §5:
-- Did it **discover** `AGENTS.md`/`CLAUDE.md`/`design-system.md` on its own? (assertion-relevant)
+- Did it **consult/follow** the auto-loaded contract (`AGENTS.md`/`design-system.md`), or ignore it? (The contract is auto-present per spec §3 — we observe whether it *acts on* it, not whether it *finds* it.)
 - Did it build with token utilities, or reach for hardcoded/arbitrary classes?
 - Did it hit a **red `npm run check`** and recover from the output alone? (§5 #2)
 - Did it run the **extension procedure** for the promo color? (§5 #1 color leg)
@@ -155,19 +167,27 @@ Mark Run A1 PASS/FAIL in §3 per the spec §4 table. List every FAIL event (if a
 
 - [ ] **Step 6: Commit the record (NOT the page yet — keep-decision is later, Task 8)**
 
-The subagent's `/pricing` files exist in the working tree. **Stage only the report** for now; the page/token stay unstaged pending the keep-decision (Task 8). If a run FAILED and needs a product fix, that's Task 7.
+The subagent's `/pricing` files exist in the working tree. **Stage only the report** for now; the page/token stay unstaged pending the keep-decision (Task 8). **If this run FAILED, follow the "On a FAIL event" loop above** (classify → fix product or re-dispatch → re-run fresh) before moving on.
 
 ```bash
 git add docs/M6-DOGFOOD.md
 git commit -m "docs(m6): record run A1 (/pricing)"
 ```
 
-- [ ] **Step 7: Reset the working tree for the next independent run**
+- [ ] **Step 7: Reset the working tree for the next independent run (keeper scheme — N1/N2)**
 
-Run A2 must be **independent** (fresh repo state, no memory of A1's page). Stash/discard the uncommitted page so A2 starts clean:
+Run A2 must be **independent** (fresh repo state, no memory of A1's page). Keep **at most one keeper candidate per brief**, in a **named, path-scoped** stash so the stack stays unambiguous:
+- **If A1 PASSED and is the current best `/pricing` candidate:** save just its output to a named stash, replacing any prior pricing candidate:
+  ```bash
+  git stash drop "$(git stash list | grep keeper-pricing | head -1 | cut -d: -f1)" 2>/dev/null || true
+  git stash push -u -m keeper-pricing -- app/pricing app/globals.css design-system.json design-system.md
+  ```
+- **If A1 FAILED or is not the keeper:** discard its output: `git checkout -- app/globals.css design-system.* && git clean -fd app/pricing`.
 
-Run: `git stash -u` (keeps A1's output recoverable) — or `git checkout -- . && git clean -fd app/pricing` if A1 is not being kept.
-Expected: working tree clean except committed report. **Decide per outcome:** if A1 passed and looks like the keeper candidate, `git stash -u` (recover in Task 8); if not, discard.
+- [ ] **Step 8: Gate on a clean tree before the next dispatch**
+
+Run: `git status --porcelain`
+Expected: empty (only committed report on the branch; no stray untracked files the subagent may have created elsewhere). If non-empty, clean the residue (`git checkout -- . && git clean -fd <paths>`) until clean — an unclean tree contaminates the next "independent" run.
 
 ---
 
@@ -182,7 +202,7 @@ Identical to Task 2, second independent subagent, same verbatim Brief A.
 - [ ] **Step 5: Inspect extension** (Task 2 Step 4).
 - [ ] **Step 6: Grade + record** Run A2 in §3.
 - [ ] **Step 7: Commit record** — `git add docs/M6-DOGFOOD.md && git commit -m "docs(m6): record run A2 (/pricing)"`.
-- [ ] **Step 8: Reset tree** for Task 4 (stash keeper candidate or discard).
+- [ ] **Step 8: Reset tree** for Task 4 using the **keeper scheme (Task 2 Steps 7–8)** — if A2 beats A1 as the `/pricing` keeper, replace the `keeper-pricing` stash with A2's output; else discard A2. End on a clean `git status --porcelain`.
 
 ---
 
@@ -199,8 +219,8 @@ Identical to Task 2, second independent subagent, same verbatim Brief A.
   - **Radius:** did it find and edit the `--radius` knob in `globals.css` (§5 #1 radius leg), or hardcode `rounded-[Npx]` + try to suppress (dodge ⇒ FAIL per §4)? Or ignore the "softer" ask (brief-intent-not-met note, not a FAIL)?
 - [ ] **Step 4: Gate + suite** — `npm run check && npm test && npm run lint && npm run build`; capture.
 - [ ] **Step 5: Grade + record** Run B1 in §3.
-- [ ] **Step 6: Commit record** — `git commit -m "docs(m6): record run B1 (/settings)"`.
-- [ ] **Step 7: Reset tree** for Task 5.
+- [ ] **Step 6: Commit record** — `git add docs/M6-DOGFOOD.md && git commit -m "docs(m6): record run B1 (/settings)"`.
+- [ ] **Step 7: Reset tree** for Task 5 using the **keeper scheme (Task 2 Steps 7–8)**, but with stash name **`keeper-settings`** and paths `app/settings app/globals.css design-system.json design-system.md`. End on a clean `git status --porcelain`.
 
 ---
 
@@ -213,8 +233,8 @@ Identical to Task 4, second independent subagent, same verbatim Brief B.
 - [ ] **Step 3: Observe** (Task 4 Step 3 criteria).
 - [ ] **Step 4: Gate + suite**; capture.
 - [ ] **Step 5: Grade + record** Run B2 in §3.
-- [ ] **Step 6: Commit record** — `git commit -m "docs(m6): record run B2 (/settings)"`.
-- [ ] **Step 7: Reset tree** for Task 6.
+- [ ] **Step 6: Commit record** — `git add docs/M6-DOGFOOD.md && git commit -m "docs(m6): record run B2 (/settings)"`.
+- [ ] **Step 7: Reset tree** for Task 6 using the **keeper scheme (Task 2 Steps 7–8)**, `keeper-settings` (if B2 beats B1). End on a clean `git status --porcelain`.
 
 ---
 
@@ -226,14 +246,18 @@ Identical to Task 4, second independent subagent, same verbatim Brief B.
 
 - [ ] **Step 1: Confirm clean tree.**
 
-- [ ] **Step 2: Seed legacy violations** in scanned dirs (`run.ts` walks `app` + `components`, excludes `components/ui`). Create `app/legacy/page.tsx` and `components/legacy-card.tsx` each containing realistic pre-existing mess: `className="bg-[#3b82f6] text-gray-500 p-[13px]"` and an inline `style={{ color: "red" }}`.
+- [ ] **Step 2: Seed legacy violations** in scanned dirs (`run.ts` walks `app` + `components`, excludes `components/ui`). Create `app/legacy/page.tsx` and `components/legacy-card.tsx` with a realistic mix — some the gate catches, some it doesn't (this is deliberate, see Step 4):
+  - **Caught:** `className="bg-[#3b82f6] p-[13px] bg-gray-500 border-gray-300"` (arbitrary-color, arbitrary-length, default-palette ×2).
+  - **NOT caught (verified against `lib/check/`):** `className="text-gray-500"` (`arbitrary-tailwind` palette prefixes omit `text-`) and an inline `style={{ color: "red" }}` (`hardcoded-color` matches only hex/rgb/hsl, not the keyword `red`).
 
 - [ ] **Step 3: Run the gate cold**
 
 Run: `npm run check`
-Expected: FAIL with multiple findings (hardcoded color, arbitrary length, default-palette, off-scale). Capture the **full output**.
+Expected: **FAIL**, exit 1, with findings for `bg-[#3b82f6]` (arbitrary-color), `p-[13px]` (arbitrary-length), and `bg-gray-500`/`border-gray-300` (default-palette). **`text-gray-500` and the inline `style` produce NO finding.** Capture the **full output** + the exact count.
 
-- [ ] **Step 4: Record the adoption experience** in §4: how many violations fired on code "the user didn't just write," how legible the output is at that volume, whether any incremental-adoption path exists today (none — confirms the fast-follow need). This is a **finding**, not a pass/fail.
+- [ ] **Step 4: Record the adoption experience** in §4 — TWO findings:
+  1. **Volume/legibility:** how many violations fired on code "the user didn't just write," how readable the output is at that volume, and that no incremental-adoption path exists today (confirms the brownfield baseline fast-follow).
+  2. **Inverse coverage gap:** `text-gray-500` (text-palette) + inline-`style` keyword colors **slip through uncaught** — a real hole that overlaps the M5 fast-follow ("named colors / `text-` palette not caught"). Both are **findings**, not pass/fail.
 
 - [ ] **Step 5: Revert the seed**
 
@@ -282,7 +306,13 @@ The keep-decision is NOT automatic. Screenshots → user reviews → user signs 
 - Restore (if keeping): the keeper run's `app/pricing/**`, `app/settings/**`, `app/globals.css` extension, regenerated `design-system.{md,json}`
 - Temporary: `e2e/__m6_shots__.spec.ts` (throwaway screenshot spec, gitignored shots)
 
-- [ ] **Step 1: Restore the keeper candidates** — `git stash pop` (or re-dispatch is NOT needed; reuse the stashed passing output) for the best `/pricing` and `/settings` runs. Run `npm run tokens` if a token was added so the manifest is fresh.
+- [ ] **Step 1: Restore the keeper candidates by name** (the named stashes from the keeper scheme):
+
+```bash
+git stash pop "$(git stash list | grep keeper-pricing  | head -1 | cut -d: -f1)"
+git stash pop "$(git stash list | grep keeper-settings | head -1 | cut -d: -f1)"
+```
+Resolve any conflict in `app/globals.css` (both stashes may touch it — take the union of both added tokens / the radius edit). Then run `npm run tokens` so the manifest reflects the merged globals. (If only one brief produced a keeper, pop just that one.)
 
 - [ ] **Step 2: Capture screenshots** — write a throwaway Playwright spec that loads `/pricing` and `/settings` in **light and dark** (≥1 theme), saves PNGs to `e2e/__shots__/` (gitignored). Run it.
 
@@ -314,7 +344,7 @@ Expected: PNGs written.
 - [ ] **Step 2: Full green re-check on the final tree**
 
 Run: `npm run check && npm test && npm run lint && npm run build && npx playwright test`
-Expected: check ✓, vitest passing, lint 0, build ok, e2e 16 passed / 1 skipped (+ any new route still passes the gate).
+Expected: all green — check ✓, vitest passing, lint 0, build ok, e2e all passing (~16 passed / 1 skipped) (+ any kept route still passes the gate). Counts are sanity checks; "all green" is the gate.
 
 - [ ] **Step 3: Commit docs**
 

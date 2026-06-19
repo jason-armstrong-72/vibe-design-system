@@ -29,7 +29,7 @@ fixes folded into this protocol:
 | Pricing too narrow — never hits interactive states / non-color extension / both-theme | Brief B is a **stateful form**; forces focus/hover/disabled/validation + a **non-color** extension (§2) |
 | The genuinely-new M5 machinery (red-gate → self-recover) is untested; M6 ≈ M2.5 re-run | **Required assertion #2** (§5): LLM hits a red `check` and recovers from the error output **alone** |
 | Pass/fail undefined → player-and-referee bias | **Pre-registered PASS/FAIL event table** (§4) — pass/fail reads off the transcript mechanically |
-| Contract pre-loaded into context = cheat (real failure mode = LLM never reads it) | Subagent gets **only the repo + the brief**; must **discover** `AGENTS.md`/`CLAUDE.md` itself (§3) |
+| Contract pre-loaded into context = cheat (real failure mode = LLM never reads it) | **Resolved differently after a plan-review finding (§3):** the Claude Code harness *auto-surfaces* `AGENTS.md`/`CLAUDE.md` to every agent in this repo — for the **Claude v1 audience that auto-load IS the product's intended delivery**, so testing with it = the real first-run experience, not a cheat. Subagent still gets **only the brief as its task** (no gap hints, no spec/HANDOFF/plan). "Does a tool surface the contract when it *doesn't* auto-load?" → **multi-model fast-follow** (§9). |
 | Validation permanently mutates the user-curated token set, bypassing token review | Runs on a **throwaway branch**; keeping `/pricing`/any token is a **separate, user-signed-off** decision (§7) |
 | "Gap" asserted, not proven — `brand-*`/`chart-*` might satisfy "vibrant" | **Prove the gap before running** (§6) — confirm no existing token fits each brief |
 | Fix-loop unbounded; if it fires, M5 shipped broken | **Bounded**: >2 contract-machinery fixes = M6 **BLOCKED**; each fix logged against the milestone that missed it (§8) |
@@ -42,16 +42,18 @@ brownfield run shows it's non-trivial.
 
 ## 1. What M6 proves (and what it does not)
 
-**Proves:** a fresh LLM, given only a realistic feature brief and a clean checkout of the template, will
-(a) find and obey the contract on its own, (b) build with token utilities, (c) when the design needs a
-value the system lacks, run the extension procedure end-to-end, (d) recover from a blocking-gate failure
-using only the gate's own output, and (e) ship green (`check` + `test` + `lint` + `build`) — with **zero
-hand-fixes to the contract**.
+**Proves:** a fresh LLM, given a realistic feature brief and a clean checkout of the template **with the
+contract auto-surfaced as a real Claude Code user receives it**, will (a) build with token utilities and
+obey the contract, (b) when the design needs a value the system lacks, run the extension procedure
+end-to-end, (c) recover from a blocking-gate failure using only the gate's own output, and (d) ship green
+(`check` + `test` + `lint` + `build`) — with **zero hand-fixes to the contract**.
 
-**Does NOT prove (explicit non-goals, stated so a PASS isn't overclaimed):** that *every* LLM/model does
-this (Claude-only — §9); that adoption onto an existing messy codebase is graceful (brownfield is
-*observed*, not *solved* — §2.3, §9); that the visual output is good (that's the human checkpoint, §7, not
-the gate). M6 certifies the **contract loop**, not aesthetics and not portability.
+**Does NOT prove (explicit non-goals, stated so a PASS isn't overclaimed):** that an LLM will **find the
+contract when a tool doesn't auto-surface it** (self-discovery is out of v1 scope — the Claude harness
+auto-loads `AGENTS.md`; "does a non-auto-loading tool surface it" is the multi-model fast-follow, §9); that
+*every* LLM/model does this (Claude-only — §9); that adoption onto an existing messy codebase is graceful
+(brownfield is *observed*, not *solved* — §2.3, §9); that the visual output is good (that's the human
+checkpoint, §7, not the gate). M6 certifies the **contract loop**, not aesthetics and not portability.
 
 ---
 
@@ -103,13 +105,18 @@ isn't already soft, else even the knob-edit doesn't fire).
 ### 2.3 Brownfield run (OBSERVATIONAL — not a pass/fail gate)
 
 Simulate adopting the contract onto an existing messy app. **Concretely (review G5):** on the throwaway
-branch, add seeded "legacy" code a migrating user would already have — e.g. `app/legacy/page.tsx` + a
-`components/legacy-card.tsx` containing `bg-[#3b82f6]`, inline `style={{ color: "red" }}`, `p-[13px]`,
-`text-gray-500` (Tailwind default palette). These land in the **scanned** dirs (`run.ts` walks `app` +
-`components`, excludes `components/ui`). Run `npm run check`. **Observe and record** the adoption experience
+branch, add seeded "legacy" code a migrating user would already have — `app/legacy/page.tsx` +
+`components/legacy-card.tsx` containing a realistic mix: `bg-[#3b82f6]` (arbitrary color — **caught**),
+`p-[13px]` (arbitrary length — **caught**), `bg-gray-500` / `border-gray-300` (default palette — **caught**),
+**plus** `text-gray-500` and inline `style={{ color: "red" }}` which — verified against `lib/check/` — are
+**NOT caught** (`arbitrary-tailwind`'s palette prefixes omit `text-`; `hardcoded-color` matches only
+hex/rgb/hsl, not the keyword `red`). These land in the **scanned** dirs (`run.ts` walks `app` + `components`,
+excludes `components/ui`). Run `npm run check`. **Observe and record** the adoption experience
 — the "I installed your design system and now my whole app is red" first impression: how many violations
 fire on code the user didn't just write, how legible the output is at that volume, whether there's any path
-to adopt incrementally. **Revert the seeded files after observing.** **This run does not pass or fail M6**;
+to adopt incrementally. **Also record the inverse finding:** the `text-gray-500` + inline-`style` keyword
+color **slip through uncaught** — a real coverage gap (overlaps the M5 fast-follow "named colors / `text-`
+palette not caught"). **Revert the seeded files after observing.** **This run does not pass or fail M6**;
 it produces a finding. If the finding warrants a fix (a baseline / incremental-check mode) and that fix is
 non-trivial, it is a **fast-follow** (§9), not M6 scope.
 
@@ -119,11 +126,16 @@ non-trivial, it is a **fast-follow** (§9), not M6 scope.
 
 - **Runs:** Brief A × 2 fresh subagents, Brief B × 2 fresh subagents (4 total), + 1 brownfield run. Each
   subagent is **independent** (fresh context, no memory of prior runs).
-- **Context given to each building subagent = ONLY:** (a) a clean checkout of the template on the M6
-  throwaway branch, (b) the verbatim frozen brief from §2. **Nothing else.** No `AGENTS.md`/`design-system.md`
-  handed in, no HANDOFF, no spec, no hint about any gap, no mention of the contract. The subagent must
-  **discover** `AGENTS.md`/`CLAUDE.md`/`design-system.md` on its own (the most common real-world failure mode
-  is the LLM never opening the contract — this protocol must not assume it away).
+- **Context given to each building subagent = the clean checkout + ONLY the verbatim frozen brief (§2) as
+  its task.** No HANDOFF, no spec, no plan, no hint about any gap, no coaching toward the contract or the
+  fix. **The contract (`AGENTS.md` via root `CLAUDE.md`) auto-loads into the subagent via the harness — this
+  is intentional and realistic:** it is exactly how a real Claude Code user receives the contract (the file's
+  whole purpose is to be auto-surfaced by the tool). So the run legitimately starts with the contract
+  available, and M6 tests whether the LLM *builds with it correctly*, not whether it *finds it* (plan-review
+  finding: self-discovery is un-testable here and belongs to the multi-model fast-follow §9 anyway — a
+  non-auto-loading tool is where "never opens the contract" actually bites). What the subagent must still do
+  unaided: translate the brief into token-based code, hit the gap, run the extension procedure, and recover
+  from a red gate — none of which the auto-loaded contract does for it.
 - **Model:** Claude (what we can cleanly drive here). Multi-model = fast-follow (§9).
 - **Observer (the orchestrator) role:** dispatch, then **only observe and record**. The observer sends the
   subagent **nothing beyond the frozen brief** for the duration of the run (sending anything else = a FAIL
@@ -147,7 +159,7 @@ the brownfield observation (§2.3) recorded. A fix→re-run (§8) *replaces* a f
 becomes a finding, and the 2-green-per-brief minimum still must be met after any fix.
 
 **PASS-preserving subagent actions (expected, healthy — NOT failures):**
-- Reading any repo file, including discovering `AGENTS.md` / `design-system.md` / `CLAUDE.md` itself.
+- Reading/consulting any repo file, including the auto-loaded `AGENTS.md` / `design-system.md`.
 - Iterating against a **red `npm run check`** — editing its own code and re-running until green.
 - Running `npm run tokens` after adding a token (the extension procedure working as designed).
 - Using `/* ds-disable: <reason> */` **with a genuine reason** on a legitimate one-off.
@@ -273,9 +285,12 @@ it was missed."
 
 ## 9. Fast-follows (documented, out of v1 M6 scope)
 
-- **Multi-model portability.** Re-run the gate with a non-Claude agent (Cursor+GPT / Gemini CLI) and add a
-  generic/portable rules surface if `AGENTS.md` (Claude/Cursor-shaped) doesn't get read. The product says
-  "point your LLM at it"; v1 M6 only proves it for Claude.
+- **Multi-model portability + contract self-discovery.** Re-run the gate with a non-Claude agent
+  (Cursor+GPT / Gemini CLI) and add a generic/portable rules surface if `AGENTS.md` (Claude/Cursor-shaped)
+  doesn't get auto-loaded. This is where "**does the LLM find the contract when the tool doesn't
+  auto-surface it**" actually gets tested — v1 M6 (Claude) starts with the contract auto-loaded (the real
+  Claude delivery, §3), so it cannot and does not test self-discovery. The product says "point your LLM at
+  it"; v1 M6 only proves it for Claude with auto-load.
 - **Brownfield adoption fix.** If §2.3's observation shows the "all red" experience is bad, build a
   baseline / incremental-check mode (enforce only on new/changed code). Observed in M6; *fixed* later.
 - **Non-color extension procedure**, if §5 assertion #1 shows radius/spacing/shadow extension isn't
