@@ -7,7 +7,8 @@ import { checkHardcodedColor } from "./hardcoded-color";
 import { checkArbitrary } from "./arbitrary-tailwind";
 import { checkBothTheme } from "./both-theme";
 import { checkManifestFresh } from "./manifest-fresh";
-import { checkOffTokenScale, parseThemeSteps } from "./off-token-scale";
+import { checkOffTokenScale } from "./off-token-scale";
+import { parseThemeSteps } from "@/lib/tokens/theme-steps";
 
 const SOURCE_ROOTS = ["app", "components"]; // product/UI surface. NOT lib/ (template machinery that
 // legitimately handles color strings — e.g. lib/tokens/generate.ts's doc example, lib/editor/oklch.ts's
