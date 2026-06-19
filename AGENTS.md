@@ -23,6 +23,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | off-scale spacing | use a step on the spacing scale (or extend `lib/check/spacing-steps.ts`) |
 | off-token scale step (`text-8xl`, `shadow-xl`, `font-black` — produces no styles) | use a defined step, or add the value token to `:root` (`--fs-`/`--elevation-`/`--fw-`) then `npm run tokens` — one step, like color |
 | off-token radius (`rounded-2xl`/`rounded-3xl` — produces no styles) | for rounder corners overall, increase the `--radius` knob then `npm run tokens`; for a one-off step, add `--radius-<step>` to `@theme` |
+| color pair below WCAG-AA contrast (`bg`/`bg-foreground`) | raise/lower the foreground token's oklch L in the failing block (`:root` or `.dark`) until ≥ 4.5:1 (3:1 for muted/large), then `npm run tokens` |
 | deliberate one-off | `/* ds-disable: <reason> */` on the line above (reason required) |
 
 _The gate runs on `npm run check` / pre-commit / CI — not as live editor squiggles._
