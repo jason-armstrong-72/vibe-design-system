@@ -26,7 +26,7 @@ const LARGE_OK = new Set(["--muted-foreground"]);
 /** A value we can statically measure: a literal, opaque color. var()/color-mix()/calc() are
  *  unresolvable here; alpha makes wcagContrast meaningless (culori ignores it → bogus 21:1). */
 function measurable(v: string | undefined): boolean {
-  return !!v && isColorValue(v) && !/\/\s*[\d.]/.test(v);
+  return !!v && isColorValue(v) && !v.startsWith("color-mix") && !/\/\s*[\d.]/.test(v);
 }
 
 export function contrastResults(tokens: Token[]): PairResult[] {

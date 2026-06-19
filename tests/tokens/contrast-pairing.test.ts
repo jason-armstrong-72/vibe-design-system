@@ -37,4 +37,13 @@ describe("contrastResults — structural pairing", () => {
     const r = contrastResults(tokens);
     expect(r.some((p) => p.bg === "--background" && p.fg === "--foreground")).toBe(true);
   });
+
+  it("skips a color-mix() foreground (unresolvable → no result, no throw)", () => {
+    const tokens = [
+      tok("--promo", "oklch(0.6 0.2 250)"),
+      tok("--promo-foreground", "color-mix(in oklch, var(--promo), white 20%)"),
+    ];
+    expect(() => contrastResults(tokens)).not.toThrow();
+    expect(contrastResults(tokens).some((p) => p.fg === "--promo-foreground")).toBe(false);
+  });
 });
