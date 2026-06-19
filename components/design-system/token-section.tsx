@@ -57,7 +57,7 @@ export function TokenSection({ section }: { section: Section }) {
   return (
     <section
       id={section.group}
-      className="border-border bg-card flex scroll-mt-24 flex-col gap-6 rounded-2xl border p-6 shadow-sm sm:p-8"
+      className="border-border bg-card flex scroll-mt-24 flex-col gap-6 rounded-xl border p-6 shadow-sm sm:p-8"
     >
       <div className="flex items-baseline justify-between">
         <h2 className="text-2xl font-semibold tracking-tight">{section.title}</h2>
