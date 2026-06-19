@@ -49,8 +49,12 @@ Enumerated all `:root` color tokens (`grep -E '^\s*--[a-z0-9-]+:\s*oklch' app/gl
 **Assertions witnessed:** #1 color extension — **NO** (reused `brand` for hero, `warning` for badge). #2 red-gate recovery — **NO** (never tripped the gate). #3 invented-token hole — N/A (nothing invented).
 **Observation / candidate finding:** the brief's *celebratory* promo was satisfied by **misusing `warning`** (a caution color) rather than extending. The gate passes it because `warning` is a real token used syntactically — i.e. the contract enforces *token usage*, not *semantic fit*. Confirms the gap is real (no promo color exists) but shows the LLM defaulted to grabbing a semantically-wrong token over running the (easy) extension procedure. Watch whether A2 repeats; if both pricing runs reuse, color-extension (§5 #1) is not witnessed → recorded finding per §6.
 
-### Run A2 — /pricing
-_TBD_
+### Run A2 — /pricing → **PASS** (no extension; reuse path)
+**What it did:** created `app/pricing/page.tsx` only. Consulted the auto-loaded contract (token-only, ran `npm run check`). Pro hero = `brand-500` border + `brand-50→card` gradient (dark-aware `dark:from-brand-950`) + `ring-4 ring-brand-500/15` + `shadow-lg` + `lg:scale-105 z-sticky`; check badges = **`bg-success`**. Explicitly stated it used the brand ramp "without inventing tokens."
+**Verified by orchestrator:** only `app/pricing/` added; **`globals.css` untouched → NO extension**. `npm run check` ✓ / `npm run lint` ✓ / `npm run build` ✓ (/pricing static). No `#hex`/`oklch`/arbitrary classes.
+**FAIL events (§4):** none → **mechanical PASS**.
+**Assertions witnessed:** #1 color extension — **NO**. #2 red-gate recovery — **NO** (never tripped). #3 — N/A.
+**Pattern (N=2, consistent):** both pricing runs **reused `brand` for the featured tier + stretched a semantic token** (A1 `warning`, A2 `success`) for accents, and neither extended. Per the §6 pre-commitment this is the "gap softer than intended" outcome: **`brand` is a legitimate existing fit for "premium / stand out,"** so capable LLMs correctly built entirely within the 94-token set — a *success* of the set's sufficiency, not a contract failure. Consequence: **color extension is NOT exercised by Brief A**; it must come from elsewhere (radius non-color extension in B; red-gate recovery may need a seeded run per §5 #2). Flagged for the Task-7 audit + user decision.
 
 ### Run B1 — /settings
 _TBD_
