@@ -88,7 +88,12 @@ Enumerated all `:root` color tokens (`grep -E '^\s*--[a-z0-9-]+:\s*oklch' app/gl
 ---
 
 ## 4. Brownfield observation (§2.3)
-_TBD_
+Seeded `app/legacy/page.tsx` + `components/legacy-card.tsx` (~12 lines) with realistic pre-existing mess, ran `npm run check` cold → **9 problems, exit 1.**
+- **Caught (9):** `bg-[#3b82f6]` (hardcoded+arbitrary), `p-[13px]`/`p-[7px]` (arbitrary-length), `bg-gray-500`+`border-gray-300` (default-palette), `bg-[#ef4444]` (hardcoded+arbitrary), and **inline `style={{ background: "#222" }}`** (hardcoded-color — the text scan catches inline **hex**).
+- **Slipped through (uncaught):** `text-gray-500` (text-palette — `arbitrary-tailwind` palette prefixes omit `text-`); inline `style={{ color: "red" }}` (keyword color — `hardcoded-color` matches hex/rgb/hsl, not named keywords); `rounded-[5px]` (arbitrary **radius** — `arbitrary-length` covers spacing prefixes, not `rounded-[]`).
+- **Refinement of the spec's B2 claim:** inline-style **hex** colors ARE caught; only **keyword** colors slip. (Spec §2.3 said "inline style not caught" — precise truth: keyword-only.)
+**Adoption experience:** 9 errors on ~12 lines ⇒ at real-app scale (hundreds of files) this is hundreds–thousands of red errors on code the user didn't just write — the "I installed it and my whole app is red" wall. **No incremental/baseline mode exists** (the check walks all of `app`+`components` every run). Confirms the **brownfield-baseline fast-follow** (enforce only new/changed code).
+**Overlap finding:** the slip-throughs (text-palette, keyword colors, arbitrary `rounded-[]`) are the same **gate-coverage holes** seen in B3 (named no-op classes) and the M5 fast-follow list — the gate flags the common cases but is not airtight.
 
 ---
 
