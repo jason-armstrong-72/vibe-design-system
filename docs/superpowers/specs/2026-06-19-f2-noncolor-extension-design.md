@@ -1,7 +1,7 @@
 # F2 — One-step non-colour extension — design
 
 **Date:** 2026-06-19
-**Status:** Design approved (brainstorm), pre-plan
+**Status:** Design approved (brainstorm + 3-reviewer challenge), pre-plan
 **Milestone:** v1 fast-follow **F2** (from the M6 dogfood findings ledger — [docs/M6-DOGFOOD.md](../../M6-DOGFOOD.md), F2). Second of the two promoted near-term fast-follows (F3 done; F2 here).
 **Depends on:** M1 (`lib/tokens/parse`), M2 (`lib/tokens/{sync,generate}`, `npm run tokens`), F3 (`lib/check/off-token-scale.ts` `parseThemeSteps`, reused here).
 
@@ -33,6 +33,20 @@ the real `@theme` radius steps; docs present one unified procedure.
 
 Rejected alternatives: *document-the-multi-step-recipe only* (leaves the asymmetry that tripped all 3 M6
 agents) and *lock the scales / no extension* (contradicts the "extend, don't hardcode" philosophy).
+
+**Framing decision (3-reviewer pass): "easy-but-discouraged" for scales.** Type/shadow/weight scales are
+**curated on purpose** — a constrained ramp is the product value. So F2 keeps the one-step *machinery* (it
+removes the trap that forced machinery-edits and silent no-ops) but **frames scale extension as a last
+resort** in docs and gate messages: *reach for an existing step first; the ramp is deliberately small;
+extend only when it genuinely can't express what you need.* Colour stays "extend freely." This avoids
+teaching LLMs that adding `text-8xl`/`font-black` is the normal move.
+
+**The radius gate-message fix (the load-bearing change — see §5b).** The 3-reviewer pass converged on this:
+M6's failing scenario was *radius* ("rounder corners"), and radius is **not** auto-wired (it's a single
+knob). F2's only defense for radius is docs — which M6 proved LLMs skim. The fix: put the `--radius` knob
+nudge **into the `off-token-scale` gate error message** (the red gate is the one channel M6 proved reliably
+redirects an LLM — the seeded run recovered purely from gate output). So `rounded-3xl` → the failure message
+itself routes the LLM to the knob.
 
 ---
 
@@ -66,10 +80,18 @@ mapping exists (additive + idempotent, exactly like the colour pass):
 
 - **Line-height is lenient (approved):** wire `--text-<x>` always; add the `--text-<x>--line-height` mapping
   **only if** the paired `--lh-<x>` value token exists. A missing line-height falls back to Tailwind's
-  default — never blocks. Docs nudge "add both `--fs-X` and `--lh-X` for a proper pair."
-- **Grouping:** keyed by token **group** (from `parseTokens` / `groupForName`), not by raw name prefix, so
-  classification stays consistent with the rest of the system. (`--fs-*` → fontSize, `--fw-*` → fontWeight,
-  `--elevation-*` → shadow.)
+  default — never blocks. Docs nudge "add both `--fs-X` and `--lh-X` for a proper pair." **Visible signal
+  (review-driven):** when the pass wires a `--text-<x>` whose `--lh-<x>` is absent, `npm run tokens` prints a
+  **warning** ("wired text-8xl with default line-height; add --lh-8xl for a proper pair") — leniency stays,
+  but the silent-quality-regression gets a signal.
+- **Grouping — CLOSED ALLOWLIST (review-critical).** Key by token **group** (from `parseTokens`), but match
+  against an **explicit `Set` of exactly the 3 wired groups** `{fontSize, fontWeight, shadow}`. **Every other
+  group is silently ignored** (no mapping appended), exactly as the colour pass ignores all non-colour today.
+  This is load-bearing: `--lh-*` is its own first-class `lineHeight` group (11 tokens: `--lh-xs…7xl`), and
+  `--fs-*` line-heights are wired only as a *side-effect* of the fontSize entry (the `--text-X--line-height`
+  pair), never as their own mapping. **The loop must NOT fall through to an exhaustiveness `throw`** for
+  unwired groups (unlike `utilitiesForToken`, which throws) — a throw on `lineHeight` would crash
+  `npm run tokens` **and** `npm run check` on the unchanged repo. Ignore-by-default, wire only the 3.
 - **Idempotent + additive:** only appends a mapping that isn't already present; existing mappings untouched.
   Re-running `npm run tokens` is a no-op once wired (same contract as the colour pass — preserves the
   manifest-fresh invariant).
@@ -82,9 +104,15 @@ mapping exists (additive + idempotent, exactly like the colour pass):
 hard failure)**, `scripts/watch-tokens.ts` (dev watch), and the colour-sync tests. A *sibling* function wired
 only into `regenerate.ts` would make the gate's freshness view diverge from what `npm run tokens` writes
 (a scale mapping could be missing yet the gate pass, or vice-versa). So **generalise the existing
-`syncThemeColorMappings` in place** — keep its name, signature, and `SyncResult` — to wire colour **and**
-scale mappings in one pass over a small table `{ group → (bare ⇒ themeProp(s)) }`. All 4 callers get the new
-behaviour for free; the colour behaviour and its tests stay **unchanged**.
+function in place** — keep its signature and `SyncResult` — to wire colour **and** scale mappings in one
+pass over a small table `{ group → (bare ⇒ themeProp(s)) }`. All 4 callers get the new behaviour for free;
+the colour behaviour and its tests stay **unchanged**.
+
+**Rename + family-aware message (review-driven hygiene).** Rename `syncThemeColorMappings` → `syncThemeMappings`
+(mechanical, update all 4 callers + the colour-sync tests) — the old name becomes a lie once it wires 4
+namespaces. And `lib/check/manifest-fresh.ts` hardcodes the failure message "missing @theme **color**
+mapping" — make it **family-aware** (`missing @theme mapping for "<token>" — run npm run tokens`) so a
+missing `--shadow-xl` doesn't report as a colour problem.
 
 **Idempotency detail (review-driven):** the existence check must be **exact-prop membership** (the colour
 pass already does this: `existing.has(themeVar)`), NOT a `startsWith(prefix)`. The `@theme` block also
@@ -115,8 +143,18 @@ both documented:
 - **Change overall roundness → edit `--radius`** (the knob; all derived steps shift). This is the common
   case and the **nudge** (M6: 0/3 LLMs found it).
 - **Genuinely need a new step (e.g. `rounded-2xl`) →** add `--radius-2xl: calc(var(--radius) + 8px)` to the
-  `@theme inline` block directly, then `npm run tokens` (regenerates the manifest, which now reports it —
-  Part 3). A deliberate scale change, documented as the exception.
+  `@theme inline` block **directly** (NOT `:root`), then `npm run tokens` (regenerates the manifest, which
+  now reports it — Part 3). A deliberate scale change, documented as the exception.
+
+**New-trap warning (review-driven):** an LLM that just learned the scale procedure ("add the value to
+`:root` → `npm run tokens`") may try `--radius-2xl` in **`:root`** — which `groupForName` does not recognise
+(only bare `--radius` maps to radius), so `parseTokens` would **throw** and crash `npm run tokens`. F2 must
+not introduce this. Mitigations (all three): (a) the gate message (§5b) and docs say radius steps go in
+`@theme`, not `:root`; (b) the docs *loudly* lead with "radius is NOT like the other scales — it's a knob";
+(c) **harden `groupForName`** so an unknown `--radius-*` / `--shadow-*` / `--text-*` / `--font-weight-*`
+name does not throw — classify by prefix into its family (so a misplaced token is handled gracefully, and
+the gate/manifest stay alive to guide the fix) rather than crashing the toolchain. The plan pins the exact
+`groupForName` change + a regression test.
 
 ---
 
@@ -126,7 +164,10 @@ Today `utilitiesForToken` hardcodes radius utilities: `["rounded-sm","rounded-md
 — so a hand-added `--radius-2xl` never appears in the manifest (M6 F4). Fix: the radius row's utility list is
 **derived from the actual `@theme` radius steps** by reusing F3's `parseThemeSteps(globals).radius`.
 
-- `regenerate.ts`/`generate.ts` have the globals CSS available; pass `parseThemeSteps(globals).radius` into
+- **Read from the POST-sync string (review-critical):** in `regenerate.ts` use `parseThemeSteps(sync.css)`
+  (the post-sync globals that `parseTokens` also consumes), NOT the original `readFileSync` — and likewise in
+  `lib/check/manifest-fresh.ts` derive the radius steps from the post-sync string its sync produces, so the
+  manifest the gate computes matches what `npm run tokens` writes. Pass `.radius` into
   `buildManifest`/`utilitiesForToken` so the radius token lists `rounded-<step>` for **every** defined
   `@theme` radius step.
 - **Order it explicitly (review-driven):** `parseThemeSteps` returns a `Set` in **source order** (regex
@@ -136,25 +177,49 @@ Today `utilitiesForToken` hardcodes radius utilities: `["rounded-sm","rounded-md
   manifest is stable regardless of CSS authoring order.
 - The other scale families need **no** manifest change: once a value token exists in `:root` (Part 1),
   `utilitiesForToken` already derives the correct utility (`--elevation-xl` → `shadow-xl`). Verify in tests.
-- Keep `utilitiesForToken` pure: pass radius steps in as an argument rather than reading the filesystem
-  inside it. **This changes its signature** → `tests/tokens/utilities.test.ts` (currently asserts
-  `utilitiesForToken(tok("--radius","radius"))` contains `rounded-lg`) must be updated to pass the steps
-  argument. Flag for the plan.
+- Keep `utilitiesForToken` pure: pass radius steps in as an argument. **Make the arg OPTIONAL with the
+  current default (`["rounded-sm","rounded-md","rounded-lg","rounded-xl"]`) (review-driven)** — so the 4
+  `buildManifest` callers + `mergeByName` + `generate.test.ts` that don't pass it keep working, and only the
+  `regenerate.ts`/`manifest-fresh.ts` paths thread the live steps in. `tests/tokens/utilities.test.ts`
+  (asserts `rounded-lg`) stays green with the default; add a test for the passed-steps case.
+
+### 5b. Part 3b — radius knob nudge in the gate message (`lib/check/off-token-scale.ts` + `messages.ts`) — the load-bearing ergonomic fix
+
+M6's failing scenario was radius, and the red gate is the only channel that reliably redirects an LLM. So
+make `MSG.offTokenScale` **family-aware**: for `family === "radius"`, the message names the knob, not just
+"use a defined step." Concretely:
+> `off-token scale step "rounded-3xl" produces no styles — the radius scale is sm/md/lg/xl. To make corners rounder/softer overall, increase --radius in app/globals.css then npm run tokens (it shifts every step); for a one-off, add --radius-<step> to @theme. (see design-system.md)`
+
+For the other families, keep the existing message but ensure it routes to the **one-step** procedure
+("add the value token to `:root`, then `npm run tokens`") consistent with the new docs. `checkOffTokenScale`
+already knows the `family` per finding — thread it into the message. (F2 touches F3's check here; F3's tests
+update for the new message text.)
 
 ---
 
 ## 6. Part 4 — docs: one unified extension procedure
 
 Rewrite the **generated preamble** in `generate.ts` (`PREAMBLE`, which becomes `design-system.md`'s
-"Extension procedure" section) to present a **single** procedure, not "colour = easy, non-colour = fixed/rare":
+"Extension procedure" section). It currently says *"Non-color scales like type/shadow are fixed; adding to
+those is rare"* — an LLM reading that concludes it **can't** add a shadow and improvises (the M6 #1/#3
+behaviours). Replace with a **single procedure** but with **"easy-but-discouraged" framing for scales** (the
+3-reviewer decision) — NOT a uniform "extend freely" story:
 
-- **Add a value the system lacks (colour OR a scale step):** add the **value token** to `:root` (`--<name>`
-  for a colour, with `.dark` + `-foreground` as needed; `--fs-<x>`+`--lh-<x>` / `--elevation-<x>` /
-  `--fw-<x>` for a scale step), then `npm run tokens`. It **auto-wires the utility and refreshes this
-  manifest.** Never hardcode; never use an off-scale class (it produces no styles and the gate rejects it).
-- **Radius / spacing density are knobs:** to change roundness edit `--radius`; to change spacing density edit
-  `--spacing-base`. (Add a new `--radius-<step>` to `@theme` only for a deliberate new step.)
-- Keep the colour worked example; add a scale worked example (e.g. a new shadow level).
+- **Colour — extend freely** (the common, legitimate case): add `--<name>` to `:root`+`.dark` (+
+  `--<name>-foreground` if text sits on it), `npm run tokens`. Auto-wires `bg-/text-/border-<name>`.
+- **Scales (type / shadow / weight) — the ramp is deliberately small; reach for an existing step FIRST.**
+  Only when the ramp genuinely can't express what you need: add the **value token** to `:root`, then
+  `npm run tokens` (same one step — auto-wires the utility + refreshes this manifest). **Use the value-token
+  name from the table, which differs from the utility name:** shadow `--elevation-<step>` → `shadow-<step>`;
+  font size `--fs-<step>` **and** its `--lh-<step>` pair → `text-<step>`; font weight `--fw-<step>` →
+  `font-<step>`. (Get the value-token name wrong and sync silently won't wire it.)
+- **Roundness & spacing are KNOBS, not per-step tokens — radius is NOT like the other scales.** To make
+  corners rounder/softer, **increase `--radius`** (e.g. `0.625rem` → `1rem`) then `npm run tokens` — it
+  shifts every derived step. **Do NOT reach for `rounded-2xl`/`rounded-3xl`** (cleared namespace → no CSS →
+  the gate rejects it). For spacing density, edit `--spacing-base`. Only add a `--radius-<step>` to `@theme`
+  (not `:root`) for a genuine one-off extra step.
+- **Never hardcode; never use an off-scale class** — it renders unstyled and the gate rejects it.
+- Keep the colour worked example; add a scale worked example (a new shadow level).
 
 Also update:
 - **`AGENTS.md`** — the design-system contract block + failure→fix table (the extension procedure pointer
@@ -171,11 +236,21 @@ Also update:
 - **`sync` (the core):** fixture CSS with a new `--elevation-xl` (no `--shadow-xl` yet) → after sync, `@theme`
   contains `--shadow-xl: var(--elevation-xl)`. Same for `--fs-8xl`+`--lh-8xl` → `--text-8xl` +
   `--text-8xl--line-height`; `--fs-8xl` **without** `--lh-8xl` → `--text-8xl` only (lenient). `--fw-black` →
-  `--font-weight-black`. **Idempotent:** running sync twice adds nothing the second time. **Colour
-  unchanged:** the existing colour-sync tests stay green; a colour + a scale token in one fixture both wire.
+  `--font-weight-black`. **Idempotent:** running sync twice adds nothing the second time — including no
+  duplicate `--text-8xl--line-height` (exact-prop check on the line-height prop). **Closed allowlist:** a
+  fixture with `--lh-9xl` (lineHeight) and other non-wired groups present → sync wires **nothing** for them
+  and does **not throw**. **Colour unchanged:** the existing colour-sync tests stay green; a colour + a scale
+  token in one fixture both wire.
+- **`groupForName` regression (review-driven insurance):** assert it classifies every current
+  `--elevation-*` / `--fs-*` / `--fw-*` as shadow/fontSize/fontWeight (guards the prefix-before-value-inference
+  ordering — a reorder must not flip a shadow token to colour). And assert an unknown suffixed name
+  (`--radius-2xl`, `--shadow-9xl`) **does not throw** (the hardening from §4) — classifies by prefix.
 - **`generate`/manifest:** a globals with `--radius-2xl` in `@theme` → the radius manifest token lists
   `rounded-2xl` (in scale order). A globals with `--elevation-xl` → a shadow token with `shadow-xl`. Order
   deterministic.
+- **Gate message (off-token-scale, F3):** a `rounded-3xl` finding's message contains `--radius` (the knob
+  nudge); a `shadow-2xl` finding routes to the `:root` one-step procedure. Update F3's existing message
+  assertions for the new text.
 - **End-to-end (the headline):** start from the real repo; add `--elevation-xl` to `:root`; run the actual
   `npm run tokens`; assert (a) `@theme` now has `--shadow-xl: var(--elevation-xl)`, (b) `design-system.json`
   lists `shadow-xl`, (c) `npm run check` passes (off-token-scale sees `shadow-xl` defined, manifest fresh).
@@ -199,6 +274,16 @@ Also update:
 - **Auto-creating the value token** — F2 wires the `@theme` mapping from an existing `:root` value token; it
   does not invent values. The user/LLM still chooses the `--elevation-xl` shadow value etc. (as with colour).
 - **Removing/renaming tokens** — additive only, same as the colour pass.
+- **No semantic/a11y guardrail for scales (acknowledged, review-driven).** Colour extension is backstopped
+  by the `npm test` suite (theme parity/identity + WCAG-AA contrast, per M6 F5). Scales have **no analogue** —
+  a chosen `--elevation-xl` value or a `--fw-thin: 100` ships green with no quality check. F2's parity claim
+  with colour is "equally **unvalidated**, not equally safe." The docs therefore don't oversell scale
+  extension as risk-free; a lightweight scale guardrail (min font-size, paired `--fs`/`--lh` enforcement) is a
+  possible later fast-follow, **out of F2 scope.** The line-height **warning** (§3) is the one cheap signal F2
+  does add.
+- **Theme files are values-only.** `npm run theme` swaps `:root`/`.dark` value blocks and leaves `@theme`
+  untouched (and doesn't run sync). The extension procedure applies to **`app/globals.css`**; a docs note
+  says so (editing a `themes/*.css` directly won't wire a new mapping until `npm run tokens` runs on globals).
 
 ---
 
