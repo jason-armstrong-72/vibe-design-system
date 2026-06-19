@@ -76,11 +76,27 @@ mapping exists (additive + idempotent, exactly like the colour pass):
 - **`:root`-only:** scale value tokens are not themed (light only); the pass keys on the `light` tokens, like
   the colour pass does. (Scales legitimately live in `:root` only — `both-theme` exempts non-`COLOR_ROLES`.)
 
-**Structure:** either extend `syncThemeColorMappings` into a general `syncThemeMappings` (one pass over a
-small mapping table `{ group → (bare)=>themeProp }`), or add a sibling `syncThemeScaleMappings` called
-alongside it from the same `npm run tokens` entry point (`lib/tokens/regenerate.ts` / wherever sync is
-invoked). The plan picks the cleaner factoring; the colour behaviour must be **unchanged** (its tests stay
-green). Note the existing function name is exported and used — keep a compatible export or update callers.
+**Structure — fold INTO `syncThemeColorMappings` (decided; review-driven).** `syncThemeColorMappings` has
+**4 callers, one of them gate-critical** — `lib/tokens/regenerate.ts` (`npm run tokens`),
+**`lib/check/manifest-fresh.ts` (the `npm run check` freshness enforcer — treats `sync.changed===true` as a
+hard failure)**, `scripts/watch-tokens.ts` (dev watch), and the colour-sync tests. A *sibling* function wired
+only into `regenerate.ts` would make the gate's freshness view diverge from what `npm run tokens` writes
+(a scale mapping could be missing yet the gate pass, or vice-versa). So **generalise the existing
+`syncThemeColorMappings` in place** — keep its name, signature, and `SyncResult` — to wire colour **and**
+scale mappings in one pass over a small table `{ group → (bare ⇒ themeProp(s)) }`. All 4 callers get the new
+behaviour for free; the colour behaviour and its tests stay **unchanged**.
+
+**Idempotency detail (review-driven):** the existence check must be **exact-prop membership** (the colour
+pass already does this: `existing.has(themeVar)`), NOT a `startsWith(prefix)`. The `@theme` block also
+contains the namespace-clear decls `--text-*: initial`, `--shadow-*: initial`, `--font-weight-*: initial` —
+an exact check (`existing.has("--shadow-xl")`) correctly ignores those; a prefix check would not.
+
+**`@theme` block locator:** for **writing** mappings, reuse sync's existing postcss `walkAtRules("theme")`
++ `/(^|\s)inline(\s|$)/` params test (handles the multi-decl-per-line formatting — postcss splits each
+`--text-xs: …; --text-xs--line-height: …;` into discrete decls, verified). For the radius **read** (Part 3)
+reuse F3's string-based `parseThemeSteps`. Two locators coexist (one writes via postcss, one reads via
+string slice); the plan notes which is used where so a future edit to the `@theme` comment/preamble can't
+silently break one.
 
 **Result:** the one-step procedure for a new scale step becomes:
 ```css
@@ -110,13 +126,20 @@ Today `utilitiesForToken` hardcodes radius utilities: `["rounded-sm","rounded-md
 — so a hand-added `--radius-2xl` never appears in the manifest (M6 F4). Fix: the radius row's utility list is
 **derived from the actual `@theme` radius steps** by reusing F3's `parseThemeSteps(globals).radius`.
 
-- `generate.ts` already has the globals CSS available (it's generated from it); pass the parsed radius steps
-  (or the whole `ThemeSteps`) into `mergeByName`/`utilitiesForToken` so the radius token lists
-  `rounded-<step>` for **every** defined `@theme` radius step, in scale order (`sm,md,lg,xl,2xl,…`).
+- `regenerate.ts`/`generate.ts` have the globals CSS available; pass `parseThemeSteps(globals).radius` into
+  `buildManifest`/`utilitiesForToken` so the radius token lists `rounded-<step>` for **every** defined
+  `@theme` radius step.
+- **Order it explicitly (review-driven):** `parseThemeSteps` returns a `Set` in **source order** (regex
+  match order over the block), not canonical scale order — for the current file that's `sm,md,lg,xl`, but a
+  hand-added `--radius-2xl` could land out of place. Sort the steps against F3's `VOCAB.radius` ordering
+  (`xs,sm,md,lg,xl,2xl,3xl,4xl` in `lib/check/off-token-scale.ts`) before emitting `rounded-<step>`, so the
+  manifest is stable regardless of CSS authoring order.
 - The other scale families need **no** manifest change: once a value token exists in `:root` (Part 1),
   `utilitiesForToken` already derives the correct utility (`--elevation-xl` → `shadow-xl`). Verify in tests.
 - Keep `utilitiesForToken` pure: pass radius steps in as an argument rather than reading the filesystem
-  inside it (testability + matches the existing pure-function pattern).
+  inside it. **This changes its signature** → `tests/tokens/utilities.test.ts` (currently asserts
+  `utilitiesForToken(tok("--radius","radius"))` contains `rounded-lg`) must be updated to pass the steps
+  argument. Flag for the plan.
 
 ---
 
@@ -157,9 +180,14 @@ Also update:
   `npm run tokens`; assert (a) `@theme` now has `--shadow-xl: var(--elevation-xl)`, (b) `design-system.json`
   lists `shadow-xl`, (c) `npm run check` passes (off-token-scale sees `shadow-xl` defined, manifest fresh).
   Revert. (A scripted integration test or a documented manual check in the plan.)
-- **Manifest-fresh invariant:** after F2, `npm run tokens` on the unchanged repo is still a no-op (the new
-  sync pass finds all scale mappings already present) — `manifest-fresh` + the git-dirty CI gate stay green.
-  This is critical: the new pass must not rewrite existing `@theme` on every run.
+- **Manifest-fresh invariant (verified in review — holds):** every current `--fs-*`/`--fw-*`/`--elevation-*`
+  already has its `@theme` mapping, so the generalised sync pass finds them all present → `npm run tokens`
+  and `npm run check` (via `lib/check/manifest-fresh.ts`, which calls the same sync) stay a **no-op** on the
+  unchanged repo. Test this explicitly: `sync(globals).changed === false` and `sync(globals).added === []`
+  on the real `app/globals.css`. The pass must not rewrite existing `@theme` on any run.
+- **All-callers parity:** assert the gate agrees with `npm run tokens` — after adding a scale value token,
+  `lib/check/manifest-fresh.ts`'s sync sees the same `changed===true` that `regenerate.ts` acts on (same
+  function, so this is structural, but include a test that the gate flags an un-wired scale token as stale).
 
 ---
 
