@@ -95,7 +95,15 @@ _TBD_
 ## 5. Required assertions (§5) — witnessed?
 - [ ] #1 extension procedure unaided (color + radius-knob)
 - [ ] #2 red-gate self-recovery
-- [ ] #3 invented-token gate hole — confirmed?
+- [ ] #3 invented-token gate hole — **re-probed: much narrower than flagged (see below)**
+
+### #3 — direct empirical probe (invented color through the FULL gate)
+Added `--ghost: oklch(0.95 0.02 200)` to `app/globals.css` `:root` **only**, then ran the full blocking gate:
+- **Naked (no `npm run tokens`):** `npm run check` FAILS (`manifest-fresh` — stale); `npm test` FAILS (manifest-fresh, freshness, self, **apply-theme identity**). → caught immediately.
+- **After `npm run tokens`:** `npm run check` ✓ (both-theme is COLOR_ROLES-only, so it doesn't flag `--ghost`) — **BUT `npm test` still FAILS** on `apply-theme.test.ts` ("applying neutral to globals is a token-set identity"): `--ghost` is in globals but not `themes/neutral.css` → identity breaks. → **caught by the test suite.**
+- **Contrast leg:** `lib/tokens/contrast.ts` auto-pairs **any** `--x`/`--x-foreground` by naming convention (not a fixed list) over `themes/*.css`. So an invented `--promo`/`--promo-foreground` in the themes **is** contrast-checked → below-AA is caught.
+
+**Resolution:** the `npm run check` **script alone** has the hole (both-theme = COLOR_ROLES-only; no contrast over globals) — but the **full blocking gate (`check && test`, what CI + husky run)** backstops it: `manifest-fresh` + `apply-theme` neutral-identity + `parity` + auto-paired `contrast` catch one-theme, unrefreshed, and below-AA invented colors. **The earlier "invented color ships one-theme/below-AA green" flag was OVERSTATED** — true of `check` alone, false of the real gate. **Residual (narrow) hole:** a color token with **no `-foreground` sibling** that nonetheless carries text isn't contrast-checked. **Corrected fast-follow:** make the `check` *script* match what the tests already enforce (both-theme over all `:root` color tokens; fold contrast into `check`) so the script is honest standalone — smaller and different from what HANDOFF first implied.
 
 ---
 
