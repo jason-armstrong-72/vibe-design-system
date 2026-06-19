@@ -38,6 +38,26 @@ describe("groupForName", () => {
   it("still throws on an unknown name with a non-color value", () => {
     expect(() => groupForName("--mystery", "1rem")).toThrow(/unknown token/i);
   });
+
+  // F2: a misplaced scale name (an LLM puts a @theme-namespace name in :root) must NOT crash the
+  // toolchain — classify by family so the gate/docs can steer the real fix.
+  it.each([
+    ["--radius-2xl", "radius"],
+    ["--shadow-9xl", "shadow"],
+    ["--text-8xl", "fontSize"],
+    ["--font-weight-black", "fontWeight"],
+  ])("classifies misplaced %s -> %s without throwing", (name, group) => {
+    expect(groupForName(name)).toBe(group);
+  });
+
+  // regression: real value tokens classify correctly regardless of value-string (prefix wins over inference)
+  it.each([
+    ["--elevation-lg", "0 10px 15px -3px oklch(0 0 0 / 0.1)", "shadow"],
+    ["--fs-2xl", "1.5rem", "fontSize"],
+    ["--fw-semibold", "600", "fontWeight"],
+  ])("classifies %s -> %s by prefix, not value", (name, value, group) => {
+    expect(groupForName(name, value)).toBe(group);
+  });
 });
 
 describe("controlForGroup", () => {
