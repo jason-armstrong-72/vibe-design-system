@@ -65,8 +65,12 @@ Enumerated all `:root` color tokens (`grep -E '^\s*--[a-z0-9-]+:\s*oklch' app/gl
 - Adding a *new non-color token* (a radius step) has **no documented one-step path** (the procedure is color-only). To make `rounded-2xl` real *and* keep the manifest-freshness gate happy, the LLM **had to edit the generator** (`lib/tokens/utilities.ts`). So the gate effectively *forces* a machinery edit for non-color extension — exactly the gap §2.2/§9 predicted.
 **Class:** extension-procedure / non-color. **Against:** M2/M5 (extension procedure color-only; no supported non-color-token path; no nudge toward the single-knob path). **Decision:** discard B1's changes, run B2 fresh to test variance vs. robust pattern before deciding any product fix (the fix touches the ≤2 contract-machinery bound → user call at Task-7 audit).
 
-### Run B2 — /settings
-_TBD_
+### Run B2 — /settings → **PASS** (non-color extension, clean) — with a subtle finding
+**What it did:** created `app/settings/page.tsx` (form, hover/`focus-within` ring rows, blur-gated email validation, disabled-until-dirty Save, empty state, Danger zone, native styled select). **For "softer corners" it added `--radius-2xl: calc(var(--radius) + 8px)` to `@theme` only** — and *deliberately did NOT* edit `lib/tokens/utilities.ts`, reasoning that `parse.ts` reads only `:root`/`.dark` so a `@theme` derived step won't make the manifest stale.
+**Verified by orchestrator:** only `app/globals.css` (1 line) + `app/settings/` changed; **machinery (`lib/`, `design-system.*`) untouched**. `npm run check` ✓ / `npm test` 312 ✓ / `npm run lint` ✓ / `npm run build` ✓ (/settings static). `rounded-2xl` used 7× and **emitted in built CSS** (genuinely works). No hardcoded/arbitrary classes.
+**FAIL events (§4):** **none** (`app/globals.css` is the token *source*, the legitimate extension surface — not in the §4 machinery list) → **mechanical PASS**.
+**Assertions witnessed:** #1 **non-color extension — YES** (added a working `rounded-2xl` step unaided, no machinery edit). #1 color leg — still NO. #2 red-gate recovery — NO. #3 — n/a (non-color token, not subject to both-theme/contrast).
+**Subtle finding:** B2's clean path leaves the manifest **silently incomplete** — `rounded-2xl` works but appears **nowhere in `design-system.{md,json}`** (0 hits), so a future LLM reading the manifest wouldn't know it exists. Combined with B1: the **same task** yielded a FAIL (B1 documented the step → edited the generator) and a PASS (B2 left it undocumented → clean). The "correct" gate-passing path requires reasoning about parser internals and produces an under-documented system. **Robust non-color-extension finding (N=2): the path is undocumented, inconsistent, and the clean variant de-documents the new token.**
 
 ---
 
