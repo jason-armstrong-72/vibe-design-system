@@ -22,6 +22,12 @@ describe("checkContrast", () => {
     expect(msg).toContain("npm run tokens");
   });
 
+  it("does not crash and does not flag a color-mix() foreground", () => {
+    const css = wrap(`--promo: oklch(0.6 0.2 250);\n--promo-foreground: color-mix(in oklch, var(--foreground), white 20%);`);
+    expect(() => checkContrast(css)).not.toThrow();
+    expect(checkContrast(css).some((x) => x.message.includes("--promo-foreground"))).toBe(false);
+  });
+
   it("does not crash and does not flag a var()-indirected foreground", () => {
     const css = wrap(`--promo: oklch(0.6 0.2 250);\n--promo-foreground: var(--foreground);`);
     expect(() => checkContrast(css)).not.toThrow();
