@@ -62,17 +62,19 @@ Two consequences that make it safe and self-maintaining:
 `defined(P)` is parsed from `@theme`, so the "flagged today" column is *derived*, never hardcoded — it shifts automatically if the scale is extended.
 
 ### Edge handling
-- **Side variants (radius):** `rounded-t-2xl`, `rounded-tl-3xl`, etc. — parse the trailing step, check it against radius vocab/defined. `rounded-t-lg` → `lg` defined → ok; `rounded-t-2xl` → flag.
+- **Variant prefixes (CRITICAL — review gap).** Real classes carry `md:`, `hover:`, `dark:`, `group-hover:`, `sm:`, stacked (`md:hover:`), etc. `md:rounded-2xl` is one whitespace-delimited token and an `^`-anchored `rounded-{step}` match would **miss it** (false negative — the no-op still ships). **Rule:** before matching, strip the leading variant chain — split the class on `:` and take the **last segment** as the utility (`md:hover:rounded-2xl` → `rounded-2xl`). Match `P-{step}` on that final segment. (Arbitrary variants like `[&:hover]:` are rare in app code; splitting on the last `:` outside brackets is sufficient — the plan pins the exact tokenizer.)
+- **Side variants (radius):** `rounded-t-2xl`, `rounded-tl-3xl`, etc. The side segment is **optional** and the **step is always the final segment**. Match shape (after variant-strip): `^rounded(?:-(?:t|r|b|l|tl|tr|bl|br|s|e|ss|se|ee|es))?-(<step>)$`; check `<step>` against radius vocab/defined. `rounded-t-lg` → `lg` defined → ok; `rounded-t-2xl` → flag.
 - **Bare prefix:** `rounded` (alone) maps to the `--radius` knob (defined) → never flagged. `shadow`/`text`/`font` alone aren't scale steps → ignored.
-- **Static survivors:** `rounded-full`, `rounded-none`, `shadow-none`, `shadow-inner` are NOT in `vocab` (they survive the namespace clear) → never flagged.
+- **Static survivors:** `rounded-full`, `rounded-none`, `shadow-none`, `shadow-inner` are NOT in `vocab` → never flagged. (`shadow-inner` *is* a theme var in v4, but the **safe-omission rule** keeps it out of vocab → never flagged, which is the correct outcome.)
+- **Arbitrary values** (`rounded-[5px]`, `text-[10px]`) are NOT scale-step classes (they're `[...]` arbitraries, handled by `arbitrary-tailwind` separately) → not in scope for this rule.
 
 ---
 
 ## 3. Implementation shape
 
 - **New pure sub-check:** `lib/check/off-token-scale.ts`, exporting `checkOffTokenScale(definedSteps, path, content): Finding[]` — mirrors the existing `lib/check/arbitrary-tailwind.ts` pattern (scans string-literals in a file for class tokens). Rule name: **`off-token-scale`**.
-- **Defined-steps parsing:** a small helper reads the `@theme` block of `app/globals.css` once and returns `{ radius: Set, shadow: Set, text: Set, fontWeight: Set }`. Lives in `off-token-scale.ts` (or a tiny `theme-steps.ts` if cleaner). Regex over `@theme` for `--radius-{step}`, `--shadow-{step}`, `--text-{step}`, `--font-weight-{step}` declarations. **Parser caveat:** the `@theme` block has sub-properties like `--text-xs--line-height: …` on the same lines as `--text-xs: …` — the regex must capture the step from `--text-{step}:` and **exclude** the `--{step}--line-height` form (anchor on a single `:` immediately after the step, step = `[a-z0-9]+`).
-- **Wiring:** `scripts/check.ts` / `lib/check/run.ts` already read `app/globals.css` (for `both-theme`). Compute `definedSteps` once there, pass into the per-file scan loop alongside the existing checks. Same file scope (`app` + `components`, excludes `components/ui/**` + token sources) and the same `ds-disable` suppression pass apply automatically.
+- **Defined-steps parsing:** a small helper reads the **`@theme` block** of `app/globals.css` once and returns `{ radius: Set, shadow: Set, text: Set, fontWeight: Set }`. Lives in `off-token-scale.ts` (or a tiny `theme-steps.ts` if cleaner). **Scope the parse to the `@theme` block** (slice from `@theme` to its closing brace) so `:root`/`.dark` declarations can't leak in. Regex per namespace, e.g. `/--(?:radius|shadow|font-weight|text)-([a-z0-9]+)\s*:/g` with the guard that the char ending the step is `:` (not `-`), to **exclude** the `--text-xs--line-height` sub-property form. (Confirmed: those sub-props sit on the same physical lines as `--text-xs:`.)
+- **Wiring:** `lib/check/run.ts` already reads `app/globals.css` once (for `both-theme`/`manifest-fresh`) and runs a per-file loop via `walkSource`. Compute `definedSteps` once there, pass it into the per-file scan. **Note:** `checkOffTokenScale(definedSteps, path, content)` has a different arity than the existing `(path, content)` checks — `run.ts` currently spreads fixed-arity checks in one array; the loop must be adjusted (curry `definedSteps` in, or call it explicitly) — small edit, not drop-in. Same file scope (`app` + `components`, excludes `components/ui/**` + token sources) and the same `ds-disable` suppression pass apply automatically.
 - **Message** (`lib/check/messages.ts`): e.g.
   `off-token-scale: "rounded-2xl" produces no styles — the radius scale is sm/md/lg/xl. Use a defined step, or extend the scale in @theme (see design-system.md).`
   The defined steps in the message are read from `defined(P)` so the guidance is always current.
@@ -84,11 +86,21 @@ Two consequences that make it safe and self-maintaining:
 
 ## 4. Self-pass (the template passes its own new check)
 
-The new check scans `app/` + `components/` (excl. `components/ui/**`). Before shipping, confirm the repo's own
-code uses **only defined steps** — most importantly `/design-system` (the living page, which renders many
-sizes) and the kept `app/pricing`. If any in-repo class trips the new rule, fix it to a defined step (or, if
-the step is genuinely wanted, extend the scale in `@theme` — the proper path). The existing **dogfood
-self-pass test** (`npm run check` exits 0 on the repo) extends to cover `off-token-scale` automatically.
+The new check scans `app/` + `components/` (excl. `components/ui/**`). **The repo currently trips the new
+rule in exactly 2 places** (verified — this is the complete blast radius; no `text-8xl/9xl`, `shadow-xl`,
+`font-black`, `rounded-3xl/4xl`, or variant-prefixed offenders exist):
+- `app/design-system/page.tsx:34` — `… rounded-2xl border p-6 shadow-sm sm:p-8`
+- `components/design-system/token-section.tsx:60` — `… rounded-2xl border p-6 shadow-sm sm:p-8`
+
+**These are a real pre-existing latent bug:** `rounded-2xl` has been a **silent no-op since M3** — those
+cards have been rendering with **flat corners** all along (nobody noticed; exactly the bug class F3 exists to
+surface). **Fix (decide in the plan, with a quick visual check):** change both to **`rounded-xl`** (the
+defined max — simplest, no scale change, no new token; RECOMMENDED) **or** extend the scale by adding
+`--radius-2xl` to `@theme` + `npm run tokens` (if genuinely rounder cards are wanted — a visual call). Either
+way the cards' corners change from their current (flat) render, so **capture a before/after screenshot of
+`/design-system` for the human checkpoint.** The existing **dogfood self-pass test**
+(`tests/check/self.test.ts` asserts `run()` returns `[]` on the repo) will fail the instant `off-token-scale`
+is wired in until these 2 are fixed — so fix them in the same task that wires the check.
 
 ---
 
