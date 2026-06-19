@@ -43,6 +43,14 @@ export function groupForName(name: string, value?: string): TokenGroup {
   if (/^container-/.test(bare)) return "container";
   if (COLOR_ROLES.has(bare)) return "color";
 
+  // F2: misplaced @theme-namespace names (e.g. an LLM puts `--radius-2xl`/`--text-8xl` in :root) →
+  // classify by family rather than crashing the toolchain. These never match real :root tokens
+  // (which use --fs-/--lh-/--fw-/--elevation-/--radius); only misplaced ones reach here.
+  if (/^radius-/.test(bare)) return "radius";
+  if (/^shadow-/.test(bare)) return "shadow";
+  if (/^text-/.test(bare)) return "fontSize";
+  if (/^font-weight-/.test(bare)) return "fontWeight";
+
   // unknown name → infer color from value (the extension path); else it's real drift
   if (value !== undefined && isColorValue(value)) return "color";
 

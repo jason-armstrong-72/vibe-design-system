@@ -3,13 +3,13 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseTokens } from "../lib/tokens/parse";
 import { buildManifest } from "../lib/tokens/generate";
-import { syncThemeColorMappings } from "../lib/tokens/sync";
+import { syncThemeMappings } from "../lib/tokens/sync";
 
 const GLOBALS = resolve("app/globals.css");
 
 function regen() {
   try {
-    const sync = syncThemeColorMappings(readFileSync(GLOBALS, "utf8"));
+    const sync = syncThemeMappings(readFileSync(GLOBALS, "utf8"));
     if (sync.changed) writeFileSync(GLOBALS, sync.css, "utf8");
     const { json, markdown } = buildManifest(parseTokens(sync.css));
     writeFileSync(resolve("design-system.json"), JSON.stringify(json, null, 2) + "\n", "utf8");

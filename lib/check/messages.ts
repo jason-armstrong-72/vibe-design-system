@@ -14,6 +14,8 @@ export const MSG = {
   manifestStale: (file: string) =>
     `${file} is stale — run npm run tokens and commit`,
   offTokenScale: (cls: string, family: string, defined: string[]) =>
-    `off-token scale step "${cls}" produces no styles — the ${family} scale is ${defined.join("/")}. Use a defined step, or extend the scale in @theme (see design-system.md)`,
+    family === "radius"
+      ? `off-token scale step "${cls}" produces no styles — the radius scale is ${defined.join("/")}. To make corners rounder/softer overall, increase --radius in app/globals.css then npm run tokens (it shifts every step); for a one-off, add --radius-<step> to @theme. (see design-system.md)`
+      : `off-token scale step "${cls}" produces no styles — the ${family} scale is ${defined.join("/")}. Add the value token to :root then npm run tokens, or use a defined step (see design-system.md)`,
   bareDisable: () => `ds-disable needs a reason: /* ds-disable: <why> */`,
 } as const;

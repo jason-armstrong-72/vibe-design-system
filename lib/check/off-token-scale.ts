@@ -1,24 +1,8 @@
 import type { Finding } from "./types";
 import { MSG } from "./messages";
+import { parseThemeSteps, type ThemeSteps } from "@/lib/tokens/theme-steps";
 
-export type ThemeSteps = { radius: Set<string>; shadow: Set<string>; text: Set<string>; fontWeight: Set<string> };
-
-/** Read the steps actually defined in the `@theme` block of globals.css.
- *  Source of truth for "what compiles" — keys the check on @theme, not the manifest. */
-export function parseThemeSteps(globalsCss: string): ThemeSteps {
-  // Anchor on the actual at-rule `@theme inline {`, NOT the first "@theme" — the real globals.css
-  // mentions "@theme" in a comment before the block; anchoring on "@theme" would slice the wrong
-  // region and return empty sets → mass false positives. (Caught in plan review.)
-  const start = globalsCss.indexOf("@theme inline");
-  const block = start === -1 ? "" : globalsCss.slice(start, globalsCss.indexOf("\n}", start));
-  const out: ThemeSteps = { radius: new Set(), shadow: new Set(), text: new Set(), fontWeight: new Set() };
-  const key = { radius: "radius", shadow: "shadow", "font-weight": "fontWeight", text: "text" } as const;
-  // step is [a-z0-9]+ ended by a single `:` (not `-`), so `--text-xs--line-height:` does NOT match.
-  for (const m of block.matchAll(/--(radius|shadow|font-weight|text)-([a-z0-9]+)\s*:/g)) {
-    out[key[m[1] as keyof typeof key]].add(m[2]);
-  }
-  return out;
-}
+export { parseThemeSteps, type ThemeSteps };
 
 const STRING_LIT = /["'`]([^"'`]*)["'`]/g;
 const lineOf = (content: string, idx: number) => content.slice(0, idx).split("\n").length;

@@ -21,7 +21,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | color in one theme only | add it to both `:root` and `.dark`, then `npm run tokens` |
 | hardcoded color / off-token class | replace with a token utility, or add a token via the procedure |
 | off-scale spacing | use a step on the spacing scale (or extend `lib/check/spacing-steps.ts`) |
-| off-token scale step (`rounded-2xl`, `text-8xl`, `shadow-xl`, `font-black` — produces no styles) | use a defined step, or extend that scale in `@theme` (`app/globals.css`) then `npm run tokens` |
+| off-token scale step (`text-8xl`, `shadow-xl`, `font-black` — produces no styles) | use a defined step, or add the value token to `:root` (`--fs-`/`--elevation-`/`--fw-`) then `npm run tokens` — one step, like color |
+| off-token radius (`rounded-2xl`/`rounded-3xl` — produces no styles) | for rounder corners overall, increase the `--radius` knob then `npm run tokens`; for a one-off step, add `--radius-<step>` to `@theme` |
 | deliberate one-off | `/* ds-disable: <reason> */` on the line above (reason required) |
 
 _The gate runs on `npm run check` / pre-commit / CI — not as live editor squiggles._

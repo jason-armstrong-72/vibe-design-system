@@ -19,12 +19,12 @@ const GROUP_ORDER: TokenGroup[] = [
   "zIndex", "opacity", "container",
 ];
 
-function mergeByName(tokens: Token[]): ManifestToken[] {
+function mergeByName(tokens: Token[], radiusSteps?: string[]): ManifestToken[] {
   const byName = new Map<string, ManifestToken>();
   for (const t of tokens) {
     let entry = byName.get(t.name);
     if (!entry) {
-      const hint = utilitiesForToken(t);
+      const hint = utilitiesForToken(t, t.group === "radius" ? radiusSteps : undefined);
       entry = {
         name: t.name,
         group: t.group,
@@ -53,7 +53,9 @@ const PREAMBLE = `# Design System — token reference
 - Components live in \`components/ui/\` (shadcn: \`Button\`, \`Card\`/\`CardHeader\`/\`CardContent\`/\`CardFooter\`, \`Input\`, …). Import and compose them; they are already token-themed.
 
 ## Extension procedure (add a value the system lacks)
-**For a color** (the common case): add the token to BOTH \`:root\` and \`.dark\` in \`app/globals.css\` with an \`oklch(...)\` value (and a \`-foreground\` partner if it needs readable text on top), then run \`npm run tokens\`. That one command **auto-wires the Tailwind utility for you** (\`bg-<name>\`, \`text-<name>\`, \`border-<name>\`) and refreshes this manifest. Use it. **Never hardcode.** Example:
+One procedure for everything: **add the value token to \`:root\` in \`app/globals.css\`, then run \`npm run tokens\`** — it auto-wires the Tailwind utility and refreshes this manifest. **Never hardcode; never use an off-scale class** (it produces no styles and the blocking lint rejects it).
+
+**Color — extend freely** (the common case). Add to BOTH \`:root\` and \`.dark\` (plus a \`<name>-foreground\` partner if text sits on it):
 
 \`\`\`css
 /* in :root */   --highlight: oklch(0.72 0.18 320); --highlight-foreground: oklch(0.99 0 0);
@@ -61,7 +63,19 @@ const PREAMBLE = `# Design System — token reference
 \`\`\`
 then \`npm run tokens\` → use \`bg-highlight text-highlight-foreground\`.
 
-**Token names are a contract.** Use kebab-case; pair foreground colors as \`<name>-foreground\`; follow the existing patterns in the table. A color is recognised by its \`oklch(...)\` value, so you don't edit any config — just add it and run \`npm run tokens\`. (Non-color scales like type/shadow are fixed; adding to those is rare and documented in \`docs/NAMING-CONVENTION.md\`.)
+**Scales (type / shadow / weight) — the ramp is deliberately small; reach for an existing step FIRST.** Only when the ramp genuinely can't express what you need, add the value token (the **value-token name differs from the utility name** — get it wrong and it silently won't wire):
+- shadow: \`--elevation-<step>\` → \`shadow-<step>\`
+- font size: \`--fs-<step>\` **and** its \`--lh-<step>\` pair → \`text-<step>\`
+- font weight: \`--fw-<step>\` → \`font-<step>\`
+
+\`\`\`css
+/* in :root */  --elevation-xl: 0 20px 25px -5px oklch(0 0 0 / 0.1), 0 8px 10px -6px oklch(0 0 0 / 0.1);
+\`\`\`
+then \`npm run tokens\` → use \`shadow-xl\`.
+
+**Roundness & spacing are KNOBS — radius is NOT like the other scales.** To make corners rounder/softer, **increase \`--radius\`** (e.g. \`0.625rem\` → \`1rem\`) then \`npm run tokens\` — it shifts every step. **Do NOT reach for \`rounded-2xl\`/\`rounded-3xl\`** (cleared namespace → no CSS → the gate rejects it). For spacing density, edit \`--spacing-base\`. Only add a \`--radius-<step>\` to the \`@theme\` block (not \`:root\`) for a genuine one-off extra step.
+
+**Token names are a contract** (kebab-case; \`<name>-foreground\` pairs; the \`--fs-\`/\`--lh-\`/\`--elevation-\`/\`--fw-\` value-token prefixes for scales). Full rules in \`docs/NAMING-CONVENTION.md\`.
 `;
 
 function markdownTable(tokens: ManifestToken[]): string {
@@ -75,8 +89,8 @@ function markdownTable(tokens: ManifestToken[]): string {
   return ["| Token | Group | Value (light / dark) | Utilities |", "|---|---|---|---|", ...rows].join("\n");
 }
 
-export function buildManifest(tokens: Token[], source = "app/globals.css"): { json: Manifest; markdown: string } {
-  const merged = mergeByName(tokens);
+export function buildManifest(tokens: Token[], source = "app/globals.css", radiusSteps?: string[]): { json: Manifest; markdown: string } {
+  const merged = mergeByName(tokens, radiusSteps);
   const json: Manifest = { generatedFrom: source, tokens: merged };
   const markdown = `${PREAMBLE}\n## Tokens\n\n${markdownTable(merged)}\n`;
   return { json, markdown };

@@ -40,6 +40,18 @@ name is a breaking change to the design system's API. Pin once; change deliberat
 15. **Breakpoints**: `--breakpoint-<size>` in `@theme` — documented reference, NOT
     runtime-editable (CSS media queries can't read runtime vars).
 
+## Extending a scale (one step — F2)
+Adding a value to a scale is the **same one step as color**: add the **value token** to `:root`
+(`--fs-<step>`+`--lh-<step>` for type, `--elevation-<step>` for shadow, `--fw-<name>` for weight), then
+`npm run tokens`. The sync pass auto-wires the `@theme` mapping (`--text-`/`--shadow-`/`--font-weight-`) and
+refreshes the manifest — no hand-editing `@theme`, no machinery edits. The value-token prefix differs from
+the utility (`--elevation-xl` → `shadow-xl`); use the prefix above or the utility silently won't wire.
+
+**Radius and spacing are knobs, not per-step value tokens.** For rounder corners, change `--radius` (sm/md/lg/xl
+shift with it); for spacing density, change `--spacing-base`. A genuinely new radius step is the exception —
+add `--radius-<step>` to the `@theme inline` block directly (not `:root`), then `npm run tokens` (the manifest
+will report it). Scales are deliberately small — reach for an existing step before extending.
+
 ## fg/bg pairing
 Every color with a `-foreground` counterpart is a pair. The schema (M1) models these as
 pairs so a WCAG contrast check (fast-follow) needs no re-modeling.
