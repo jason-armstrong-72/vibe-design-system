@@ -98,8 +98,8 @@ Seeded `app/legacy/page.tsx` + `components/legacy-card.tsx` (~12 lines) with rea
 ---
 
 ## 5. Required assertions (§5) — witnessed?
-- [ ] #1 extension procedure unaided (color + radius-knob)
-- [ ] #2 red-gate self-recovery
+- [x] #1 extension procedure unaided — **color: YES (S1)** proper procedure, both blocks, `npm run tokens`, manifest documents it. **non-color: PARTIAL** — B2 added a working radius step unaided (no machinery), proving it's *possible*, but the path is unreliable (B1 edited machinery → FAIL; B3 used built-in classes → silent no-op; **0/3 took the single-knob path**).
+- [x] #2 red-gate self-recovery — **YES (S1)**: read a red `npm run check` and fixed from its output alone, zero hints, via the correct extension procedure. The genuinely-new M5 machinery — **validated.**
 - [ ] #3 invented-token gate hole — **re-probed: much narrower than flagged (see below)**
 
 ### #3 — direct empirical probe (invented color through the FULL gate)
@@ -113,9 +113,33 @@ Added `--ghost: oklch(0.95 0.02 200)` to `app/globals.css` `:root` **only**, the
 ---
 
 ## 6. Findings ledger (§8)
-_TBD_
+
+| # | Finding | Class | Against | Severity | Disposition |
+|---|---|---|---|---|---|
+| F1 | LLMs default to **reusing an existing token** (incl. a semantically-wrong one — `warning`/`success` as a promo accent) rather than extending, when a token is syntactically usable. The gate enforces token *usage*, not *semantic fit*. | contract-design | M5 | Low (extension works when forced — S1) | Observation; optional AGENTS.md nudge ("if no token fits the *meaning*, extend") — fast-follow |
+| F2 | **Non-color extension is unreliable.** Same "softer corners" task → B1 edited machinery (FAIL), B2 worked but left the token **undocumented in the manifest**, B3 used built-in classes that **silently no-op**. 0/3 found the single-knob path (`--radius`). | extension-procedure (non-color) | M2/M5 | **High** | **fast-follow (user-accepted)** — document a one-step non-color path + nudge single-knob + manifest-document derived steps |
+| F3 | **Gate-coverage hole — silent no-op classes.** Named off-token utilities mapping to a **cleared namespace** (`rounded-2xl/3xl`) produce no CSS and are **not flagged** → a real feature (rounded cards) silently broke while the gate stayed green. | gate-coverage | M5 | **High** | fast-follow — flag named utilities outside the system's defined scale, not just `[...]` arbitraries |
+| F4 | **Manifest de-documentation.** B2's `@theme`-only radius step works but appears **nowhere in `design-system.{md,json}`** → a future LLM can't discover it. | manifest-completeness | M2 | Med | fast-follow — manifest should list derived/@theme steps |
+| F5 | **#3 corrected (good news).** `npm run check` *script alone* misses invented-color theme-completeness/contrast (both-theme = COLOR_ROLES-only; no contrast over globals) — **but the full blocking gate (`check && test`) backstops it** (manifest-fresh + neutral-identity + parity + auto-paired contrast). Earlier HANDOFF flag was OVERSTATED. Residual: a color token with no `-foreground` sibling isn't contrast-checked. | gate-coverage (narrow) | M5 | Low | fast-follow — align the `check` script to what the tests already enforce |
+| F6 | **Brownfield: no incremental/baseline mode.** 9 violations on ~12 lines of legacy code ⇒ "whole app is red" at scale. Slip-throughs: `text-gray-500` (text-palette), keyword `color:"red"` (inline non-hex), `rounded-[5px]` (arbitrary radius). | adoption / gate-coverage | (new) | Med | fast-follow — baseline/incremental check + close the slip-throughs |
+
+**Contract-machinery fixes applied during M6:** **0.** (B1's machinery edit was the *subagent's*, discarded — not an orchestrator product fix.) Termination bound (>2 ⇒ BLOCKED) **not hit.**
 
 ---
 
-## 7. Verdict
-_PENDING_
+## 7. Verdict — **RECOMMENDED: QUALIFIED PASS** (awaiting user ratification + visual checkpoint)
+
+**The headline loop is validated, with zero hand-fixes to the contract:**
+- ✅ A fresh LLM builds a **real feature with tokens, gate-green**, unaided — pricing **A1 + A2 = 2/2 clean PASS**; settings **B2** shipped a clean token-only page.
+- ✅ **Color extension end-to-end, unaided** (S1): hit a genuine gap → ran the procedure (`:root`+`.dark` → `npm run tokens`) → manifest self-documented → theme-complete + AA (forced by the test suite).
+- ✅ **Red-gate self-recovery, unaided** (S1): the genuinely-new M5 machinery M2.5 never tested — an LLM read a red `npm run check` and fixed it correctly from the output alone. **This is the strongest single result.**
+
+**But not an unqualified pass — the runs surfaced real, pre-registered weaknesses:**
+- ⚠️ **Settings did not cleanly hit 2 correct passes.** Of 3 runs: 1 genuine PASS (B2, but token undocumented), 1 FAIL (B1, machinery edit), 1 hollow PASS (B3, **silently broken corners the gate missed**). The **non-color extension path is confirmed unreliable** (F2) and the **silent-no-op gate hole is real** (F3).
+- ⚠️ Several narrower gate edges (F4–F6).
+
+**Why QUALIFIED PASS, not BLOCKED:** the product's core promise — *an LLM builds with the system, extends it, and recovers from the gate, with zero contract hand-fixes* — **was demonstrated end-to-end for color** (the primary case) and the contract machinery needed **no fixes** during the run (bound not hit). The weaknesses are all in **non-color extension + gate-coverage edges**, every one **pre-registered as a fast-follow** (§9) and **user-accepted as deferred**. None is a contract *defect that blocks the headline*; they bound *how far* the v1 claim reaches (color: strong; non-color: works-but-rough).
+
+**Why not unqualified PASS:** B3's silent breakage + F2's unreliability mean we cannot honestly claim "any feature, any value, flawlessly." The honest claim v1 earns: **"an LLM builds real features with the design system and extends it with *color* reliably, recovering from the gate unaided; *non-color* extension works but is rough (fast-follow)."**
+
+**Recommended actions:** ratify QUALIFIED PASS at the visual checkpoint (§ Task 8); keep decision on `/pricing` + `/settings` + any token is the user's; correct the overstated HANDOFF #3 note (F5); promote **F2 + F3** to near-term (not just "someday") given they silently break real features.
