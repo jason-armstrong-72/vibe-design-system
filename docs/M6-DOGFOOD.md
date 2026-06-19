@@ -3,7 +3,7 @@
 **Protocol:** [docs/superpowers/specs/2026-06-18-m6-dogfood-gate-design.md](superpowers/specs/2026-06-18-m6-dogfood-gate-design.md)
 **Plan:** [docs/superpowers/plans/2026-06-19-m6-dogfood-gate.md](superpowers/plans/2026-06-19-m6-dogfood-gate.md)
 **Branch:** `m6-dogfood`
-**Verdict:** _PENDING_
+**Verdict:** ✅ **QUALIFIED PASS** (user-ratified 2026-06-19). Keep-decision: **`/pricing` only** (run A2) kept as a worked example; `/settings` + the `--radius-2xl` step **dropped** (layout quality not reference-worthy). `/pricing` uses **no new tokens** — the kept surface adds nothing to the token set.
 
 ---
 
@@ -127,7 +127,9 @@ Added `--ghost: oklch(0.95 0.02 200)` to `app/globals.css` `:root` **only**, the
 
 ---
 
-## 7. Verdict — **RECOMMENDED: QUALIFIED PASS** (awaiting user ratification + visual checkpoint)
+## 7. Verdict — ✅ **QUALIFIED PASS** (user-ratified 2026-06-19)
+
+**Keep-decision (visual checkpoint):** keep **`/pricing` (A2)** only — Pro hero reads premium in light+dark, token-only, no extension. **Drop `/settings` (B2)** despite it passing — layout quality not reference-worthy (empty-state stacked above the form; unremarkable). **Reject `--radius-2xl`** (only the dropped settings page needed it). Net product surface added by M6: one route, zero new tokens.
 
 **The headline loop is validated, with zero hand-fixes to the contract:**
 - ✅ A fresh LLM builds a **real feature with tokens, gate-green**, unaided — pricing **A1 + A2 = 2/2 clean PASS**; settings **B2** shipped a clean token-only page.
