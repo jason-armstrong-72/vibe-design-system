@@ -5,7 +5,7 @@ export interface UtilityHint {
   usage?: string;
 }
 
-export function utilitiesForToken(t: Token): UtilityHint {
+export function utilitiesForToken(t: Token, radiusSteps?: string[]): UtilityHint {
   const bare = t.name.slice(2);
   switch (t.group) {
     case "color":
@@ -24,7 +24,7 @@ export function utilitiesForToken(t: Token): UtilityHint {
     case "fontFamily":
       return { utilities: [`font-${bare.replace(/^font-/, "")}`] };
     case "radius":
-      return { utilities: ["rounded-sm", "rounded-md", "rounded-lg", "rounded-xl"], usage: "--radius is the knob; sm/md/lg/xl derived" };
+      return { utilities: (radiusSteps ?? ["sm", "md", "lg", "xl"]).map((s) => `rounded-${s}`), usage: "--radius is the knob; steps derived in @theme" };
     case "borderWidth":
       return { utilities: [`border-${bare.replace(/^border-width-/, "")}`] };
     case "shadow":

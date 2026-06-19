@@ -19,12 +19,12 @@ const GROUP_ORDER: TokenGroup[] = [
   "zIndex", "opacity", "container",
 ];
 
-function mergeByName(tokens: Token[]): ManifestToken[] {
+function mergeByName(tokens: Token[], radiusSteps?: string[]): ManifestToken[] {
   const byName = new Map<string, ManifestToken>();
   for (const t of tokens) {
     let entry = byName.get(t.name);
     if (!entry) {
-      const hint = utilitiesForToken(t);
+      const hint = utilitiesForToken(t, t.group === "radius" ? radiusSteps : undefined);
       entry = {
         name: t.name,
         group: t.group,
@@ -75,8 +75,8 @@ function markdownTable(tokens: ManifestToken[]): string {
   return ["| Token | Group | Value (light / dark) | Utilities |", "|---|---|---|---|", ...rows].join("\n");
 }
 
-export function buildManifest(tokens: Token[], source = "app/globals.css"): { json: Manifest; markdown: string } {
-  const merged = mergeByName(tokens);
+export function buildManifest(tokens: Token[], source = "app/globals.css", radiusSteps?: string[]): { json: Manifest; markdown: string } {
+  const merged = mergeByName(tokens, radiusSteps);
   const json: Manifest = { generatedFrom: source, tokens: merged };
   const markdown = `${PREAMBLE}\n## Tokens\n\n${markdownTable(merged)}\n`;
   return { json, markdown };

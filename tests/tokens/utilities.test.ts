@@ -33,6 +33,9 @@ describe("utilitiesForToken", () => {
   it("shadow / radius / border-width / easing / z / opacity / container", () => {
     expect(utilitiesForToken(tok("--elevation-md", "shadow")).utilities).toEqual(["shadow-md"]);
     expect(utilitiesForToken(tok("--radius", "radius")).utilities).toContain("rounded-lg");
+    expect(utilitiesForToken(tok("--radius", "radius")).utilities).toEqual(["rounded-sm", "rounded-md", "rounded-lg", "rounded-xl"]); // default
+    expect(utilitiesForToken(tok("--radius", "radius"), ["sm", "md", "lg", "xl", "2xl"]).utilities)
+      .toEqual(["rounded-sm", "rounded-md", "rounded-lg", "rounded-xl", "rounded-2xl"]); // F2: live @theme steps
     expect(utilitiesForToken(tok("--border-width-thick", "borderWidth")).utilities).toEqual(["border-thick"]);
     expect(utilitiesForToken(tok("--ease-standard", "easing")).utilities).toEqual(["ease-standard"]);
     expect(utilitiesForToken(tok("--z-modal", "zIndex")).utilities).toEqual(["z-modal"]);
