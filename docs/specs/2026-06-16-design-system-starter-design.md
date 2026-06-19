@@ -525,11 +525,17 @@ Each milestone is TDD'd and reviewed, and is independently usable.
   `ds-disable` override + manifest-freshness CI gate + optional Claude skill. Lint fixture tests. *Done = a
   hardcoded value fails CI; a one-theme token fails CI; a stale manifest fails CI; the extension procedure
   is documented and works.*
-- **M6 — Dogfood gate (validates the headline).** Drive an LLM to build one real sample feature on the
+- **M6 — Dogfood gate (validates the headline). ✅ QUALIFIED PASS (2026-06-19).** Drive an LLM to build one real sample feature on the
   finished template: it reads the manifest, builds with tokens, hits a missing value, runs the extension
   procedure end-to-end, and passes lint + CI. The product's actual job ("build with an LLM") is the
   acceptance test — not just "lint fails on hardcode." *Done = an LLM ships a feature through the full loop
-  with zero hand-fixes to the contract.*
+  with zero hand-fixes to the contract.* **Result:** executed as a pre-registered run protocol (own spec+plan
+  under `docs/superpowers/`, run record in `docs/M6-DOGFOOD.md`). The full loop — build-with-tokens →
+  color-extend → recover-from-red-gate — was demonstrated **unaided, with zero contract hand-fixes** (incl.
+  a seeded run validating red-gate self-recovery, the new M5 machinery). **Qualified** because non-color
+  extension proved unreliable + a silent-no-op gate blind-spot was found (both pre-registered fast-follows,
+  F2/F3); the earlier "invented-color ships green" worry was disproven (full `check && test` catches it, F5).
+  `/pricing` kept as a worked example. v1 (M0–M6) complete.
 
 ### Fast-follows (post-v1)
 
