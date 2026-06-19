@@ -31,7 +31,7 @@ export default function DesignSystemPage() {
         {sections.map((s) => (
           <TokenSection key={s.group} section={s} />
         ))}
-        <div className="border-border bg-card flex flex-col gap-6 rounded-2xl border p-6 shadow-sm sm:p-8">
+        <div className="border-border bg-card flex flex-col gap-6 rounded-xl border p-6 shadow-sm sm:p-8">
           <ComponentShowcase />
         </div>
       </div>

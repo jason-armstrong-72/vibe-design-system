@@ -13,5 +13,7 @@ export const MSG = {
     `${name} is missing from ${missingIn === "dark" ? ".dark" : ":root"} — add it to both blocks, then npm run tokens`,
   manifestStale: (file: string) =>
     `${file} is stale — run npm run tokens and commit`,
+  offTokenScale: (cls: string, family: string, defined: string[]) =>
+    `off-token scale step "${cls}" produces no styles — the ${family} scale is ${defined.join("/")}. Use a defined step, or extend the scale in @theme (see design-system.md)`,
   bareDisable: () => `ds-disable needs a reason: /* ds-disable: <why> */`,
 } as const;
