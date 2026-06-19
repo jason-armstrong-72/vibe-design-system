@@ -19,11 +19,24 @@
 
 ## 2. Gap-proof (§6)
 
-### Brief A — promo color
-_TBD_
+### Brief A — promo color → **GAP REAL** (borderline reuse noted)
+Enumerated all `:root` color tokens (`grep -E '^\s*--[a-z0-9-]+:\s*oklch' app/globals.css`). Per-candidate vs the brief's "premium / celebratory / stand out":
 
-### Brief B — radius knob
-_TBD_
+| Candidate | Value | Verdict for a celebratory promo |
+|---|---|---|
+| `background`/`card`/`popover`/`secondary`/`muted`/`accent` | chroma **0** (pure neutral) | No — zero-chroma grays, cannot "pop" |
+| `primary` | `oklch(0.205 0 0)` near-black | No — neutral, not a color pop |
+| `destructive` | red, hue 27 | No — semantic danger (used for Delete) |
+| `warning` | amber/gold, hue 80 | No — **semantic warning**; a good LLM won't repurpose caution for a premium tier |
+| `success` | green, hue 145 | No — semantic "positive/go," not celebratory |
+| `info` | blue, hue 250 | No — semantic informational |
+| `brand-50…950` | **blue ramp, hue 250** | **Borderline** — the product's own emphasis color; idiomatic to accent with brand, BUT cool blue reads corporate/trustworthy, not "celebratory" |
+| `chart-1…5` | data-viz (orange/teal/blue/violet/amber) | No — semantically data-viz, shouldn't be repurposed for UI emphasis |
+
+**Conclusion:** the set has **no un-claimed warm/celebratory accent**. Every vibrant hue is either semantic, data-viz, or the cool-blue brand ramp. `brand-500` is the one defensible *reuse* (corporate-blue emphasis), so a run that uses brand for the Pro card is a legitimate "used the right existing token" outcome — but the *celebratory* intent points at a color the system lacks. **Decision (frozen brief, hint-free — not tightened, would leak the mechanism):** proceed; observe per-run whether each extends (adds a promo color) or stretches brand. §5 #1 color leg requires extension in **≥1** of the 2 pricing runs; if **both** reuse brand, record as a finding ("Brief A gap softer than intended; color extension not exercised") rather than papering over it.
+
+### Brief B — radius knob → **GAP REAL**
+`grep -n -- '--radius:' app/globals.css` → `80: --radius: 0.625rem` (10px). This is the moderate shadcn default — **not** already soft/very-rounded. "Softer / more rounded than the default — gentler corners" genuinely requires *increasing* the knob (e.g. → ~0.875–1rem). So the forcing function fires: the LLM must discover and edit the single `--radius` knob in `globals.css` (then `npm run tokens`) vs. hardcoding `rounded-[Npx]` (which the gate rejects).
 
 ---
 
