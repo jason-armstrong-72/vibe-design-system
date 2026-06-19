@@ -51,8 +51,9 @@ export function groupForName(name: string, value?: string): TokenGroup {
   if (/^text-/.test(bare)) return "fontSize";
   if (/^font-weight-/.test(bare)) return "fontWeight";
 
-  // unknown name → infer color from value (the extension path); else it's real drift
-  if (value !== undefined && isColorValue(value)) return "color";
+  // unknown name → infer color from value (the extension path); var() references are also
+  // valid aliases (e.g. --promo-foreground: var(--foreground)), else it's real drift
+  if (value !== undefined && (isColorValue(value) || /^var\(/.test(value))) return "color";
 
   throw new Error(`unknown token: ${name} (not in naming convention)`);
 }

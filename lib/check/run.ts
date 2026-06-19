@@ -6,6 +6,7 @@ import { applySuppressions, bareDisableFindings } from "./ds-disable";
 import { checkHardcodedColor } from "./hardcoded-color";
 import { checkArbitrary } from "./arbitrary-tailwind";
 import { checkBothTheme } from "./both-theme";
+import { checkContrast } from "./contrast";
 import { checkManifestFresh } from "./manifest-fresh";
 import { checkOffTokenScale } from "./off-token-scale";
 import { parseThemeSteps } from "@/lib/tokens/theme-steps";
@@ -34,6 +35,7 @@ export function run(): { findings: Finding[]; disableCount: number } {
     all.push(...kept, ...bareDisableFindings(f.path, f.content));
   }
   all.push(...checkBothTheme(globals));
+  all.push(...checkContrast(globals));
   all.push(...checkManifestFresh(
     globals,
     readFileSync(resolve("design-system.json"), "utf8"),
