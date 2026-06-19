@@ -119,7 +119,9 @@ so the message states the correct target automatically.
 `lib/check/both-theme.ts` currently iterates `COLOR_ROLES` only. Broaden to **every color-valued token**:
 
 - **Color detection:** filter the union of light+dark token *names* by whether the token's **value** satisfies
-  `isColorValue(value)` (schema.ts:14). **Do NOT** filter by `groupForName(...) === "color"` — that classifies
+  `isColorValue(value)` (schema.ts:14). The union is over *names*, but a one-block-only token has a value in
+  only one map — read its value with a fallback (`light.get(n) ?? dark.get(n)`), not from a fixed block, or
+  the lookup misses. **Do NOT** filter by `groupForName(...) === "color"` — that classifies
   `--brand-*`/`--chart-*` as color *by prefix regardless of value*, pulling ramps in only to re-exclude them
   (review, correctness lens). `isColorValue(value)` + explicit ramp-prefix exclusion is the clean path.
 - **Ramp exemption (unchanged intent):** skip names matching `^--(brand|chart)-` — ramps are intentionally
