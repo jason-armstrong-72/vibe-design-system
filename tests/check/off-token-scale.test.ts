@@ -11,8 +11,15 @@ const DEF: ThemeSteps = {
   fontWeight: new Set(["normal", "medium", "semibold", "bold"]),
 };
 const rules = (s: string) => checkOffTokenScale(DEF, "x.tsx", `const c = "${s}";`).map((f) => f.rule);
+const msg = (s: string) => checkOffTokenScale(DEF, "x.tsx", `const c = "${s}";`)[0]?.message ?? "";
 
 describe("checkOffTokenScale", () => {
+  it("radius message nudges the --radius knob; other families route to the :root one-step", () => {
+    expect(msg("rounded-3xl")).toContain("--radius");
+    expect(msg("rounded-3xl")).toContain("npm run tokens");
+    expect(msg("shadow-2xl")).toContain(":root");
+  });
+
   it("flags scale steps not defined in @theme", () => {
     for (const c of ["rounded-2xl", "rounded-3xl", "rounded-4xl", "rounded-xs", "shadow-xl", "shadow-2xs",
       "text-8xl", "text-9xl", "font-black", "font-thin", "font-extrabold"])
