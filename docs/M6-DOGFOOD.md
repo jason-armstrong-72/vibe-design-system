@@ -42,8 +42,12 @@ Enumerated all `:root` color tokens (`grep -E '^\s*--[a-z0-9-]+:\s*oklch' app/gl
 
 ## 3. Runs
 
-### Run A1 — /pricing
-_TBD_
+### Run A1 — /pricing → **PASS** (no extension; reuse path)
+**What it did:** created `app/pricing/page.tsx` only (one file). Consulted the auto-loaded contract (used token utilities throughout, ran `npm run check` itself). Pro hero = `bg-brand-600` + `ring-2 ring-brand-400` + `shadow-lg` + desktop lift/scale; "Most popular" badge = **`bg-warning`** (amber) + Sparkles icon.
+**Verified by orchestrator (not self-report):** `git status` = only `app/pricing/` added; **`globals.css` untouched → NO extension**. `npm run check` ✓ / `npm test` 312 ✓ / `npm run lint` ✓ / `npm run build` ✓ (/pricing prerendered static). No `#hex`/`oklch`/arbitrary classes in the page.
+**FAIL events (§4):** none (no contract-machinery edit, no observer message, no hardcode-and-dodge, didn't give up) → **mechanical PASS**.
+**Assertions witnessed:** #1 color extension — **NO** (reused `brand` for hero, `warning` for badge). #2 red-gate recovery — **NO** (never tripped the gate). #3 invented-token hole — N/A (nothing invented).
+**Observation / candidate finding:** the brief's *celebratory* promo was satisfied by **misusing `warning`** (a caution color) rather than extending. The gate passes it because `warning` is a real token used syntactically — i.e. the contract enforces *token usage*, not *semantic fit*. Confirms the gap is real (no promo color exists) but shows the LLM defaulted to grabbing a semantically-wrong token over running the (easy) extension procedure. Watch whether A2 repeats; if both pricing runs reuse, color-extension (§5 #1) is not witnessed → recorded finding per §6.
 
 ### Run A2 — /pricing
 _TBD_
