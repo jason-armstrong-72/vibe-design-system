@@ -29,7 +29,8 @@
 
 **Files:**
 - Create: `lib/tokens/theme-steps.ts`
-- Modify: `lib/check/off-token-scale.ts` (import `parseThemeSteps`/`ThemeSteps` from the new module; drop the local copy)
+- Modify: `lib/check/off-token-scale.ts` (import from the new module; drop the local copy)
+- Modify: `lib/check/run.ts` (**also imports `parseThemeSteps` from `./off-token-scale` — line 10; repoint to `@/lib/tokens/theme-steps`**)
 - Test: `tests/check/off-token-scale.test.ts` (update import path), `tests/tokens/theme-steps.test.ts` (new)
 
 - [ ] **Step 1: Create `lib/tokens/theme-steps.ts`** — move `ThemeSteps` + `parseThemeSteps` verbatim from `lib/check/off-token-scale.ts`, and add a canonical radius step order (the F3 vocab order):
@@ -54,7 +55,7 @@ export function parseThemeSteps(globalsCss: string): ThemeSteps {
 }
 ```
 
-- [ ] **Step 2: Update `lib/check/off-token-scale.ts`** — remove the local `ThemeSteps`/`parseThemeSteps`, and `import { parseThemeSteps, type ThemeSteps } from "@/lib/tokens/theme-steps";`. (The `VOCAB` const + `checkOffTokenScale` stay.)
+- [ ] **Step 2: Update the two importers** — in `lib/check/off-token-scale.ts` remove the local `ThemeSteps`/`parseThemeSteps` and `import { parseThemeSteps, type ThemeSteps } from "@/lib/tokens/theme-steps";` (the `VOCAB` const + `checkOffTokenScale` stay). In `lib/check/run.ts` (line 10) change the `parseThemeSteps` import from `./off-token-scale` to `@/lib/tokens/theme-steps`. (Grep to confirm no other importer: `grep -rn parseThemeSteps lib scripts app tests`.)
 
 - [ ] **Step 3: Update test import** in `tests/check/off-token-scale.test.ts` — import `parseThemeSteps`/`ThemeSteps` from `@/lib/tokens/theme-steps` (was `@/lib/check/off-token-scale`). `checkOffTokenScale` still from off-token-scale.
 
@@ -65,7 +66,7 @@ export function parseThemeSteps(globalsCss: string): ThemeSteps {
 Run: `npx vitest run tests/check/off-token-scale.test.ts tests/tokens/theme-steps.test.ts`
 Expected: PASS.
 ```bash
-git add lib/tokens/theme-steps.ts lib/check/off-token-scale.ts tests/check/off-token-scale.test.ts tests/tokens/theme-steps.test.ts
+git add lib/tokens/theme-steps.ts lib/check/off-token-scale.ts lib/check/run.ts tests/check/off-token-scale.test.ts tests/tokens/theme-steps.test.ts
 git commit -m "refactor(f2): move parseThemeSteps to lib/tokens/theme-steps (clean layering for generate)"
 ```
 
@@ -274,7 +275,7 @@ git commit -m "fix(f2): family-aware manifest-fresh message (names the missing m
 - Modify: `lib/tokens/regenerate.ts` + `lib/check/manifest-fresh.ts` (pass post-sync radius steps)
 - Test: `tests/tokens/utilities.test.ts`, `tests/tokens/generate.test.ts`
 
-- [ ] **Step 1: Write failing tests** — `utilitiesForToken(tok("--radius","radius"), ["sm","md","lg","xl","2xl"])` lists `rounded-2xl`; with no arg, defaults to `rounded-sm…xl` (existing assertion stays green). `buildManifest(tokens, ["sm","md","lg","xl","2xl"])` → radius token utilities include `rounded-2xl` in order.
+- [ ] **Step 1: Write failing tests** — `utilitiesForToken(tok("--radius","radius"), ["sm","md","lg","xl","2xl"])` lists `rounded-2xl`; with no arg, defaults to `rounded-sm…xl` (existing assertion stays green). `buildManifest(tokens, "app/globals.css", ["sm","md","lg","xl","2xl"])` (note the 3-arg signature — `source` is 2nd) → radius token utilities include `rounded-2xl` in order.
 
 - [ ] **Step 2: Run → fail.**
 
@@ -284,15 +285,15 @@ git commit -m "fix(f2): family-aware manifest-fresh message (names the missing m
     case "radius":
       return { utilities: (radiusSteps ?? ["sm","md","lg","xl"]).map((s) => `rounded-${s}`), usage: "--radius is the knob; sm/md/lg/xl derived" };
     ```
-  - `generate.ts`: `mergeByName(tokens, radiusSteps?)` passes `radiusSteps` only for the radius token: `utilitiesForToken(t, t.group === "radius" ? radiusSteps : undefined)`. `buildManifest(tokens, radiusSteps?)` forwards it. (All other `buildManifest` callers that omit it keep the default — no break.)
-  - `regenerate.ts`: 
+  - `generate.ts`: **`buildManifest` ALREADY has a 2nd param `source = "app/globals.css"` (→ `generatedFrom`) — do NOT collide with it (review B1).** Add `radiusSteps` as the **3rd** param: `buildManifest(tokens: Token[], source = "app/globals.css", radiusSteps?: string[])`. `mergeByName(tokens, radiusSteps?)` passes it only for the radius token: `utilitiesForToken(t, t.group === "radius" ? radiusSteps : undefined)`. All callers that omit the 3rd arg keep the hardcoded default — no break.
+  - `regenerate.ts`:
     ```ts
     import { parseThemeSteps, RADIUS_STEP_ORDER } from "./theme-steps";
     const radius = [...parseThemeSteps(sync.css).radius].sort((a,b) => RADIUS_STEP_ORDER.indexOf(a) - RADIUS_STEP_ORDER.indexOf(b));
-    const { json, markdown } = buildManifest(parseTokens(sync.css), radius);
+    const { json, markdown } = buildManifest(parseTokens(sync.css), "app/globals.css", radius);
     ```
-    (Use `sync.css` — the POST-sync string.)
-  - `manifest-fresh.ts`: same — derive `radius` from `parseThemeSteps(sync.css).radius` (post-sync) and pass to `buildManifest`, so the gate's expected manifest matches `npm run tokens`.
+    (Pass `source` explicitly so `radius` lands in the 3rd slot, and use `sync.css` — the POST-sync string.)
+  - `manifest-fresh.ts`: same — derive `radius` from `parseThemeSteps(sync.css).radius` (the **post-sync** string `sync.css`, NOT the `globalsCss` param), sort, and pass as the 3rd arg to `buildManifest`, so the gate's expected manifest matches `npm run tokens` byte-for-byte.
 
 - [ ] **Step 4: Run tests → pass.** Then `npm run tokens` (regenerates with live radius steps = current sm/md/lg/xl → **no manifest diff**). Confirm: `git status` shows no change to `design-system.*` (no-op on current scale). `npm run check` ✓.
 
