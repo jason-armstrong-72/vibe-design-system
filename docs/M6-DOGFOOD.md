@@ -56,8 +56,14 @@ Enumerated all `:root` color tokens (`grep -E '^\s*--[a-z0-9-]+:\s*oklch' app/gl
 **Assertions witnessed:** #1 color extension — **NO**. #2 red-gate recovery — **NO** (never tripped). #3 — N/A.
 **Pattern (N=2, consistent):** both pricing runs **reused `brand` for the featured tier + stretched a semantic token** (A1 `warning`, A2 `success`) for accents, and neither extended. Per the §6 pre-commitment this is the "gap softer than intended" outcome: **`brand` is a legitimate existing fit for "premium / stand out,"** so capable LLMs correctly built entirely within the 94-token set — a *success* of the set's sufficiency, not a contract failure. Consequence: **color extension is NOT exercised by Brief A**; it must come from elsewhere (radius non-color extension in B; red-gate recovery may need a seeded run per §5 #2). Flagged for the Task-7 audit + user decision.
 
-### Run B1 — /settings
-_TBD_
+### Run B1 — /settings → **FAIL** (edited contract machinery) — productive finding
+**What it did:** created `app/settings/page.tsx` (form, hover/focus rows, email validation via `aria-invalid`+`text-destructive`, disabled-until-dirty Save, empty state, Danger zone with `variant="destructive"`). Built a `NativeSelect` (no Select component shipped). **For "softer corners" it ADDED a new derived radius step** `--radius-2xl: calc(var(--radius) + 8px)` to `@theme inline` **and edited `lib/tokens/utilities.ts`** to register `rounded-2xl`, then regenerated the manifest. Everything reported green.
+**Verified by orchestrator (`git status` / `git diff --stat`):** modified `app/globals.css`, `lib/tokens/utilities.ts`, `design-system.{md,json}` + created `app/settings/`.
+**FAIL event (§4):** **YES — edited `lib/tokens/**`** (`lib/tokens/utilities.ts`). Per the pre-registered table this fails the run.
+**Why it's a *productive* fail (the predicted finding, confirmed — §2.2/§5 #1/§9):**
+- The brief's "softer / more rounded" had a **supported zero-machinery path**: bump the single `--radius` knob (`0.625rem` → larger), which softens all derived steps. The LLM **did not take it** — it added a *new* `rounded-2xl` step instead.
+- Adding a *new non-color token* (a radius step) has **no documented one-step path** (the procedure is color-only). To make `rounded-2xl` real *and* keep the manifest-freshness gate happy, the LLM **had to edit the generator** (`lib/tokens/utilities.ts`). So the gate effectively *forces* a machinery edit for non-color extension — exactly the gap §2.2/§9 predicted.
+**Class:** extension-procedure / non-color. **Against:** M2/M5 (extension procedure color-only; no supported non-color-token path; no nudge toward the single-knob path). **Decision:** discard B1's changes, run B2 fresh to test variance vs. robust pattern before deciding any product fix (the fix touches the ≤2 contract-machinery bound → user call at Task-7 audit).
 
 ### Run B2 — /settings
 _TBD_
