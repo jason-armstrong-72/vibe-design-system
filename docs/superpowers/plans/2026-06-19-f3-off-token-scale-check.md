@@ -35,7 +35,12 @@
 import { describe, it, expect } from "vitest";
 import { parseThemeSteps } from "@/lib/check/off-token-scale";
 
+// NOTE the decoy: a `:root` block AND a comment mentioning "@theme" come BEFORE the real
+// `@theme inline {` — exactly like the real globals.css (which has `… derived in @theme …` in a
+// comment on line 79). The parser must anchor on `@theme inline`, not the first "@theme".
 const THEME = `
+/* radius (single knob; sm/md/lg/xl derived in @theme) */
+:root { --text-decoy: 1; --radius-decoy: 2; }
 @theme inline {
   --color-primary: var(--primary);
   --text-xs: var(--fs-xs);     --text-xs--line-height: var(--lh-xs);
@@ -45,7 +50,6 @@ const THEME = `
   --radius-xl: calc(var(--radius) + 4px);
   --shadow-md: var(--elevation-md);
 }
-:root { --text-decoy: 1; }
 `;
 
 describe("parseThemeSteps", () => {
@@ -60,8 +64,11 @@ describe("parseThemeSteps", () => {
     expect(parseThemeSteps(THEME).text.has("xs")).toBe(true);
     expect([...parseThemeSteps(THEME).text]).not.toContain("line"); // no mis-capture
   });
-  it("ignores --text-* outside the @theme block (the :root decoy)", () => {
-    expect(parseThemeSteps(THEME).text.has("decoy")).toBe(false);
+  it("anchors on `@theme inline`, ignoring the earlier comment + :root decoys", () => {
+    const s = parseThemeSteps(THEME);
+    expect(s.text.has("decoy")).toBe(false);
+    expect(s.radius.has("decoy")).toBe(false);
+    expect([...s.radius].sort()).toEqual(["sm", "xl"]); // proves it didn't slice empty
   });
 });
 ```
@@ -81,7 +88,10 @@ export type ThemeSteps = { radius: Set<string>; shadow: Set<string>; text: Set<s
 /** Read the steps actually defined in the `@theme` block of globals.css.
  *  Source of truth for "what compiles" — keys the check on @theme, not the manifest. */
 export function parseThemeSteps(globalsCss: string): ThemeSteps {
-  const start = globalsCss.indexOf("@theme");
+  // Anchor on the actual at-rule `@theme inline {`, NOT the first "@theme" — the real globals.css
+  // mentions "@theme" in a comment (line ~79) before the block; anchoring on "@theme" would slice the
+  // wrong region and return empty sets → ~75 false positives. (Caught in plan review.)
+  const start = globalsCss.indexOf("@theme inline");
   const block = start === -1 ? "" : globalsCss.slice(start, globalsCss.indexOf("\n}", start));
   const out: ThemeSteps = { radius: new Set(), shadow: new Set(), text: new Set(), fontWeight: new Set() };
   const key = { radius: "radius", shadow: "shadow", "font-weight": "fontWeight", text: "text" } as const;
