@@ -74,11 +74,12 @@ A small vitest (`tests/surfaces.test.ts`, sibling of the root-level `tests/compi
 the single-source guarantee:
 
 - **Each pointer surface references the canonical source.** `GEMINI.md` contains `@AGENTS.md`;
-  `.github/copilot-instructions.md` and `.cursor/rules/design-system.mdc` each mention `AGENTS.md` and/or
-  `design-system.md`.
+  `.github/copilot-instructions.md` **and** `.cursor/rules/design-system.mdc` each mention **both**
+  `AGENTS.md` **and** `design-system.md` (one concrete rule per file — no "and/or" ambiguity).
 - **No pointer surface inlines the contract.** None of `GEMINI.md`, `.github/copilot-instructions.md`,
-  `.cursor/rules/design-system.mdc` contains the `BEGIN:design-system` marker or a copy of the token table
-  header (e.g. the literal `| Token | Group | Value` row) — i.e. the contract data lives only in
+  `.cursor/rules/design-system.mdc` contains the `BEGIN:design-system` marker or the token-table header —
+  assert by **substring** `| Token | Group | Value` (the real header is `| Token | Group | Value (light / dark) | Utilities |`,
+  so match the substring, not a full-line equality). The contract data thus lives only in
   `AGENTS.md`/`design-system.md`.
 - **The surfaces exist.** Presence assertions for `GEMINI.md`, `.github/copilot-instructions.md`,
   `.cursor/rules/design-system.mdc`, `CLAUDE.md`.
