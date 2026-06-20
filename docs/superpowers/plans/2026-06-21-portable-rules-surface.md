@@ -149,7 +149,8 @@ Expected: FAIL — README lacks the pointer + still says "In progress", no `docs
 **Building with an LLM?** Point your assistant at `AGENTS.md` + `design-system.md`. Claude Code, Cursor,
 Gemini CLI, and GitHub Copilot auto-load the contract (`CLAUDE.md` / `.cursor/rules` / `GEMINI.md` /
 `.github/copilot-instructions.md`); for any other tool (Windsurf, Cline, aider, web chat), open or paste
-those two files.
+those two files. _(On Gemini CLI, run `/memory show` to confirm the contract loaded — `@`-import support is
+version-dependent.)_
 ```
 
 - [ ] **Step 4: Replace the stale Status block** — `README.md`, the `## Status` section at the bottom
