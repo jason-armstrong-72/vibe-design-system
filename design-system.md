@@ -17,6 +17,7 @@ One procedure for everything: **add the value token to `:root` in `app/globals.c
 /* in .dark */   --highlight: oklch(0.66 0.18 320); --highlight-foreground: oklch(0.16 0 0);
 ```
 then `npm run tokens` → use `bg-highlight text-highlight-foreground`.
+**The `<name>`/`<name>-foreground` pair must clear WCAG-AA contrast** (4.5:1, or 3:1 for large/muted text) in **both** blocks, or `npm run check` fails.
 
 **Scales (type / shadow / weight) — the ramp is deliberately small; reach for an existing step FIRST.** Only when the ramp genuinely can't express what you need, add the value token (the **value-token name differs from the utility name** — get it wrong and it silently won't wire):
 - shadow: `--elevation-<step>` → `shadow-<step>`

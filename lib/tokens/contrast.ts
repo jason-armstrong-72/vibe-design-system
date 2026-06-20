@@ -1,6 +1,6 @@
 import { wcagContrast } from "culori";
 import type { Token, Theme } from "./types";
-import { foregroundFor } from "./schema";
+import { isColorValue } from "./schema";
 
 export interface PairResult {
   bg: string;
@@ -23,22 +23,29 @@ function effective(tokens: Token[], name: string, theme: Theme): string | undefi
 /** Secondary/large-text pairs allowed at the AA-large 3:1 threshold. */
 const LARGE_OK = new Set(["--muted-foreground"]);
 
+/** A value we can statically measure: a literal, opaque color. var()/color-mix()/calc() are
+ *  unresolvable here; alpha makes wcagContrast meaningless (culori ignores it → bogus 21:1). */
+function measurable(v: string | undefined): boolean {
+  return !!v && isColorValue(v) && !v.startsWith("color-mix") && !/\/\s*[\d.]/.test(v);
+}
+
 export function contrastResults(tokens: Token[]): PairResult[] {
   const out: PairResult[] = [];
-  // foregroundFor pairs by the `{name}-foreground` convention; --background/--foreground is the one
-  // body-text pair that doesn't follow it, so add it explicitly (it's the most important pair).
-  const pairs: Array<[string, string]> = [
-    ["--background", "--foreground"],
-    ...[...new Set(tokens.map((t) => t.name))]
-      .filter((n) => foregroundFor(n))
-      .map((bg) => [bg, foregroundFor(bg)!] as [string, string]),
-  ];
+  const names = [...new Set(tokens.map((t) => t.name))];
+  const present = new Set(names);
+  // --background/--foreground is the one body pair not following the -foreground convention.
+  const pairs: Array<[string, string]> = [["--background", "--foreground"]];
+  for (const bg of names) {
+    if (bg.endsWith("-foreground")) continue;
+    const fg = `${bg}-foreground`;
+    if (present.has(fg)) pairs.push([bg, fg]);
+  }
   for (const theme of ["light", "dark"] as Theme[]) {
     for (const [bg, fg] of pairs) {
       const bgv = effective(tokens, bg, theme);
       const fgv = effective(tokens, fg, theme);
-      if (!bgv || !fgv) continue;
-      const ratio = wcagContrast(fgv, bgv);
+      if (!measurable(bgv) || !measurable(fgv)) continue; // skip unresolvable/alpha (no throw, no false pass)
+      const ratio = wcagContrast(fgv!, bgv!);
       const min = LARGE_OK.has(fg) ? 3.0 : 4.5;
       out.push({ bg, fg, theme, ratio, min, pass: ratio >= min });
     }
