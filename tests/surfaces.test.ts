@@ -32,4 +32,12 @@ describe("portable rules surface", () => {
       expect(c, `${f} must not inline the design-system block`).not.toContain("BEGIN:design-system");
     }
   });
+
+  it("README points any-tool users at the contract and isn't stale", () => {
+    const r = read("README.md");
+    expect(r).toContain("AGENTS.md");
+    expect(r).toContain("design-system.md");
+    expect(r, "stale 'In progress' Status block must be replaced").not.toContain("In progress");
+    expect(r, "README should point to the live status doc").toContain("docs/HANDOFF.md");
+  });
 });

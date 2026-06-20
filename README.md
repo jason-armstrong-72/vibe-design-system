@@ -14,6 +14,12 @@ token auto-appears on the `/design-system` page, ready to edit.
 
 **Stack:** Next.js (App Router) + TypeScript + Tailwind + shadcn/ui.
 
+**Building with an LLM?** Point your assistant at `AGENTS.md` + `design-system.md`. Claude Code, Cursor,
+Gemini CLI, and GitHub Copilot auto-load the contract (`CLAUDE.md` / `.cursor/rules` / `GEMINI.md` /
+`.github/copilot-instructions.md`); for any other tool (Windsurf, Cline, aider, web chat), open or paste
+those two files. _(On Gemini CLI, run `/memory show` to confirm the contract loaded — `@`-import support is
+version-dependent.)_
+
 ## Themes
 
 Pick a look at adoption time, then fine-tune in the editor. Default is **Neutral** (already applied —
@@ -46,8 +52,7 @@ builds.
 
 ## Status
 
-In progress. Design is complete and approved — see
-[docs/specs/2026-06-16-design-system-starter-design.md](docs/specs/2026-06-16-design-system-starter-design.md).
-
-Build order: ✅ M0 skeleton + naming convention → ✅ M1 token write-core → ✅ M2 manifest generation →
-✅ M3 design-system page → ✅ M3a theme preset suite → ✅ M4 visual editor → M5 LLM contract → M6 dogfood.
+**v1 complete (M0–M6)** + shipped fast-follows: F2 (one-step non-color extension), F3 (off-token-scale
+check), F5 (honest standalone `check`). The token system, living `/design-system` page, visual editor, and
+blocking lint are all in place. See [docs/HANDOFF.md](docs/HANDOFF.md) for the live status and remaining
+fast-follows.
