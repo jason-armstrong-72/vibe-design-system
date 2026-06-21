@@ -1,4 +1,9 @@
-@import "tailwindcss";
+/* source(none) disables Tailwind v4's broad auto-detection; we scan ONLY real UI (app + components).
+   Without this, Tailwind also scans tests/ + lib/, where check fixtures like `bg-[url(tan.png)]`
+   become real CSS (`background-image: url(tan.png)`) and break the build on a missing module. */
+@import "tailwindcss" source(none);
+@source "../app";
+@source "../components";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 

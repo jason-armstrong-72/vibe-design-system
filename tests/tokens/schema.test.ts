@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { groupForName, controlForGroup, foregroundFor, minRatio, partnerOf } from "@/lib/tokens/schema";
+import { groupForName, controlForGroup, minRatio, partnerOf } from "@/lib/tokens/schema";
 
 describe("minRatio", () => {
   it("3.0 for muted-foreground, 4.5 otherwise", () => {
@@ -99,15 +99,5 @@ describe("controlForGroup", () => {
     ["shadow", "text"],
   ] as const)("maps %s -> %s", (group, control) => {
     expect(controlForGroup(group)).toBe(control);
-  });
-});
-
-describe("foregroundFor", () => {
-  it("pairs a bg token with its -foreground", () => {
-    expect(foregroundFor("--primary")).toBe("--primary-foreground");
-  });
-  it("returns null for a token that has no foreground pair", () => {
-    expect(foregroundFor("--primary-foreground")).toBeNull();
-    expect(foregroundFor("--radius")).toBeNull();
   });
 });

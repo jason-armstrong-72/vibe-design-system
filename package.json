@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint app components lib scripts",
     "check": "tsx scripts/check.ts",
+    "verify": "npm run check && npm run test && npm run lint && npm run build",
     "test": "vitest run",
     "tokens": "tsx scripts/generate-tokens.ts",
     "tokens:watch": "tsx scripts/watch-tokens.ts",
