@@ -38,4 +38,18 @@ describe("checkContrast", () => {
     const css = readFileSync(resolve("app/globals.css"), "utf8");
     expect(checkContrast(css)).toEqual([]);
   });
+
+  it("reports a :root-only below-AA pair ONCE (not a redundant .dark finding)", () => {
+    // single-arg wrap → --promo present in :root only (no own .dark)
+    const css = wrap(`--promo: oklch(0.85 0.1 250);\n--promo-foreground: oklch(0.9 0.05 250);`);
+    const findings = checkContrast(css).filter((f) => f.message.includes("--promo-foreground"));
+    expect(findings.length).toBe(1);
+    expect(findings[0].message).toContain(":root");
+  });
+
+  it("still reports a both-block below-AA pair in BOTH themes", () => {
+    const pair = `--promo: oklch(0.85 0.1 250);\n--promo-foreground: oklch(0.9 0.05 250);`;
+    const findings = checkContrast(wrap(pair, pair)).filter((f) => f.message.includes("--promo-foreground"));
+    expect(findings.length).toBe(2); // :root + .dark (real own-dark, not fallback)
+  });
 });
