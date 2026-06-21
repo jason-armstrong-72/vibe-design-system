@@ -18,7 +18,7 @@
 
 | File | Responsibility | Action |
 |---|---|---|
-| `lib/check/css-colors.ts` | CSS named-color vocabulary + `has()` | Create |
+| `lib/check/css-colors.ts` | CSS named-color vocabulary + `isNamedColor()` | Create |
 | `lib/check/arbitrary-tailwind.ts` | variant-strip + palette/length/bracket-color fixes | Modify |
 | `lib/check/hardcoded-color.ts` | inline keyword-color pass | Modify |
 | `tests/check/css-colors.test.ts` | membership/exclusion unit test | Create |
