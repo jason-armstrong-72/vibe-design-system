@@ -79,8 +79,9 @@ documented limitation.
 
 `seed` is called from three places, each with the theme in hand — update all:
 - `select` → `queue.seed(name, editingBlock, currentValue(name, editingBlock))`
-- `setEditingBlock` → `queue.seed(selectedToken, block, currentValue(selectedToken, block))` (the NEW block —
-  the crux: after a switch, seed the destination block's last-good)
+- `setEditingBlock` → `queue.seed(selectedToken, block, value)` — `value` is the already-bound
+  `currentValue(selectedToken, block)`; just insert `block` as the middle arg (don't re-call `currentValue`).
+  The NEW block is the crux: after a switch, seed the destination block's last-good.
 - `applyHistory` → `queue.seed(entry.token, entry.theme, value)`
 
 No other provider change (status reset stays as-is per §4, plus the §4 comment).
