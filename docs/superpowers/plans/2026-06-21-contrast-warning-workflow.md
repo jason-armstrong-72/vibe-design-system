@@ -24,7 +24,7 @@
 | `components/editor/editor-provider.tsx` | expose `committedValue(name, theme)` | Modify |
 | `components/editor/controls/color-oklch.tsx` | `useContrastReport` + both-block badge + per-block Fix + a11y | Modify |
 | `components/editor/editor-chrome.css` | warning/fix styles (reuse `--ed-warn`) | Modify |
-| `tests/tokens/schema.test.ts`, `tests/editor/oklch.test.ts`, `tests/editor/editor-provider.test.ts`, `tests/editor/color-oklch.test.tsx` | unit + behaviour | Extend |
+| `tests/tokens/schema.test.ts`, `tests/editor/oklch.test.ts`, `tests/editor/editor-provider.test.tsx`, `tests/editor/color-oklch.test.tsx` | unit + behaviour | Extend |
 | `docs/HANDOFF.md` | mark the contrast-warning fast-follow done | Modify |
 
 ---
@@ -242,9 +242,9 @@ git commit -m "feat(editor): nearestPassingL — directional, gamut-aware L sear
 
 ## Task 4: Expose `committedValue` from the provider
 
-**Files:** Modify `components/editor/editor-provider.tsx`; extend `tests/editor/editor-provider.test.ts`.
+**Files:** Modify `components/editor/editor-provider.tsx`; extend `tests/editor/editor-provider.test.tsx`.
 
-- [ ] **Step 1: Write failing test** — append to `tests/editor/editor-provider.test.ts` (follow the file's existing render/act pattern; assert the new accessor returns a freshly-committed value, manifest fallback otherwise). Sketch:
+- [ ] **Step 1: Write failing test** — append to `tests/editor/editor-provider.test.tsx` (follow the file's existing render/act pattern; assert the new accessor returns a freshly-committed value, manifest fallback otherwise). Sketch:
 
 ```ts
 it("committedValue returns the live per-block value (edited > manifest)", () => {
@@ -254,18 +254,18 @@ it("committedValue returns the live per-block value (edited > manifest)", () => 
 ```
 (Use the existing test harness in this file for mounting the provider + invoking context methods.)
 
-- [ ] **Step 2: Run — expect FAIL**: `npx vitest run tests/editor/editor-provider.test.ts`
+- [ ] **Step 2: Run — expect FAIL**: `npx vitest run tests/editor/editor-provider.test.tsx`
 
 - [ ] **Step 3: Implement** — in `editor-provider.tsx`:
   - Add `committedValue: (name: string, theme: Theme) => string;` to `EditorContextValue`.
   - Implement it as the existing `committedBaseline` (already reads `committedRef` with `currentValue` manifest fallback) — expose that fn (it's already a `useCallback`). Add `committedValue: committedBaseline` to the context `value` object + its `useMemo` deps.
 
-- [ ] **Step 4: Run — expect PASS** (+ existing provider tests green): `npx vitest run tests/editor/editor-provider.test.ts`
+- [ ] **Step 4: Run — expect PASS** (+ existing provider tests green): `npx vitest run tests/editor/editor-provider.test.tsx`
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add components/editor/editor-provider.tsx tests/editor/editor-provider.test.ts
+git add components/editor/editor-provider.tsx tests/editor/editor-provider.test.tsx
 git commit -m "feat(editor): expose committedValue(name,theme) for live partner reads"
 ```
 
@@ -275,7 +275,7 @@ git commit -m "feat(editor): expose committedValue(name,theme) for live partner 
 
 **Files:** Modify `components/editor/controls/color-oklch.tsx`, `components/editor/editor-chrome.css`; extend `tests/editor/color-oklch.test.tsx`.
 
-- [ ] **Step 1: Write failing tests** — append to `tests/editor/color-oklch.test.tsx` (follow existing render pattern; the control needs `tokens` + a `committedValue` — pass a stub). Cover:
+- [ ] **Step 1: Write failing tests** — append to `tests/editor/color-oklch.test.tsx`. The file has two render helpers (`renderControl`, `renderRerenderable`) that don't pass `committedValue` — since it's optional (manifest-fallback default, Step 3) the existing 10+ cases keep working untouched. New cases pass a `committedValue` stub where they need live partner values. Cover:
   - a pair failing in **dark only** → a Dark warning AND a Light pass badge both render (both-block).
   - the Fix button label contains the target (`/Fix Dark → L 0\.\d+/`); clicking calls `onChange` with a value whose gamut-mapped ratio ≥ min for that block.
   - editing `--muted-foreground` (a `-foreground` token) renders a badge (reverse pairing) at min 3.0.
@@ -285,7 +285,7 @@ git commit -m "feat(editor): expose committedValue(name,theme) for live partner 
 - [ ] **Step 2: Run — expect FAIL**: `npx vitest run tests/editor/color-oklch.test.tsx`
 
 - [ ] **Step 3: Implement.**
-  - Add a `committedValue` prop to `ColorOklchProps` (wired from `useEditor()` at the call site in `control-host.tsx`/`editor-panel.tsx` — check where `ColorOklch` is rendered and thread it; or read `useEditor()` inside the control if it's already inside the provider).
+  - Add an **optional** `committedValue?` prop to `ColorOklchProps` (signature `(name: string, theme: Theme) => string`), **defaulting to a manifest-snapshot lookup** (reuse the existing `blockValue` over `tokens`) so the existing test render helpers keep working without passing it. `ColorOklch` is rendered **only** in `components/editor/controls/control-host.tsx` (not editor-panel.tsx) — and `ControlHost` already calls `useEditor()` and passes `tokens`/`editingBlock` to the control, so thread `committedValue` from there the same way (prop approach, consistent with the existing pure-prop control + test harness).
   - Add a `useContrastReport(token, value, tokens, committedValue)` helper (in the same file or a small local hook) that:
     - builds `present = new Set(tokens.map(t => t.name))`;
     - `partner = partnerOf(token, present)`; if null → `{light:null,dark:null}`;
@@ -301,7 +301,7 @@ git commit -m "feat(editor): expose committedValue(name,theme) for live partner 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add components/editor/controls/color-oklch.tsx components/editor/editor-chrome.css components/editor/editor-panel.tsx components/editor/controls/control-host.tsx tests/editor/color-oklch.test.tsx
+git add components/editor/controls/color-oklch.tsx components/editor/editor-chrome.css components/editor/controls/control-host.tsx tests/editor/color-oklch.test.tsx
 git commit -m "feat(editor): both-block contrast warning + labeled per-block Fix + aria-live"
 ```
 
