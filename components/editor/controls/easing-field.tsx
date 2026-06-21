@@ -51,8 +51,10 @@ function AxisInput({
   max: number;
   onCommit: (n: number) => void;
 }) {
+  // Round the displayed value to 2dp so a live drag doesn't show full-precision float noise.
+  // The drag buffer keeps full precision internally (smooth curve); commit re-rounds via formatBezier.
   const field = useDraftField(
-    String(value),
+    String(Math.round(value * 100) / 100),
     (draft) => onCommit(Number(draft)),
     (draft) => {
       const n = Number(draft);
