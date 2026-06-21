@@ -1,6 +1,7 @@
 import type { Finding } from "./types";
 import { MSG } from "./messages";
 import { ALLOWED_SPACING_STEPS } from "./spacing-steps";
+import { isNamedColor } from "./css-colors";
 
 const STRING_LIT = /["'`]([^"'`]*)["'`]/g; // candidate class strings
 const SPACING = "p|px|py|pt|pr|pb|pl|ps|pe|m|mx|my|mt|mr|mb|ml|ms|me|gap|gap-x|gap-y|space-x|space-y";
@@ -8,9 +9,9 @@ const PALETTES = "slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|gre
 
 const reArbitrary = /^-?[a-z][a-z-]*-\[([^\]]*)\]$/;
 const reArbColorPrefix = /^-?(bg|text|border|ring|fill|stroke|from|via|to|decoration|outline|caret|accent|shadow)-\[/;
-const reArbLengthPrefix = new RegExp(`^-?(?:text|leading|${SPACING})-\\[`);
+const reArbLengthPrefix = new RegExp(`^-?(?:text|leading|rounded|border|ring|outline|ring-offset|${SPACING})-\\[`);
 const reSpacingNum = new RegExp(`^-?(?:${SPACING})-(\\d+(?:\\.\\d+)?)$`);
-const rePalette = new RegExp(`^-?(?:bg|border|ring|from|via|to|fill|stroke|divide|outline|decoration|accent|caret|ring-offset)-(?:${PALETTES})-\\d{2,3}$`);
+const rePalette = new RegExp(`^-?(?:bg|text|placeholder|border|ring|from|via|to|fill|stroke|divide|outline|decoration|accent|caret|ring-offset)-(?:${PALETTES})-\\d{2,3}$`);
 
 const lineOf = (content: string, idx: number) => content.slice(0, idx).split("\n").length;
 
@@ -34,7 +35,7 @@ export function checkArbitrary(path: string, content: string): Finding[] {
       if (arb) {
         const inner = arb[1];
         if (/var\(|color-mix\(|calc\(|min\(|max\(|clamp\(/.test(inner)) continue; // token/computed → allowed
-        if (reArbColorPrefix.test(base) && /^(#|rgba?\(|hsla?\(|oklch\(|oklab\()/.test(inner))
+        if (reArbColorPrefix.test(base) && (/^(#|rgba?\(|hsla?\(|oklch\(|oklab\()/.test(inner) || isNamedColor(inner)))
           out.push({ file: path, line, rule: "arbitrary-color", message: MSG.arbitraryColor(cls) });
         else if (reArbLengthPrefix.test(base) && /^\d*\.?\d+(px|rem|em|%)$/.test(inner))
           out.push({ file: path, line, rule: "arbitrary-length", message: MSG.arbitraryLength(cls) });

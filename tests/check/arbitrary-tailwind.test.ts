@@ -34,4 +34,26 @@ describe("arbitrary-tailwind", () => {
   it("variant strip is bracket-aware (colon inside [] is not a variant separator)", () => {
     expect(find("bg-[url(http://x)]")).toEqual([]); // not a color/length → no finding, no misparse
   });
+
+  it("flags text/placeholder palette (hole #1)", () => {
+    expect(find("text-gray-500")).toContain("default-palette");
+    expect(find("placeholder-gray-500")).toContain("default-palette");
+    expect(find("md:text-gray-500")).toContain("default-palette");
+  });
+  it("flags arbitrary radius/border/ring widths (hole #2)", () => {
+    for (const c of ["rounded-[5px]", "border-[3px]", "ring-[3px]", "outline-[2px]", "hover:rounded-[5px]"])
+      expect(find(c), c).toContain("arbitrary-length");
+  });
+  it("flags bracket named colors (hole #3a)", () => {
+    for (const c of ["bg-[red]", "border-[gold]", "ring-[blue]", "dark:bg-[red]"])
+      expect(find(c), c).toContain("arbitrary-color");
+  });
+  it("does not false-positive on tokens/keywords/legit utilities", () => {
+    for (const c of [
+      "text-primary", "text-lg", "text-brand-700", "rounded-full", "rounded-lg",
+      "rounded-[var(--radius)]", "rounded-[min(var(--radius-md),10px)]", "bg-[var(--x)]",
+      "bg-[url(tan.png)]", "border-[currentColor]", "bg-[transparent]",
+    ]) expect(find(c), c).toEqual([]);
+    expect(find("bg-[oklch(0.5_0.2_30)]")).toContain("arbitrary-color"); // still flags via hex/func test
+  });
 });
