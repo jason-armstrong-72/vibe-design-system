@@ -42,7 +42,9 @@ parse/format/clamp/keyword math is pure and lives in a new lib; the control is a
   component name from its kind; "bezier" lives only in the lib.]** Same props
   `{ token: string; value: string; onChange: (v: string) => void; tokens: ManifestToken[] }`.
 
-**Client-safety / imports:** `bezier.ts` imports only types (no `culori`, no Node). `lib/editor → lib/tokens`
+**Client-safety / imports:** `bezier.ts` imports only types (no `culori`, no Node). The DOM read
+(`getBoundingClientRect()` for `geom`) stays in the **component**; `toSvg`/`fromSvg` are pure and take `geom`
+as a param (so they unit-test without a DOM). `lib/editor → lib/tokens`
 for `ManifestToken` is the existing arrow. The whole tree stays inside the dev-only editor island
 (`components/editor/**`, tree-shaken from prod via `EditorMount`), so nothing leaks into the production
 bundle. New CSS classes go in `components/editor/editor-chrome.css` (the `--ed-*` namespace, excluded from
@@ -70,7 +72,8 @@ const display: Cubic = drag ?? parsed ?? FALLBACK;     // what the canvas/inputs
 change `value` from outside) move the handles automatically, no re-seed effect needed. This is the same
 "transient buffer committed on release" shape as `use-draft-field`'s `draft` (committed on blur).
 `FALLBACK` (used only when `parsed` is `null`, i.e. a `steps()`/`var()`/garbage value) is the
-`--ease-standard` token's curve if present, else `[0.25, 0.1, 0.25, 1]` (`ease`).
+`--ease-standard` token's curve **resolved from the `tokens` prop** (`tokens.find(t => t.name ===
+"--ease-standard")`, parsed) if present, else the hardcoded `[0.25, 0.1, 0.25, 1]` (`ease`). No live CSS read.
 
 ---
 
@@ -211,7 +214,8 @@ and would persist + push undo history.]**
 - a11y: every numeric input + the raw input has an accessible name; handles are `aria-hidden`.
 
 **`tests/editor/control-host.test.tsx`** — verify the `easing` case still resolves the (rewritten) control;
-update only if it asserts removed `<select>`/text specifics.
+grep it early — the current control renders a `<select>`, so an assertion on it is plausible and the rewrite
+removes it. Update only if it asserts removed `<select>`/text specifics.
 
 **Delete** nothing structural — the file/test names stay; their contents are rewritten.
 
