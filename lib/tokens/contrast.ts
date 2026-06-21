@@ -1,6 +1,6 @@
 import { wcagContrast } from "culori";
 import type { Token, Theme } from "./types";
-import { isColorValue } from "./schema";
+import { isColorValue, minRatio, partnerOf } from "./schema";
 
 export interface PairResult {
   bg: string;
@@ -20,12 +20,9 @@ function effective(tokens: Token[], name: string, theme: Theme): string | undefi
   return tokens.find((t) => t.name === name && t.theme === "light")?.value;
 }
 
-/** Secondary/large-text pairs allowed at the AA-large 3:1 threshold. */
-const LARGE_OK = new Set(["--muted-foreground"]);
-
 /** A value we can statically measure: a literal, opaque color. var()/color-mix()/calc() are
  *  unresolvable here; alpha makes wcagContrast meaningless (culori ignores it → bogus 21:1). */
-function measurable(v: string | undefined): boolean {
+export function measurable(v: string | undefined): boolean {
   return !!v && isColorValue(v) && !v.startsWith("color-mix") && !/\/\s*[\d.]/.test(v);
 }
 
@@ -33,12 +30,13 @@ export function contrastResults(tokens: Token[]): PairResult[] {
   const out: PairResult[] = [];
   const names = [...new Set(tokens.map((t) => t.name))];
   const present = new Set(names);
-  // --background/--foreground is the one body pair not following the -foreground convention.
-  const pairs: Array<[string, string]> = [["--background", "--foreground"]];
-  for (const bg of names) {
-    if (bg.endsWith("-foreground")) continue;
-    const fg = `${bg}-foreground`;
-    if (present.has(fg)) pairs.push([bg, fg]);
+  // Build pairs via the shared structural partnerOf (bases only; the reverse direction is the base's
+  // job, so iterating bases avoids double-pairing). partnerOf("--background") returns "--foreground".
+  const pairs: Array<[string, string]> = [];
+  for (const name of names) {
+    if (name.endsWith("-foreground")) continue;
+    const fg = partnerOf(name, present);
+    if (fg) pairs.push([name, fg]);
   }
   for (const theme of ["light", "dark"] as Theme[]) {
     for (const [bg, fg] of pairs) {
@@ -46,7 +44,7 @@ export function contrastResults(tokens: Token[]): PairResult[] {
       const fgv = effective(tokens, fg, theme);
       if (!measurable(bgv) || !measurable(fgv)) continue; // skip unresolvable/alpha (no throw, no false pass)
       const ratio = wcagContrast(fgv!, bgv!);
-      const min = LARGE_OK.has(fg) ? 3.0 : 4.5;
+      const min = minRatio(fg);
       out.push({ bg, fg, theme, ratio, min, pass: ratio >= min });
     }
   }
