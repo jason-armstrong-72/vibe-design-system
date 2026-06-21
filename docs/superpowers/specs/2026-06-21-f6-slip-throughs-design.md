@@ -144,11 +144,19 @@ Inline-string cases added to the **existing** suites (`tests/check/arbitrary-tai
 `find()`/`rules()` string helpers; `__fixtures__/` is only for `files.test.ts`). Plus a unit test for
 `css-colors.ts` membership/exclusions.
 
+**Helper note (the two suites differ — don't cross them up):** `arbitrary-tailwind.test.ts`'s `find()` wraps
+input as `const c = "<s>"`, so **class-token** cases (`md:text-gray-500`, `bg-[red]`, `rounded-[5px]`) go there.
+`hardcoded-color.test.ts`'s `find()` passes **raw source**, so **inline-style** cases (`color: "red"`,
+`borderColor: 'blue'`) go there. The bracket OR-clause (§3.4) must be tested to fire *without* disturbing the
+existing `^(#|rgba?\(|…)` test (both keep firing: assert `bg-[red]` flags AND `bg-[oklch(...)]` still flags).
+
 - **Flagged:** `text-gray-500`, `placeholder-gray-500`, `rounded-[5px]`, `bg-[red]`, `border-[gold]`,
   `md:text-gray-500`, `hover:rounded-[5px]`, `dark:bg-[red]`, and inline `color: "red"` / `borderColor: 'blue'` /
   `background: "RED"`.
 - **Not flagged (FP guards):** `text-primary`, `text-lg`, `text-brand-700`, `rounded-full`, `rounded-lg`,
-  `rounded-[var(--radius)]`, `bg-[var(--x)]`, `bg-[oklch(...)]` (already color via the hex/func test),
+  `rounded-[var(--radius)]` (named guard — the highest-traffic FP risk from hole #2; confirms the
+  `var(|min(|calc(` inner-skip still wins now that `rounded` is in `reArbLengthPrefix`),
+  `bg-[var(--x)]`, `bg-[oklch(...)]` (already color via the hex/func test),
   `bg-[url(tan.png)]`, `border-[currentColor]`, `bg-[transparent]`, inline `borderColor: "var(--foreground)"`,
   `boxShadow: v`, a bare identifier `const orange = 1`, and the word "red" in a comment/non-color-prop string.
 - **css-colors.ts:** `has("red")`/`has("RED")` true; `has("transparent")`/`has("currentcolor")`/`has("none")`/
