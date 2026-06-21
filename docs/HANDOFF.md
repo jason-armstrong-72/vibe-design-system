@@ -45,8 +45,8 @@ M6 validated the headline loop (LLM builds with tokens + **color-extends** + **r
 ### M4 fast-follows (deferred, all on the same machinery)
 - Draggable **cubic-bezier curve editor** (easing is preset+text now) + **layered shadow builder** (shadow is text now).
 - **Pick-anywhere** (reverse-resolution) + **gradient builder**.
-- Contrast **warning** workflow beyond the read-only badge.
-- 3 review nits (non-blocking): block-switch resets a same-token in-flight save-state to idle (cosmetic; write still lands); writeback debounce keys by token name not `token|theme` (very narrow cross-block race); contrast badge hides for `var()`-indirected colors.
+- ✅ **Contrast warning workflow — DONE 2026-06-21.** The colour control now reports WCAG-AA for **both** light and dark (gate-aligned: `minRatio`/structural `partnerOf`/`measurable` shared via `schema.ts`+`contrast.ts`, so the editor can't drift from `npm run check`; `contrastResults` refactored to the shared helpers, parity-proven by the existing suites). Resolves one-level `var()` (closes the badge-hides-on-`var()` nit); computes against **live** edited + partner values (new `committedValue(name,theme)` on the provider, not the stale manifest); on failure shows a per-block warning with a **labeled** `Fix <block> → L x.xx` applying a directional, gamut-aware `nearestPassingL` (or a "lower chroma" message when unreachable; the non-active block shows a "switch to fix" hint since `onChange` writes the active block); `aria-live="polite"` on pass↔fail transition. Spec/plan under `docs/superpowers/`.
+- 2 review nits remain (non-blocking): block-switch resets a same-token in-flight save-state to idle (cosmetic; write still lands); writeback debounce keys by token name not `token|theme` (very narrow cross-block race).
 - ✅ **Lint debt — RESOLVED in M5.** The "158 errors" were eslint scanning nested `.claude/worktrees/*/.next/` build chunks; fixed via `globalIgnores` (`**/.next/**` + `.claude/**`) + pinning `lint` to source globs. `npm run lint` = 0.
 
 ## Load-bearing decisions & conventions (non-obvious — don't relearn the hard way)

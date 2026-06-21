@@ -85,3 +85,25 @@ export function foregroundFor(name: string): string | null {
   const bare = name.slice(2);
   return COLOR_ROLES.has(`${bare}-foreground`) ? `${name}-foreground` : null;
 }
+
+/** Foreground roles allowed at the AA-large 3:1 threshold (secondary/large text). */
+export const LARGE_OK = new Set(["--muted-foreground"]);
+
+/** WCAG-AA minimum contrast for a pair, keyed on the FOREGROUND token name. */
+export function minRatio(fgName: string): number {
+  return LARGE_OK.has(fgName) ? 3.0 : 4.5;
+}
+
+/** Structural, both-direction contrast partner (presence-checked), or null. Mirrors the gate's pairing:
+ *  a base pairs with its `-foreground`; a `-foreground` pairs back with its base; the
+ *  `--background`/`--foreground` body pair is explicit (so `--foreground` never strips to `--`). */
+export function partnerOf(name: string, present: Set<string>): string | null {
+  if (name === "--background") return present.has("--foreground") ? "--foreground" : null;
+  if (name === "--foreground") return present.has("--background") ? "--background" : null;
+  if (name.endsWith("-foreground")) {
+    const base = name.slice(0, -"-foreground".length);
+    return present.has(base) ? base : null;
+  }
+  const fg = `${name}-foreground`;
+  return present.has(fg) ? fg : null;
+}

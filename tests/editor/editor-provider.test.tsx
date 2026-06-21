@@ -26,6 +26,8 @@ function Probe() {
       <span data-testid="pt-status">{pt?.status ?? "none"}</span>
       <span data-testid="can-undo">{String(e.canUndo)}</span>
       <span data-testid="can-redo">{String(e.canRedo)}</span>
+      <span data-testid="committed-primary-light">{e.committedValue("--primary", "light")}</span>
+      <span data-testid="committed-ring-dark">{e.committedValue("--ring", "dark")}</span>
       <button onClick={() => e.enable()}>do-enable</button>
       <button onClick={() => e.select("--z-modal")}>do-select</button>
       <button onClick={() => e.select("--primary")}>do-select-primary</button>
@@ -241,5 +243,17 @@ describe("EditorProvider", () => {
     expect(
       document.documentElement.style.getPropertyValue("--primary"),
     ).toBe("");
+  });
+
+  it("committedValue returns the live per-block value (edited > manifest)", () => {
+    setup();
+    // Unedited token → manifest fallback (non-empty).
+    expect(screen.getByTestId("committed-ring-dark").textContent).not.toBe("");
+    const manifestPrimary = screen.getByTestId("committed-primary-light").textContent;
+    expect(manifestPrimary).not.toBe("");
+    // Edit --primary in the light block → committedValue reflects it.
+    fireEvent.click(screen.getByText("do-edit-primary"));
+    expect(screen.getByTestId("committed-primary-light").textContent).toBe("oklch(0.5 0 0)");
+    expect(screen.getByTestId("committed-primary-light").textContent).not.toBe(manifestPrimary);
   });
 });

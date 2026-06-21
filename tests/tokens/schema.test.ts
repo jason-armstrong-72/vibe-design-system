@@ -1,5 +1,29 @@
 import { describe, it, expect } from "vitest";
-import { groupForName, controlForGroup, foregroundFor } from "@/lib/tokens/schema";
+import { groupForName, controlForGroup, foregroundFor, minRatio, partnerOf } from "@/lib/tokens/schema";
+
+describe("minRatio", () => {
+  it("3.0 for muted-foreground, 4.5 otherwise", () => {
+    expect(minRatio("--muted-foreground")).toBe(3.0);
+    expect(minRatio("--primary-foreground")).toBe(4.5);
+    expect(minRatio("--foreground")).toBe(4.5);
+  });
+});
+
+describe("partnerOf (structural, both directions)", () => {
+  const present = new Set([
+    "--background", "--foreground", "--primary", "--primary-foreground",
+    "--promo", "--promo-foreground", "--muted", "--muted-foreground",
+  ]);
+  it("base → its -foreground", () => expect(partnerOf("--primary", present)).toBe("--primary-foreground"));
+  it("-foreground → its base", () => expect(partnerOf("--primary-foreground", present)).toBe("--primary"));
+  it("background ↔ foreground special pair", () => {
+    expect(partnerOf("--background", present)).toBe("--foreground");
+    expect(partnerOf("--foreground", present)).toBe("--background");
+  });
+  it("invented token pairs structurally", () => expect(partnerOf("--promo", present)).toBe("--promo-foreground"));
+  it("--foreground does NOT strip to '--'", () => expect(partnerOf("--foreground", present)).not.toBe("--"));
+  it("null when partner absent", () => expect(partnerOf("--ring", present)).toBe(null));
+});
 
 describe("groupForName", () => {
   it.each([

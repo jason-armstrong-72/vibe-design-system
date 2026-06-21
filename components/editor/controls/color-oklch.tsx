@@ -1,18 +1,47 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { wcagContrast } from "culori";
 import type { ManifestToken } from "@/lib/tokens/generate";
 import type { Theme } from "@/lib/tokens/types";
-import { foregroundFor } from "@/lib/tokens/schema";
+import { minRatio, partnerOf } from "@/lib/tokens/schema";
+import { measurable } from "@/lib/tokens/contrast";
 import { useDraftField } from "@/lib/editor/use-draft-field";
 import {
   parseOklch,
   formatOklch,
   hexToOklch,
   oklchToHex,
+  nearestPassingL,
   type Lch,
 } from "@/lib/editor/oklch";
+
+const THEMES: Theme[] = ["light", "dark"];
+
+/** One block's contrast outcome (or null when unmeasurable / no partner). */
+interface BlockReport {
+  theme: Theme;
+  ratio: number;
+  min: number;
+  pass: boolean;
+  partnerValue: string; // gamut-source partner value (for the fix search)
+}
+
+/** Resolve a one-level var(--x) reference to the referenced token's value for the theme. */
+function resolveOneLevel(
+  v: string,
+  theme: Theme,
+  committed: (name: string, theme: Theme) => string,
+): string {
+  const m = v.match(/^var\(\s*(--[\w-]+)\s*\)$/);
+  return m ? committed(m[1], theme) : v;
+}
+
+/** Gamut-map a measurable color string to the hex actually rendered (for honest contrast). */
+function gamutHex(v: string): string | null {
+  const lch = parseOklch(v);
+  return lch ? oklchToHex(lch) : null;
+}
 
 /** Minimal type for the (Chromium-only) EyeDropper API; declared locally to avoid a global. */
 interface EyeDropperResult {
@@ -33,6 +62,9 @@ interface ColorOklchProps {
   tokens: ManifestToken[];
   /** The active editing block, so we look up partner/reuse values for the right theme. */
   editingBlock: Theme;
+  /** Live committed value of any token for a block (edited > manifest). Optional — defaults to the
+   *  manifest snapshot so the control renders standalone (e.g. in tests). */
+  committedValue?: (name: string, theme: Theme) => string;
 }
 
 const FALLBACK: Lch = { l: 0, c: 0, h: 0 };
@@ -54,9 +86,18 @@ export function ColorOklch({
   onChange,
   tokens,
   editingBlock,
+  committedValue,
 }: ColorOklchProps) {
   const lch = parseOklch(value) ?? FALLBACK;
   const hex = oklchToHex(lch);
+
+  // Live value of any token for a block. Default to the manifest snapshot when not provided.
+  const committed =
+    committedValue ??
+    ((name: string, theme: Theme) => {
+      const t = tokens.find((x) => x.name === name);
+      return t ? blockValue(t, theme) : "";
+    });
 
   // EyeDropper is a client-only capability; useSyncExternalStore gives a stable SSR
   // snapshot (false) and the real client value without a sync effect.
@@ -105,19 +146,51 @@ export function ColorOklch({
     (t) => t.group === "color" && t.name !== token,
   );
 
-  // Contrast badge: pair with the foreground partner (read-only).
-  const partnerName = foregroundFor(token);
-  const partner = partnerName
-    ? tokens.find((t) => t.name === partnerName)
-    : undefined;
-  const partnerValue = partner ? blockValue(partner, editingBlock) : undefined;
-  let badge: { ratio: number; pass: boolean } | null = null;
-  if (partnerValue) {
-    const ratio = wcagContrast(value, partnerValue);
-    if (Number.isFinite(ratio)) {
-      badge = { ratio, pass: ratio >= 4.5 };
+  // Contrast report: BOTH blocks, gate-aligned (structural partnerOf + minRatio + measurable).
+  const present = new Set(tokens.map((t) => t.name));
+  const partnerName = partnerOf(token, present);
+  // The threshold is keyed on the foreground side of the pair (3.0 for --muted-foreground, else 4.5).
+  const fgName =
+    token === "--foreground" || token.endsWith("-foreground") ? token : partnerName;
+  const min = fgName ? minRatio(fgName) : 4.5;
+  // The edited token's own value is editable only as a literal oklch (you can't nudge L of an alias).
+  const fixable = parseOklch(value) !== null && !/^var\(/.test(value);
+
+  const report: Record<Theme, BlockReport | null> = { light: null, dark: null };
+  if (partnerName) {
+    for (const theme of THEMES) {
+      // Edited token: the live in-progress value for the active block; committed for the other.
+      const editedRaw = theme === editingBlock ? value : committed(token, theme);
+      const edited = resolveOneLevel(editedRaw, theme, committed);
+      const partnerRaw = committed(partnerName, theme);
+      const partner = resolveOneLevel(partnerRaw, theme, committed);
+      if (!measurable(edited) || !measurable(partner)) continue; // can't measure → no report
+      const eHex = gamutHex(edited);
+      const pHex = gamutHex(partner);
+      if (!eHex || !pHex) continue;
+      const ratio = wcagContrast(eHex, pHex);
+      if (!Number.isFinite(ratio)) continue;
+      report[theme] = { theme, ratio, min, pass: ratio >= min, partnerValue: partner };
     }
   }
+
+  // a11y: announce only on a pass↔fail transition (not on every slider tick).
+  const passKey = `${report.light?.pass ?? "-"}|${report.dark?.pass ?? "-"}`;
+  const [announce, setAnnounce] = useState("");
+  const prevKey = useRef(passKey);
+  useEffect(() => {
+    if (prevKey.current !== passKey) {
+      prevKey.current = passKey;
+      const fails = THEMES.filter((t) => report[t] && !report[t]!.pass);
+      setAnnounce(
+        fails.length
+          ? `Contrast below AA in ${fails.join(" and ")}`
+          : partnerName
+            ? "Contrast passes AA"
+            : "",
+      );
+    }
+  }, [passKey, partnerName]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="ed-color">
@@ -215,16 +288,51 @@ export function ColorOklch({
         />
       </div>
 
-      {badge ? (
-        <div
-          data-testid="contrast-badge"
-          className="ed-contrast"
-          data-pass={badge.pass}
-        >
-          <span className="ed-label">contrast</span>
-          <span>
-            {badge.ratio.toFixed(2)} : 1 — {badge.pass ? "PASS" : "FAIL"} (AA 4.5)
-          </span>
+      {partnerName ? (
+        <div data-testid="contrast-badge" className="ed-contrast-report" aria-describedby={undefined}>
+          <span className="ed-label">contrast vs {partnerName}</span>
+          {THEMES.map((theme) => {
+            const r = report[theme];
+            if (!r) {
+              return (
+                <div key={theme} className="ed-contrast-row" data-theme={theme}>
+                  <span className="ed-contrast-block">{theme}</span>
+                  <span className="ed-contrast-na">not measurable</span>
+                </div>
+              );
+            }
+            const isActive = theme === editingBlock;
+            const fixedValue = !r.pass && fixable
+              ? nearestPassingL(value, r.partnerValue, r.min)
+              : null;
+            return (
+              <div key={theme} className="ed-contrast-row" data-theme={theme} data-pass={r.pass}>
+                <span className="ed-contrast-block">{theme}</span>
+                <span className="ed-contrast-ratio">
+                  {r.ratio.toFixed(2)} : 1 — {r.pass ? "PASS" : `below ${r.min}`}
+                </span>
+                {!r.pass && isActive && fixedValue ? (
+                  <button
+                    type="button"
+                    className="ed-contrast-fix"
+                    onClick={() => onChange(fixedValue)}
+                  >
+                    Fix {theme} → L {parseOklch(fixedValue)!.l.toFixed(2)}
+                  </button>
+                ) : null}
+                {!r.pass && isActive && fixable && !fixedValue ? (
+                  <span className="ed-contrast-na">can&apos;t reach AA at this chroma — lower Chroma or change Hue</span>
+                ) : null}
+                {!r.pass && isActive && !fixable ? (
+                  <span className="ed-contrast-na">aliased — edit the source token</span>
+                ) : null}
+                {!r.pass && !isActive ? (
+                  <span className="ed-contrast-na">switch to {theme} to fix</span>
+                ) : null}
+              </div>
+            );
+          })}
+          <span className="ed-sr-only" aria-live="polite">{announce}</span>
         </div>
       ) : null}
 

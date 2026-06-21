@@ -20,7 +20,7 @@ const MANIFEST = designSystem as Manifest;
  * Every ControlKind maps to a real control (Task 10).
  */
 export function ControlHost() {
-  const { selectedToken, editingBlock, perToken, editValue } = useEditor();
+  const { selectedToken, editingBlock, perToken, editValue, committedValue } = useEditor();
   if (!selectedToken) return null;
 
   const token = MANIFEST.tokens.find((t) => t.name === selectedToken);
@@ -53,6 +53,7 @@ export function ControlHost() {
           onChange={(v) => editValue(token.name, v)}
           tokens={MANIFEST.tokens}
           editingBlock={editingBlock}
+          committedValue={committedValue}
         />
       );
     case "length":

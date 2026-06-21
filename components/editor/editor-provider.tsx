@@ -65,6 +65,8 @@ export interface EditorContextValue {
   setEditingBlock: (block: Theme) => void;
   setPanelAppearance: (appearance: PanelAppearance) => void;
   editValue: (name: string, value: string) => void;
+  /** Live committed value of any token for a block (last edit this session, else manifest). */
+  committedValue: (name: string, theme: Theme) => string;
   reset: (name: string) => void;
   canUndo: boolean;
   canRedo: boolean;
@@ -313,6 +315,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       setEditingBlock,
       setPanelAppearance,
       editValue,
+      committedValue: committedBaseline,
       reset,
       canUndo,
       canRedo,
@@ -332,6 +335,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       setEditingBlock,
       setPanelAppearance,
       editValue,
+      committedBaseline,
       reset,
       canUndo,
       canRedo,
