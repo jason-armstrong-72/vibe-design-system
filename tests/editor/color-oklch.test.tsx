@@ -1,8 +1,11 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, fireEvent, screen, cleanup } from "@testing-library/react";
+import { wcagContrast } from "culori";
 import { ColorOklch } from "@/components/editor/controls/color-oklch";
 import type { ManifestToken } from "@/lib/tokens/generate";
+import type { Theme } from "@/lib/tokens/types";
+import { parseOklch, oklchToHex } from "@/lib/editor/oklch";
 
 afterEach(cleanup);
 
@@ -46,6 +49,20 @@ function renderControl(overrides: Partial<React.ComponentProps<typeof ColorOklch
     />,
   );
   return { onChange };
+}
+
+function renderWithContainer(overrides: Partial<React.ComponentProps<typeof ColorOklch>> = {}) {
+  const onChange = vi.fn();
+  return render(
+    <ColorOklch
+      token="--primary"
+      value="oklch(0.205 0 0)"
+      onChange={onChange}
+      tokens={TOKENS}
+      editingBlock="light"
+      {...overrides}
+    />,
+  );
 }
 
 function renderRerenderable() {
@@ -154,6 +171,79 @@ describe("ColorOklch", () => {
     // --primary (0.205) vs --primary-foreground (0.985) → high contrast, should pass
     expect(badge.textContent).toMatch(/\d/);
     expect(badge.textContent?.toLowerCase()).toMatch(/pass|fail/);
+  });
+
+  describe("contrast workflow (both-block, fix, a11y)", () => {
+    const PROMO: ManifestToken[] = [
+      { name: "--promo", group: "color", values: { light: "oklch(0.205 0 0)", dark: "oklch(0.9 0 0)" }, utilities: [] },
+      { name: "--promo-foreground", group: "color", values: { light: "oklch(0.985 0 0)", dark: "oklch(0.985 0 0)" }, utilities: [] },
+    ];
+    const committed = (map: Record<string, string>) => (n: string, t: Theme) => map[`${n}|${t}`] ?? "";
+
+    it("reports BOTH blocks (light pass + dark fail)", () => {
+      renderControl({
+        token: "--promo",
+        value: "oklch(0.205 0 0)", // active light bg: dark, high contrast vs light fg → pass
+        tokens: PROMO,
+        editingBlock: "light",
+        committedValue: committed({
+          "--promo|light": "oklch(0.205 0 0)", "--promo|dark": "oklch(0.9 0 0)",
+          "--promo-foreground|light": "oklch(0.985 0 0)", "--promo-foreground|dark": "oklch(0.985 0 0)",
+        }),
+      });
+      const light = document.querySelector('[data-theme="light"]');
+      const dark = document.querySelector('[data-theme="dark"]');
+      expect(light?.getAttribute("data-pass")).toBe("true");
+      expect(dark?.getAttribute("data-pass")).toBe("false");
+      // dark is the non-active block → shows a switch hint, not a Fix button
+      expect(dark?.textContent?.toLowerCase()).toContain("switch to dark");
+    });
+
+    it("offers a labeled Fix for the ACTIVE failing block and calls onChange with a passing value", () => {
+      const { onChange } = renderControl({
+        token: "--promo",
+        value: "oklch(0.9 0 0)", // active light bg: very light vs light fg → FAIL
+        tokens: PROMO,
+        editingBlock: "light",
+        committedValue: committed({
+          "--promo|light": "oklch(0.9 0 0)", "--promo|dark": "oklch(0.9 0 0)",
+          "--promo-foreground|light": "oklch(0.985 0 0)", "--promo-foreground|dark": "oklch(0.985 0 0)",
+        }),
+      });
+      const btn = screen.getByRole("button", { name: /Fix light → L/ });
+      fireEvent.click(btn);
+      expect(onChange).toHaveBeenCalledTimes(1);
+      const applied = onChange.mock.calls[0][0] as string;
+      const ratio = wcagContrast(oklchToHex(parseOklch(applied)!), "oklch(0.985 0 0)");
+      expect(ratio).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it("pairs a -foreground token in reverse (renders a badge)", () => {
+      renderControl({
+        token: "--primary-foreground",
+        value: "oklch(0.985 0 0)",
+        tokens: TOKENS,
+        editingBlock: "light",
+      });
+      expect(screen.getByTestId("contrast-badge")).toBeTruthy();
+    });
+
+    it("resolves a var()-indirected partner (not blank) and skips color-mix", () => {
+      const { container } = renderWithContainer({
+        token: "--promo",
+        value: "oklch(0.5 0 0)",
+        tokens: PROMO,
+        editingBlock: "light",
+        committedValue: committed({
+          "--promo|light": "oklch(0.5 0 0)", "--promo|dark": "oklch(0.5 0 0)",
+          "--promo-foreground|light": "var(--ref)", "--ref|light": "oklch(0.985 0 0)",
+          "--promo-foreground|dark": "color-mix(in oklch, white, black)",
+        }),
+      });
+      // light: var() resolves → a row renders with a ratio; dark: color-mix → not measurable
+      expect(container.querySelector('[data-theme="light"]')?.textContent).toMatch(/\d/);
+      expect(container.querySelector('[data-theme="dark"]')?.textContent?.toLowerCase()).toContain("not measurable");
+    });
   });
 
   describe("eyedropper", () => {
