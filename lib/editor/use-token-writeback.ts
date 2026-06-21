@@ -30,10 +30,10 @@ interface WritebackOpts {
  * - seed(): record the last-persisted value for a token (so rollback has a target).
  */
 export class WritebackQueue {
-  private timers = new Map<string, ReturnType<typeof setTimeout>>();
-  private pending = new Map<string, WritebackEdit>();
-  private lastGood = new Map<string, string>();
-  /** Names of vars we've applied inline for preview, so clearPreviews() can remove exactly those. */
+  private timers = new Map<string, ReturnType<typeof setTimeout>>(); // keyed by name|theme
+  private pending = new Map<string, WritebackEdit>(); // keyed by name|theme
+  private lastGood = new Map<string, string>(); // keyed by name|theme (per-block rollback target)
+  /** Names of inline preview vars — keyed by NAME (the DOM var is global per name; one block shown). */
   private applied = new Set<string>();
   private readonly endpoint: string;
 
@@ -41,8 +41,13 @@ export class WritebackQueue {
     this.endpoint = opts.endpoint ?? "/api/ds/token";
   }
 
-  seed(name: string, value: string): void {
-    this.lastGood.set(name, value);
+  /** Composite persist key — same idiom as the provider's committedRef Map<"name|theme", value>. */
+  private key(name: string, theme: Theme): string {
+    return `${name}|${theme}`;
+  }
+
+  seed(name: string, theme: Theme, value: string): void {
+    this.lastGood.set(this.key(name, theme), value);
   }
 
   /**
@@ -56,24 +61,22 @@ export class WritebackQueue {
   }
 
   edit(edit: WritebackEdit): void {
-    this.opts.setVar(edit.name, edit.value); // optimistic preview, immediate
+    this.opts.setVar(edit.name, edit.value); // optimistic preview, immediate (name-keyed DOM var)
     this.applied.add(edit.name);
     this.opts.onStatus(edit.name, "dirty");
-    this.pending.set(edit.name, edit);
-    const existing = this.timers.get(edit.name);
+    const k = this.key(edit.name, edit.theme);
+    this.pending.set(k, edit);
+    const existing = this.timers.get(k);
     if (existing) clearTimeout(existing);
-    this.timers.set(
-      edit.name,
-      setTimeout(() => void this.flush(edit.name), this.opts.debounceMs),
-    );
+    this.timers.set(k, setTimeout(() => void this.flush(k), this.opts.debounceMs));
   }
 
-  private async flush(name: string): Promise<void> {
-    this.timers.delete(name);
-    const edit = this.pending.get(name);
+  private async flush(k: string): Promise<void> {
+    this.timers.delete(k);
+    const edit = this.pending.get(k);
     if (!edit) return;
-    this.pending.delete(name);
-    this.opts.onStatus(name, "saving");
+    this.pending.delete(k);
+    this.opts.onStatus(edit.name, "saving");
     try {
       const res = await fetch(this.endpoint, {
         method: "POST",
@@ -88,20 +91,23 @@ export class WritebackQueue {
         } catch {
           /* ignore */
         }
-        this.rollback(name, msg);
+        this.rollback(edit, msg);
         return;
       }
-      this.lastGood.set(name, edit.value);
-      this.opts.onStatus(name, "saved");
+      this.lastGood.set(k, edit.value);
+      this.opts.onStatus(edit.name, "saved");
     } catch (e) {
-      this.rollback(name, (e as Error).message);
+      this.rollback(edit, (e as Error).message);
     }
   }
 
-  private rollback(name: string, error: string): void {
-    const good = this.lastGood.get(name);
-    if (good !== undefined) this.opts.setVar(name, good);
-    this.opts.onStatus(name, "error", error);
+  private rollback(edit: WritebackEdit, error: string): void {
+    const good = this.lastGood.get(this.key(edit.name, edit.theme));
+    if (good !== undefined) {
+      this.opts.setVar(edit.name, good);
+      this.applied.add(edit.name); // re-arm: a block switch may have emptied applied; keep it reclaimable
+    }
+    this.opts.onStatus(edit.name, "error", error);
   }
 }
 

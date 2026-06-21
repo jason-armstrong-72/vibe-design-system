@@ -157,7 +157,11 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       // ...then re-seed the currently-selected token's control + queue from the new block's value.
       if (selectedToken) {
         const value = currentValue(selectedToken, block);
-        queue.seed(selectedToken, value);
+        queue.seed(selectedToken, block, value);
+        // NOTE: status is name-keyed (one slot per token, shared across blocks), so we reset to the new
+        // block's truth (idle). A same-token write still in flight for the OLD block isn't surfaced after
+        // the switch (it still lands via the armed timer) — a known limitation pending a per-(name,theme)
+        // status model. See docs/superpowers/specs/2026-06-21-writeback-perblock-key-design.md §4.
         setPerToken((prev) => {
           const existing = prev[selectedToken];
           if (!existing) return prev;
@@ -189,7 +193,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     (name: string) => {
       setSelectedToken(name);
       const value = currentValue(name, editingBlock);
-      queue.seed(name, value);
+      queue.seed(name, editingBlock, value);
       setPerToken((prev) => {
         if (prev[name]) return prev;
         return {
@@ -279,7 +283,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     (entry: HistoryEntry, value: string) => {
       if (entry.theme !== editingBlock) setEditingBlock(entry.theme);
       setSelectedToken(entry.token);
-      queue.seed(entry.token, value);
+      queue.seed(entry.token, entry.theme, value);
       applyValue(entry.token, entry.theme, value, "idle");
     },
     [editingBlock, setEditingBlock, queue, applyValue],
