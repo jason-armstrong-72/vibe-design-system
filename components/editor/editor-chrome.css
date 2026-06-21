@@ -590,10 +590,10 @@
   stroke-width: 2.5;
 }
 .ed-bezier-anchor {
-  fill: var(--ed-muted);
+  fill: var(--ed-accent);
 }
 .ed-bezier-handle {
-  fill: var(--ed-accent);
+  fill: var(--ed-muted);
   stroke: var(--ed-panel);
   stroke-width: 2;
   cursor: grab;

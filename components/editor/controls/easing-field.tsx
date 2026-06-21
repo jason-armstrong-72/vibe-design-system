@@ -210,7 +210,7 @@ export function EasingField({ token, value, onChange, tokens }: EasingFieldProps
           aria-hidden="true"
           cx={pts.p1.sx}
           cy={pts.p1.sy}
-          r={8}
+          r={6}
           className="ed-bezier-handle"
           onPointerDown={(e) => onHandleDown(1, e)}
           onPointerMove={onHandleMove}
@@ -222,7 +222,7 @@ export function EasingField({ token, value, onChange, tokens }: EasingFieldProps
           aria-hidden="true"
           cx={pts.p2.sx}
           cy={pts.p2.sy}
-          r={8}
+          r={6}
           className="ed-bezier-handle"
           onPointerDown={(e) => onHandleDown(2, e)}
           onPointerMove={onHandleMove}
