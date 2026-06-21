@@ -53,7 +53,7 @@ const PREAMBLE = `# Design System — token reference
 - Components live in \`components/ui/\` (shadcn: \`Button\`, \`Card\`/\`CardHeader\`/\`CardContent\`/\`CardFooter\`, \`Input\`, …). Import and compose them; they are already token-themed.
 
 ## Extension procedure (add a value the system lacks)
-One procedure for everything: **add the value token to \`:root\` in \`app/globals.css\`, then run \`npm run tokens\`** — it auto-wires the Tailwind utility and refreshes this manifest. **Never hardcode; never use an off-scale class** (it produces no styles and the blocking lint rejects it).
+One procedure for everything: **add the value token to \`:root\` in \`app/globals.css\`, then run \`npm run tokens\`** — it auto-wires the Tailwind utility and refreshes this manifest. **Never hardcode; never use an off-scale class** (it produces no styles and the blocking lint rejects it). **If no existing token fits the *meaning* (not just the syntax), extend — don't repurpose a semantically-wrong token (e.g. \`warning\` for a celebratory promo).**
 
 **Color — extend freely** (the common case). Add to BOTH \`:root\` and \`.dark\` (plus a \`<name>-foreground\` partner if text sits on it):
 

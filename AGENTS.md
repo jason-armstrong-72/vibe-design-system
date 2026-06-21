@@ -13,7 +13,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 **The token reference is generated and always current:** see [`design-system.md`](design-system.md) for the full token table, usage rules, and the one-step extension procedure. Read it before building.
 
-**Need a value the system lacks?** Follow the extension procedure in `design-system.md` (for a color: add it to BOTH `:root` and `.dark` in `app/globals.css`, then `npm run tokens`). The new token auto-appears on `/design-system` and becomes editable in the visual editor — extend the system, don't hardcode.
+**Need a value the system lacks?** Follow the extension procedure in `design-system.md` (for a color: add it to BOTH `:root` and `.dark` in `app/globals.css`, then `npm run tokens`). The new token auto-appears on `/design-system` and becomes editable in the visual editor — extend the system, don't hardcode. If no existing token fits the *meaning* (not just the syntax), extend — don't repurpose a semantically-wrong token (e.g. `warning` for a celebratory promo).
 
 **The gate (`npm run check`, also run in CI + pre-commit) and how to fix each failure:**
 
