@@ -24,4 +24,14 @@ describe("arbitrary-tailwind", () => {
     expect(find("w-[20rem]")).toEqual([]);          // size prefix: not bare-numeric-checked
     expect(find("p-4 gap-1.5 px-2.5 bg-primary text-lg")).toEqual([]);
   });
+
+  it("strips variant prefixes so existing rules still fire (hole #4 / regression twins)", () => {
+    expect(find("md:bg-red-500")).toContain("default-palette");
+    expect(find("hover:p-13")).toContain("off-scale-spacing");
+    expect(find("md:text-[10px]")).toContain("arbitrary-length");
+    expect(find("md:hover:bg-red-500")).toContain("default-palette"); // stacked
+  });
+  it("variant strip is bracket-aware (colon inside [] is not a variant separator)", () => {
+    expect(find("bg-[url(http://x)]")).toEqual([]); // not a color/length → no finding, no misparse
+  });
 });
