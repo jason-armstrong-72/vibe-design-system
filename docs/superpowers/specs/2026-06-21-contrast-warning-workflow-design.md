@@ -28,7 +28,10 @@ gate already uses, and make the editor a thin consumer:
     a `-foreground` token pairs with its base; a base pairs with its present `-foreground`; the
     `--background`↔`--foreground` special pair is handled explicitly (so `--foreground` doesn't naively strip to
     `--` **[R: C3]**). Structural (presence-checked) — matches the gate's invented-token pairing (F5), not the
-    role-gated `foregroundFor`.
+    role-gated `foregroundFor`. The `present: Set<string>` is supplied by each caller: `contrastResults` already
+    has `new Set(names)`; the **editor builds `new Set(tokens.map(t => t.name))`** from its `ManifestToken[]`.
+    Keep the `--background/--foreground` handling non-role-gated and presence-tolerant so `contrastResults`'
+    output stays byte-identical (the parity suites in §5 are the acceptance gate for the refactor).
 - **`lib/tokens/contrast.ts`** is refactored to **build its pairs via `partnerOf`** and read its threshold via
   `minRatio` (replacing the inlined logic at the current lines 37-42, 49). Behaviour is unchanged — guarded by
   the existing theme-AA + F5 tests. It also **exports `measurable`** (already a pure predicate) for editor reuse.
@@ -75,6 +78,8 @@ Lives in `lib/editor/oklch.ts`. Signature: `nearestPassingL(value: string, partn
   persisted value are **gamut-mapped** (`oklchToHex` calls `clampChroma`). Measuring the raw value can return a
   "passing" L whose clamped colour actually fails. So the search must measure the **gamut-mapped** value at each
   candidate L (clamp via the same path `oklchToHex` uses, then contrast), so the returned L passes *as rendered*.
+  Implement the re-measure as `wcagContrast(oklchToHex(candidate), partnerValue)` (hex round-trip — `oklchToHex`
+  already `clampChroma`s; no new clamped-oklch helper needed).
 - Keeps C and H fixed; returns the new `oklch(...)` string, or **`null`** if no L in the chosen direction
   reaches `min` at this chroma.
 
@@ -118,7 +123,8 @@ per-theme result or null) + the fix suggestions. The control renders:
 **a11y [R: P2]:** the sliders fire on every drag, so `role="alert"` would spam screen readers. Use a single
 `aria-live="polite"` region that updates **only on a pass↔fail transition** (not on every ratio tick), and
 associate the readout with the L/C/H inputs via `aria-describedby`. Icons (if any) from `@untitled-ui/icons-react`
-(the editor's set), not inline SVG.
+(the editor's set), not inline SVG — **confirm the package is an installed dependency before using it**; the
+current control uses an inline SVG glyph, so plain text (no icon) is an acceptable fallback if it isn't.
 
 ---
 
