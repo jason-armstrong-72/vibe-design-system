@@ -1,8 +1,19 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { WritebackQueue } from "@/lib/editor/use-token-writeback";
 
 beforeEach(() => vi.useFakeTimers());
+afterEach(() => vi.useRealTimers());
+
+// A fetch mock that records the parsed POST bodies (the existing mocks ignore args).
+function capturingFetch(ok = true, status = 200) {
+  const bodies: Array<{ token: string; value: string; theme: string }> = [];
+  const fn = vi.fn(async (_url: string, init: { body: string }) => {
+    bodies.push(JSON.parse(init.body));
+    return new Response(JSON.stringify(ok ? { ok: true } : { error: "bad" }), { status });
+  }) as unknown as typeof fetch;
+  return { fn, bodies };
+}
 
 function makeQueue(fetchImpl: typeof fetch) {
   vi.stubGlobal("fetch", fetchImpl);
@@ -43,7 +54,7 @@ describe("WritebackQueue", () => {
       async () => new Response(JSON.stringify({ error: "bad" }), { status: 400 }),
     ) as unknown as typeof fetch;
     const { q, applied } = makeQueue(fetchMock);
-    q.seed("--primary", "oklch(0.2 0 0)");
+    q.seed("--primary", "light", "oklch(0.2 0 0)");
     q.edit({ name: "--primary", value: "oklch(0.9 0 0)", theme: "light" });
     await vi.advanceTimersByTimeAsync(250);
     expect(applied.at(-1)).toEqual(["--primary", "oklch(0.2 0 0)"]);
@@ -62,5 +73,51 @@ describe("WritebackQueue", () => {
     cleared.length = 0;
     q.clearPreviews();
     expect(cleared).toEqual([]);
+  });
+
+  it("cross-block: same token in light then dark within the debounce → BOTH writes POST", async () => {
+    const { fn, bodies } = capturingFetch();
+    const { q } = makeQueue(fn);
+    q.edit({ name: "--primary", value: "L", theme: "light" });
+    q.edit({ name: "--primary", value: "D", theme: "dark" }); // within debounce — must NOT overwrite light
+    await vi.advanceTimersByTimeAsync(250);
+    expect(fn).toHaveBeenCalledTimes(2);
+    expect(bodies).toEqual(
+      expect.arrayContaining([
+        { token: "--primary", value: "L", theme: "light" },
+        { token: "--primary", value: "D", theme: "dark" },
+      ]),
+    );
+  });
+
+  it("same token + same block coalesces to ONE POST carrying the LAST value", async () => {
+    const { fn, bodies } = capturingFetch();
+    const { q } = makeQueue(fn);
+    q.edit({ name: "--primary", value: "oklch(0.3 0 0)", theme: "light" });
+    q.edit({ name: "--primary", value: "oklch(0.4 0 0)", theme: "light" });
+    await vi.advanceTimersByTimeAsync(250);
+    expect(fn).toHaveBeenCalledTimes(1);
+    expect(bodies[0]).toEqual({ token: "--primary", value: "oklch(0.4 0 0)", theme: "light" });
+  });
+
+  it("cross-block rollback reverts to THAT block's last-good (lastGood is per-block)", async () => {
+    const { fn } = capturingFetch(false, 400);
+    const { q, applied } = makeQueue(fn);
+    q.seed("--primary", "dark", "oklch(0.8 0 0)"); // dark's last-good
+    q.edit({ name: "--primary", value: "oklch(0.5 0 0)", theme: "dark" }); // will 400
+    await vi.advanceTimersByTimeAsync(250);
+    expect(applied.at(-1)).toEqual(["--primary", "oklch(0.8 0 0)"]); // reverted to dark good, not undefined
+  });
+
+  it("a failed cross-block flush's rollback re-adds to applied so clearPreviews reclaims it (no leak)", async () => {
+    const { fn } = capturingFetch(false, 400);
+    const { q, cleared } = makeQueue(fn);
+    q.seed("--primary", "light", "oklch(0.2 0 0)");
+    q.edit({ name: "--primary", value: "oklch(0.9 0 0)", theme: "light" });
+    q.clearPreviews(); // simulate block switch BEFORE the flush — empties applied
+    await vi.advanceTimersByTimeAsync(250); // flush fails → rollback setVar + re-add to applied
+    cleared.length = 0; // ISOLATE the next clear — only it is sensitive to the applied.add re-arm
+    q.clearPreviews();
+    expect(cleared).toContain("--primary"); // reclaimable ONLY if rollback re-added it
   });
 });
