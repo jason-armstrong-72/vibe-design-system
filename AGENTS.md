@@ -9,6 +9,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 **Law:** style with the design system's Tailwind token utilities (`bg-primary`, `p-4`, `text-lg`, `rounded-lg`) or CSS vars (`var(--primary)`). Never hardcode a color, size, font, or duration. Off-token classes produce no styles **and** fail `npm run check`.
 
+**Variant prefixes don't exempt a class** — `md:bg-[red]`, `hover:rounded-[5px]`, `dark:text-gray-500` are rejected exactly like their unprefixed forms.
+
 **The token reference is generated and always current:** see [`design-system.md`](design-system.md) for the full token table, usage rules, and the one-step extension procedure. Read it before building.
 
 **Need a value the system lacks?** Follow the extension procedure in `design-system.md` (for a color: add it to BOTH `:root` and `.dark` in `app/globals.css`, then `npm run tokens`). The new token auto-appears on `/design-system` and becomes editable in the visual editor — extend the system, don't hardcode.
