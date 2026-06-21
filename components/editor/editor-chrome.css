@@ -555,3 +555,110 @@
   outline: 2px solid var(--ed-accent);
   outline-offset: 1px;
 }
+
+/* Bezier curve editor (easing control) */
+.ed-bezier {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ed-bezier-legend {
+  margin: 0;
+}
+.ed-bezier-canvas {
+  width: 100%;
+  height: auto;
+  background: var(--ed-field);
+  border: 1px solid var(--ed-border);
+  border-radius: 8px;
+  touch-action: none; /* let pointer drag own the gesture */
+}
+.ed-bezier-canvas--fallback {
+  opacity: 0.5;
+}
+.ed-bezier-band {
+  fill: var(--ed-panel-raised);
+  stroke: var(--ed-border);
+  stroke-dasharray: 3 3;
+}
+.ed-bezier-arm {
+  stroke: var(--ed-muted);
+  stroke-width: 1.5;
+}
+.ed-bezier-path {
+  stroke: var(--ed-accent);
+  stroke-width: 2.5;
+}
+.ed-bezier-anchor {
+  fill: var(--ed-accent);
+}
+.ed-bezier-handle {
+  fill: var(--ed-muted);
+  stroke: var(--ed-panel);
+  stroke-width: 2;
+  cursor: grab;
+}
+.ed-bezier-handle:active {
+  cursor: grabbing;
+}
+.ed-bezier-note {
+  margin: 0;
+  color: var(--ed-warn);
+}
+.ed-bezier-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+/* restore a focus ring (.ed-row input is all:unset) for keyboard users */
+.ed-bezier .ed-row input:focus-visible {
+  outline: 2px solid var(--ed-accent);
+  outline-offset: 1px;
+  border-radius: 3px;
+}
+.ed-bezier-preset {
+  all: unset;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--ed-border);
+  background: var(--ed-field);
+  color: var(--ed-text);
+  font-size: 11px;
+  cursor: pointer;
+}
+.ed-bezier-preset:hover {
+  background: var(--ed-field-hover);
+  border-color: var(--ed-accent);
+}
+.ed-bezier-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ed-bezier-preview {
+  position: relative;
+  flex: 1;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--ed-field);
+  border: 1px solid var(--ed-border);
+  overflow: hidden;
+}
+.ed-bezier-dot {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ed-accent);
+  animation: ed-bezier-run 1.2s var(--ed-bezier-ease, linear) infinite alternate;
+}
+@keyframes ed-bezier-run {
+  from {
+    left: 6px;
+  }
+  to {
+    left: calc(100% - 16px);
+  }
+}
