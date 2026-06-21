@@ -32,7 +32,9 @@ export function syncThemeMappings(css: string): SyncResult {
   // Exact-prop membership over ALL existing decls. The namespace-clear decls (`--color-*: initial`, …)
   // have prop `--color-*` (literal asterisk), so they never collide with a real step like `--text-8xl`.
   const existing = new Set<string>();
-  themeRule.walkDecls((d) => existing.add(d.prop));
+  themeRule.walkDecls((d) => {
+    existing.add(d.prop);
+  });
 
   const added: string[] = [];
   const warnings: string[] = [];
