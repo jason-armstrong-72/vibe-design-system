@@ -28,6 +28,7 @@ const KEYWORDS = ["ease", "ease-in", "ease-out", "ease-in-out", "linear"];
 const RAW_VALID =
   /^(cubic-bezier\(.+\)|linear|ease|ease-in|ease-out|ease-in-out|steps\(.+\)|var\(.+\))$/;
 const DEFAULT_CURVE: Cubic = [0.25, 0.1, 0.25, 1]; // `ease`, last-resort fallback
+const HANDLE = 10; // square handle side (px in viewBox units)
 
 function tokenValue(t: ManifestToken): string {
   return t.values.light ?? t.values.dark ?? "";
@@ -205,24 +206,26 @@ export function EasingField({ token, value, onChange, tokens }: EasingFieldProps
         <circle cx={pts.anchorStart.sx} cy={pts.anchorStart.sy} r={4} className="ed-bezier-anchor" />
         <circle cx={pts.anchorEnd.sx} cy={pts.anchorEnd.sy} r={4} className="ed-bezier-anchor" />
         {/* draggable handles (pointer-only; numeric inputs are the keyboard path) */}
-        <circle
+        <rect
           data-testid="ed-bezier-handle-1"
           aria-hidden="true"
-          cx={pts.p1.sx}
-          cy={pts.p1.sy}
-          r={6}
+          x={pts.p1.sx - HANDLE / 2}
+          y={pts.p1.sy - HANDLE / 2}
+          width={HANDLE}
+          height={HANDLE}
           className="ed-bezier-handle"
           onPointerDown={(e) => onHandleDown(1, e)}
           onPointerMove={onHandleMove}
           onPointerUp={onHandleUp}
           onPointerCancel={onHandleUp}
         />
-        <circle
+        <rect
           data-testid="ed-bezier-handle-2"
           aria-hidden="true"
-          cx={pts.p2.sx}
-          cy={pts.p2.sy}
-          r={6}
+          x={pts.p2.sx - HANDLE / 2}
+          y={pts.p2.sy - HANDLE / 2}
+          width={HANDLE}
+          height={HANDLE}
           className="ed-bezier-handle"
           onPointerDown={(e) => onHandleDown(2, e)}
           onPointerMove={onHandleMove}
