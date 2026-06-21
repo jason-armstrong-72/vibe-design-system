@@ -79,13 +79,6 @@ export function controlForGroup(group: TokenGroup): ControlType {
   return CONTROL[group];
 }
 
-/** The -foreground partner of a bg color token, or null if none / if this IS a foreground. */
-export function foregroundFor(name: string): string | null {
-  if (name.endsWith("-foreground")) return null;
-  const bare = name.slice(2);
-  return COLOR_ROLES.has(`${bare}-foreground`) ? `${name}-foreground` : null;
-}
-
 /** Foreground roles allowed at the AA-large 3:1 threshold (secondary/large text). */
 export const LARGE_OK = new Set(["--muted-foreground"]);
 
