@@ -108,8 +108,9 @@ function capturingFetch(ok = true, status = 200) {
     q.edit({ name: "--primary", value: "oklch(0.9 0 0)", theme: "light" });
     q.clearPreviews(); // simulate block switch BEFORE the flush — empties applied
     await vi.advanceTimersByTimeAsync(250); // flush fails → rollback setVar + re-add to applied
+    cleared.length = 0; // ISOLATE the next clear — only it is sensitive to the applied.add re-arm
     q.clearPreviews();
-    expect(cleared).toContain("--primary"); // the rolled-back var was reclaimable
+    expect(cleared).toContain("--primary"); // reclaimable ONLY if rollback re-added it (fails without the fix)
   });
 ```
 
