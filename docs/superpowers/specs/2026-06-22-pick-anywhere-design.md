@@ -30,34 +30,52 @@ string / manifest value). **That fails for most of the real page** and is abando
   never equals the resolved family stack.
 
 **The mechanism is therefore: match the element's computed value to a token's computed value, both produced
-by the same `getComputedStyle` path.** A **probe element** renders each candidate token's utility and we read
+by the same `getComputedStyle` path.** A **probe element** carries each candidate token's value and we read
 back the browser's canonical serialization:
 
 1. **Probe build** (per theme, memoized): create one visually-hidden probe element (`position:absolute;
    width:0;height:0;opacity:0;overflow:hidden;pointer-events:none` — **NOT** `display:none`/`visibility:hidden`,
    which yield empty/unresolved computed styles **[R: correctness-S5]**) appended **inside the live theme
    subtree** (`document.body`; `setEditingBlock` toggles `.dark` on `document.documentElement`, so the probe
-   inherits the active theme — `editor-provider.tsx:151`). For each visible token, apply its **manifest
-   `utilities[0]`** (e.g. `bg-primary`, `rounded-lg`, `text-sm`, `shadow-md`, `font-sans`) to the probe and read
-   the relevant computed property. This produces an index `{ property → [{ canonicalValue, token }] }`.
-2. **Match**: read the clicked element's computed value for each of the 6 properties, canonicalize it the same
-   way, and look it up in the index. **All** tokens sharing a canonical value are returned (collision list —
-   option A, the user's decision).
+   inherits the active theme — `editor-provider.tsx:151`). The probe value is sourced **per group** (see the
+   probe-source rule below); we read back the group's property → index `{ group → [{ canonicalValue, token }] }`.
+2. **Match**: for each of the 6 element-read properties (mapped from groups by `GROUP_PROPERTY` below), read the
+   clicked element's computed value, canonicalize it the same way, and look it up in the matching group's index.
+   **All** tokens sharing a canonical value are returned (collision list — option A, the user's decision).
 
-**Colours** are canonicalized through **culori** (parse → round in a fixed space, e.g. `formatRgb` rounded or
-oklch rounded) so the two *computed* strings compare reliably across serialization differences. culori is
-applied to **computed** values on both sides — **not** to authored tokens **[R: correctness-B2]**.
+**Probe-source rule [R: spec-review — the first draft's "probe with `bg-*` / `utilities[0]`" was wrong:
+synthesized `bg-foreground`/`bg-primary-foreground` aren't emitted by Tailwind, and `--border`/`--ring`/
+`--input` read the wrong property].** Source the probe value from the **editable runtime token var** for every
+group except radius — these vars (`--primary`, `--primary-foreground`, `--fs-sm`, `--elevation-md`,
+`--font-sans`, …) are all emitted to `:root`/`.dark`, so `var(<token.name>)` always resolves, with **no
+dependency on which Tailwind utility class got emitted** and **no per-token prefix logic**:
+- **color** → `probe.style.color = var(<token.name>)`, read `color`. (One resolved colour per token; matched
+  against the element's `background-color` **and** `color`.) Works uniformly for base, `-foreground`, `border`,
+  `ring`, `input` colour tokens.
+- **fontSize** → `probe.style.fontSize = var(<token.name>)` (e.g. `var(--fs-sm)`), read `font-size`.
+- **fontFamily** → `probe.style.fontFamily = var(<token.name>)`, read `font-family`.
+- **shadow** → `probe.style.boxShadow = var(<token.name>)` (e.g. `var(--elevation-md)`), read `box-shadow`.
+- **radius** → the **one** exception. `--radius` is a single knob; elements use the four *derived* steps
+  (`rounded-sm/md/lg/xl` → `var(--radius-sm…xl)`, which are `@theme inline` and **not** emitted as standalone
+  vars). So radius probes via the token's **manifest `utilities`** (`["rounded-sm","rounded-md","rounded-lg",
+  "rounded-xl"]`) — apply each class, read `border-radius`; all four computed px map back to the single
+  `--radius` token. (These classes are emitted — `/design-system` renders the radius steps; see the
+  compiled-CSS note.)
 
-**Property → token source of truth [R: architecture-B1].** Do **not** hardcode a `property → token-prefix`
-map (a third parallel encoding of the naming convention that drifts). Instead:
-- iterate the manifest tokens; each already carries `group` + `utilities` (the generated single source);
-- a small **closed, exhaustively-guarded `GROUP_PROPERTY` table keyed on `TokenGroup`** (living beside
-  `lib/editor/control-map.ts`) maps the groups in scope to their CSS property:
-  `color → ["background-color","color"]`, `radius → ["border-radius"]`, `fontSize → ["font-size"]`,
-  `fontFamily → ["font-family"]`, `shadow → ["box-shadow"]`. Groups not in the table (spacing, duration,
-  zIndex, …) are simply not probed — that is the scope boundary, in one place.
-- For a `color` token, probe with its `bg-*` utility and read `background-color` (one read serves both the
-  `background-color` and `color` properties — same canonical colour) **[R: correctness-N1]**.
+**Colours** are canonicalized through **culori** (parse → round in a fixed space, e.g. `formatRgb` rounded) so
+the two *computed* strings compare reliably across serialization differences. culori is applied to **computed**
+values on both sides — **not** to authored tokens **[R: correctness-B2]**.
+
+**Group → element-property source of truth [R: architecture-B1].** Do **not** hardcode a `property →
+token-prefix` map. Iterate the manifest tokens (each carries `group` — the generated single source); a small
+**closed, exhaustively-guarded `GROUP_PROPERTY` table keyed on `TokenGroup`** (beside `lib/editor/control-map.ts`)
+maps the in-scope groups to the **element** properties to read+match: `color → ["background-color","color"]`,
+`radius → ["border-radius"]`, `fontSize → ["font-size"]`, `fontFamily → ["font-family"]`,
+`shadow → ["box-shadow"]`. Groups absent from the table (spacing, duration, zIndex, borderWidth, …) are not
+probed — the scope boundary, in one place. **Note:** `border-color`/`outline-color`/ring are deliberately
+**not** read (outside the user's 6 properties); a `--border`/`--ring`/`--input` colour token is still indexed
+under `color`, so it surfaces only as an incidental value-collision if its colour equals an element's
+background/text — harmless and honest under option A.
 
 **Documented no-match cases (honest; no fuzzy/nearest matching) [R: correctness-B2/S6/S7]:**
 - a computed colour with alpha < 1 / `transparent` / `rgba(0,0,0,0)` (the default bg of most elements) →
