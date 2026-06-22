@@ -63,23 +63,21 @@ function StopRow({
   return (
     <div className="ed-gradient-stoprow">
       <GradientStopPicker stop={stop} tokens={tokens} onChange={onStop} label={`stop ${n}`} />
-      <div className="ed-gradient-stoprow-foot">
-        <NumField
-          label={`${token} stop ${n} position`}
-          value={stop.position}
-          onCommit={(v) => onStop({ ...stop, position: clampPct(v) })}
-        />
-        <span className="ed-gradient-pos-unit" aria-hidden="true">%</span>
-        <button
-          type="button"
-          className="ed-iconbtn"
-          aria-label={`Remove stop ${n}`}
-          disabled={!canRemove}
-          onClick={onRemove}
-        >
-          ✕
-        </button>
-      </div>
+      <NumField
+        label={`${token} stop ${n} position`}
+        value={stop.position}
+        onCommit={(v) => onStop({ ...stop, position: clampPct(v) })}
+      />
+      <span className="ed-gradient-pos-unit" aria-hidden="true">%</span>
+      <button
+        type="button"
+        className="ed-iconbtn"
+        aria-label={`Remove stop ${n}`}
+        disabled={!canRemove}
+        onClick={onRemove}
+      >
+        ✕
+      </button>
     </div>
   );
 }
@@ -223,8 +221,14 @@ export function GradientBuilder({ token, value, onChange, tokens, disabled = fal
             <span className="ed-gradient-pad-dot" style={{ left: `${clampPct(display.cx)}%`, top: `${clampPct(display.cy)}%` }} />
           </div>
           <div className="ed-gradient-center">
-            <NumField label={`${token} position x`} value={display.cx} onCommit={(n) => emit({ ...display, cx: clampPct(n) })} />
-            <NumField label={`${token} position y`} value={display.cy} onCommit={(n) => emit({ ...display, cy: clampPct(n) })} />
+            <label className="ed-gradient-axis">
+              <span aria-hidden="true">x</span>
+              <NumField label={`${token} position x`} value={display.cx} onCommit={(n) => emit({ ...display, cx: clampPct(n) })} />
+            </label>
+            <label className="ed-gradient-axis">
+              <span aria-hidden="true">y</span>
+              <NumField label={`${token} position y`} value={display.cy} onCommit={(n) => emit({ ...display, cy: clampPct(n) })} />
+            </label>
           </div>
         </div>
       )}
@@ -236,7 +240,7 @@ export function GradientBuilder({ token, value, onChange, tokens, disabled = fal
               key={i}
               type="button"
               className="ed-gradient-handle"
-              style={{ left: `${clampPct(s.position)}%`, background: stopColor(s) }}
+              style={{ left: `calc(7px + (100% - 14px) * ${clampPct(s.position) / 100})`, background: stopColor(s) }}
               data-checker={s.color === "transparent" ? "" : undefined}
               tabIndex={-1}
               aria-hidden="true"

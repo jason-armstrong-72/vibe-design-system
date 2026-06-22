@@ -781,14 +781,44 @@
   font-size: 12px;
   color: var(--ed-muted);
 }
+/* compact stop control: trigger chip + inline alpha + token popover */
 .ed-gradient-stop {
+  position: relative;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.ed-gradient-trigger[data-checker] {
+  background-image: repeating-conic-gradient(var(--ed-muted) 0% 25%, var(--ed-bg) 0% 50%);
+  background-size: 8px 8px;
+}
+.ed-gradient-alpha-range {
+  flex: 1;
+  min-width: 40px;
+}
+.ed-gradient-alpha-val {
+  min-width: 34px;
+  text-align: right;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--ed-muted);
+}
+.ed-gradient-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 5;
+  padding: 8px;
+  background: var(--ed-bg);
+  border: 1px solid var(--ed-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px oklch(0 0 0 / 0.4);
 }
 .ed-gradient-swatches {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(8, 18px);
   gap: 4px;
 }
 .ed-gradient-swatch {
@@ -812,21 +842,6 @@
 .ed-gradient-swatch-fill[data-checker] {
   background-image: repeating-conic-gradient(var(--ed-muted) 0% 25%, var(--ed-bg) 0% 50%);
   background-size: 8px 8px;
-}
-.ed-gradient-alpha {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.ed-gradient-alpha input[type="range"] {
-  flex: 1;
-}
-.ed-gradient-alpha-val {
-  min-width: 34px;
-  text-align: right;
-  font-family: ui-monospace, monospace;
-  font-size: 11px;
-  color: var(--ed-muted);
 }
 
 /* geometry: angle slider / radial shape + pad */
@@ -884,22 +899,33 @@
 .ed-gradient-ramp {
   position: relative;
   height: 22px;
-  margin-bottom: 12px;
+  margin-bottom: 26px;
   border-radius: 5px;
   border: 1px solid var(--ed-border);
 }
 .ed-gradient-handle {
   position: absolute;
-  top: 22px;
+  top: 27px;
   width: 14px;
   height: 14px;
   padding: 0;
   transform: translateX(-50%);
-  border: 2px solid var(--ed-bg);
+  border: 2px solid var(--ed-fg);
   border-radius: 3px;
-  box-shadow: 0 0 0 1px var(--ed-border);
+  box-shadow: 0 1px 3px oklch(0 0 0 / 0.5);
   cursor: ew-resize;
   touch-action: none;
+}
+/* upward pointer triangle bridging the chip to the ramp (the demo shape) */
+.ed-gradient-handle::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -7px;
+  transform: translateX(-50%);
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 5px solid var(--ed-fg);
 }
 .ed-gradient-handle[data-checker] {
   background-image: repeating-conic-gradient(var(--ed-muted) 0% 25%, var(--ed-bg) 0% 50%);
@@ -907,26 +933,28 @@
 }
 .ed-gradient-stoprow {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 6px;
-  padding: 8px;
+  padding: 6px 8px;
   border: 1px solid var(--ed-border);
   border-radius: 6px;
 }
-.ed-gradient-stoprow-foot {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
 .ed-gradient-pos {
-  width: 56px;
+  width: 48px;
 }
 .ed-gradient-pos-unit {
   font-size: 11px;
   color: var(--ed-muted);
 }
-.ed-gradient-stoprow-foot .ed-iconbtn {
-  margin-left: auto;
+.ed-gradient-axis {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--ed-muted);
+}
+.ed-gradient-axis .ed-gradient-pos {
+  width: 44px;
 }
 .ed-gradient-addstop {
   align-self: flex-start;

@@ -16,37 +16,45 @@ const TOKENS = [
 const stop: Stop = { color: "--brand-500", alpha: 45, position: 0 };
 
 describe("GradientStopPicker", () => {
-  it("renders a swatch button per COLOR token (not non-color tokens)", () => {
+  it("renders a compact color trigger + alpha slider; palette hidden until opened", () => {
     render(<GradientStopPicker stop={stop} tokens={TOKENS} onChange={() => {}} label="stop 1" />);
-    expect(screen.getByRole("button", { name: /--brand-500/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /--card/ })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: /--fs-base/ })).toBeNull();
+    expect(screen.getByRole("button", { name: /stop 1 color/i })).toBeTruthy();
+    expect(screen.getByRole("slider", { name: /stop 1 alpha/i })).toBeTruthy();
+    // popover closed → token swatches not in the DOM
+    expect(screen.queryByRole("menuitemradio", { name: /--card/ })).toBeNull();
   });
 
-  it("clicking a color swatch emits that token NAME", () => {
+  it("opening the trigger reveals COLOR-token swatches (not non-color)", () => {
+    render(<GradientStopPicker stop={stop} tokens={TOKENS} onChange={() => {}} label="stop 1" />);
+    fireEvent.click(screen.getByRole("button", { name: /stop 1 color/i }));
+    expect(screen.getByRole("menuitemradio", { name: /--brand-500/ })).toBeTruthy();
+    expect(screen.getByRole("menuitemradio", { name: /--card/ })).toBeTruthy();
+    expect(screen.queryByRole("menuitemradio", { name: /--fs-base/ })).toBeNull();
+  });
+
+  it("picking a color emits that token NAME and closes the popover", () => {
     const onChange = vi.fn();
     render(<GradientStopPicker stop={stop} tokens={TOKENS} onChange={onChange} label="stop 1" />);
-    fireEvent.click(screen.getByRole("button", { name: /--card/ }));
+    fireEvent.click(screen.getByRole("button", { name: /stop 1 color/i }));
+    fireEvent.click(screen.getByRole("menuitemradio", { name: /--card/ }));
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ color: "--card" }));
+    expect(screen.queryByRole("menuitemradio", { name: /--card/ })).toBeNull(); // closed
   });
 
-  it("transparent chip emits {color:transparent, alpha:0}", () => {
+  it("transparent option emits {color:transparent, alpha:0}", () => {
     const onChange = vi.fn();
     render(<GradientStopPicker stop={stop} tokens={TOKENS} onChange={onChange} label="stop 1" />);
-    fireEvent.click(screen.getByRole("button", { name: /transparent/i }));
+    fireEvent.click(screen.getByRole("button", { name: /stop 1 color/i }));
+    fireEvent.click(screen.getByRole("menuitemradio", { name: /transparent/i }));
     expect(onChange).toHaveBeenCalledWith({ color: "transparent", alpha: 0, position: 0 });
   });
 
-  it("alpha slider has an accessible name and emits on change", () => {
+  it("alpha slider emits on change and is disabled for a transparent stop", () => {
     const onChange = vi.fn();
-    render(<GradientStopPicker stop={stop} tokens={TOKENS} onChange={onChange} label="stop 1" />);
-    const slider = screen.getByRole("slider", { name: /alpha/i });
-    fireEvent.change(slider, { target: { value: "80" } });
+    const { rerender } = render(<GradientStopPicker stop={stop} tokens={TOKENS} onChange={onChange} label="stop 1" />);
+    fireEvent.change(screen.getByRole("slider", { name: /stop 1 alpha/i }), { target: { value: "80" } });
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ alpha: 80 }));
-  });
-
-  it("alpha slider is disabled for a transparent stop", () => {
-    render(<GradientStopPicker stop={{ color: "transparent", alpha: 0, position: 50 }} tokens={TOKENS} onChange={() => {}} label="stop 2" />);
-    expect((screen.getByRole("slider", { name: /alpha/i }) as HTMLInputElement).disabled).toBe(true);
+    rerender(<GradientStopPicker stop={{ color: "transparent", alpha: 0, position: 50 }} tokens={TOKENS} onChange={onChange} label="stop 1" />);
+    expect((screen.getByRole("slider", { name: /stop 1 alpha/i }) as HTMLInputElement).disabled).toBe(true);
   });
 });
