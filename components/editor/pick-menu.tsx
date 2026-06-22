@@ -18,12 +18,11 @@ const MENU_WIDTH = 240;
 interface Row { property: string; token: string; value: string; isColor: boolean; }
 
 export function PickMenu({
-  anchor, matches, onPickToken, onClose,
+  anchor, matches, onPickToken,
 }: {
   anchor: { x: number; y: number };
   matches: Match[];
   onPickToken: (token: string) => void;
-  onClose: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const rows: Row[] = matches.flatMap((m) =>

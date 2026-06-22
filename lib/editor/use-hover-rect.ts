@@ -32,9 +32,11 @@ export function useHoverRect<M>({ active, match, onPick, onScroll = "reposition"
   const matchRef = useRef(match);
   const onPickRef = useRef(onPick);
   const labelRef = useRef(label);
-  matchRef.current = match;
-  onPickRef.current = onPick;
-  labelRef.current = label;
+  useEffect(() => {
+    matchRef.current = match;
+    onPickRef.current = onPick;
+    labelRef.current = label;
+  });
 
   useEffect(() => {
     if (!active || typeof document === "undefined") return;

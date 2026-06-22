@@ -13,7 +13,7 @@ describe("PickMenu", () => {
       { property: "border-radius", group: "radius", value: "8px", tokens: ["--radius"] },
     ];
     const onPickToken = vi.fn();
-    render(<PickMenu anchor={{ x: 10, y: 10 }} matches={matches} onPickToken={onPickToken} onClose={() => {}} />);
+    render(<PickMenu anchor={{ x: 10, y: 10 }} matches={matches} onPickToken={onPickToken} />);
     expect(screen.getByRole("menu", { name: /tokens for this element/i })).toBeTruthy();
     expect(screen.getAllByRole("menuitem")).toHaveLength(2);
     fireEvent.click(screen.getByRole("menuitem", { name: /--primary/ }));
@@ -23,11 +23,11 @@ describe("PickMenu", () => {
     const matches: Match[] = [
       { property: "background-color", group: "color", value: "#ffffff", tokens: ["--card", "--background", "--popover"] },
     ];
-    render(<PickMenu anchor={{ x: 0, y: 0 }} matches={matches} onPickToken={() => {}} onClose={() => {}} />);
+    render(<PickMenu anchor={{ x: 0, y: 0 }} matches={matches} onPickToken={() => {}} />);
     expect(screen.getAllByRole("menuitem")).toHaveLength(3);
   });
   it("shows the honest empty state with no matches", () => {
-    render(<PickMenu anchor={{ x: 0, y: 0 }} matches={[]} onPickToken={() => {}} onClose={() => {}} />);
+    render(<PickMenu anchor={{ x: 0, y: 0 }} matches={[]} onPickToken={() => {}} />);
     expect(screen.getByText(/no matching design token/i)).toBeTruthy();
     expect(screen.queryAllByRole("menuitem")).toHaveLength(0);
   });

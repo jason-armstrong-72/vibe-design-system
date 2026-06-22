@@ -100,7 +100,6 @@ export function PickOverlay() {
           anchor={popover.anchor}
           matches={popover.matches}
           onPickToken={onPickToken}
-          onClose={() => setPopover(null)}
         />
       )}
     </>
