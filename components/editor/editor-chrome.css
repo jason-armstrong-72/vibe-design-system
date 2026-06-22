@@ -741,10 +741,13 @@
   flex-direction: column;
   gap: 12px;
 }
-.ed-gradient[data-editable="false"] .ed-gradient-stop,
+.ed-gradient[data-editable="false"] .ed-gradient-stops,
 .ed-gradient[data-editable="false"] .ed-gradient-geom {
   opacity: 0.4;
   pointer-events: none;
+}
+.ed-gradient[data-disabled] .ed-gradient-preview {
+  opacity: 0.6;
 }
 .ed-gradient-preview {
   height: 72px;

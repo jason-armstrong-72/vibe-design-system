@@ -115,6 +115,7 @@ export function ControlHost() {
           value={value}
           onChange={(v) => editValue(token.name, v)}
           tokens={MANIFEST.tokens}
+          disabled={editingBlock === "dark" && token.values.dark === undefined}
         />
       );
     default: {

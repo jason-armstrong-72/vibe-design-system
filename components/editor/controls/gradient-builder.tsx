@@ -29,6 +29,8 @@ interface Props {
   value: string;
   onChange: (v: string) => void;
   tokens: ManifestToken[];
+  /** True when the active editing block is dark and this :root-only gradient can't be written there. */
+  disabled?: boolean;
 }
 
 /** A labelled numeric input, commit-on-blur/Enter (the keyboard path for angle/x/y/position). */
@@ -82,7 +84,7 @@ function StopRow({
   );
 }
 
-export function GradientBuilder({ token, value, onChange, tokens }: Props) {
+export function GradientBuilder({ token, value, onChange, tokens, disabled = false }: Props) {
   const parsed = parseGradient(value);
   const [drag, setDrag] = useState<Gradient | null>(null);
   const display: Gradient = drag ?? parsed ?? FALLBACK;
@@ -152,13 +154,26 @@ export function GradientBuilder({ token, value, onChange, tokens }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
-  const startDrag = (m: DragMode) => (e: React.PointerEvent) => {
+  const startDrag = (e: React.PointerEvent, m: DragMode) => {
     e.preventDefault();
     e.currentTarget.setPointerCapture?.(e.pointerId);
     mode.current = m;
     working.current = display;
     setDrag(display);
   };
+
+  // Dark block is active but this gradient lives only in :root → writes would 400. Pre-empt with a
+  // disabled state + guidance instead of letting the error fire after a drag (hooks already ran above).
+  if (disabled) {
+    return (
+      <div className="ed-gradient" data-disabled="">
+        <div className="ed-gradient-preview" style={{ background: value }} aria-hidden="true" />
+        <p className="ed-gradient-fallback" role="status">
+          Gradients are theme-independent — switch to the Light block to edit.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="ed-gradient" data-editable={editable}>
@@ -204,7 +219,7 @@ export function GradientBuilder({ token, value, onChange, tokens }: Props) {
             <option value="circle">circle</option>
             <option value="ellipse">ellipse</option>
           </select>
-          <div className="ed-gradient-pad" ref={padRef} aria-hidden="true" onPointerDown={startDrag({ kind: "pad" })}>
+          <div className="ed-gradient-pad" ref={padRef} aria-hidden="true" onPointerDown={(e) => startDrag(e, { kind: "pad" })}>
             <span className="ed-gradient-pad-dot" style={{ left: `${clampPct(display.cx)}%`, top: `${clampPct(display.cy)}%` }} />
           </div>
           <div className="ed-gradient-center">
@@ -225,7 +240,7 @@ export function GradientBuilder({ token, value, onChange, tokens }: Props) {
               data-checker={s.color === "transparent" ? "" : undefined}
               tabIndex={-1}
               aria-hidden="true"
-              onPointerDown={startDrag({ kind: "stop", index: i })}
+              onPointerDown={(e) => startDrag(e, { kind: "stop", index: i })}
             />
           ))}
         </div>

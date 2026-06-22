@@ -60,6 +60,16 @@ describe("GradientBuilder shell", () => {
   });
 });
 
+describe("GradientBuilder dark-block guard", () => {
+  it("when disabled, shows the switch-to-Light message and no editing controls", () => {
+    const onChange = setup(LINEAR, { disabled: true });
+    expect(screen.getByText(/theme-independent.*switch to the light block/i)).toBeTruthy();
+    expect(screen.queryByRole("radiogroup")).toBeNull();
+    expect(screen.queryByLabelText(/raw value/i)).toBeNull();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+});
+
 describe("GradientBuilder stops", () => {
   it("renders one position input + remove button per stop, plus an add button", () => {
     setup(LINEAR);
