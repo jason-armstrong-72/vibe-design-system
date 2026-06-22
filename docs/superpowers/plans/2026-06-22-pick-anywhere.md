@@ -473,19 +473,26 @@ git commit -m "refactor(editor): extract use-hover-rect; highlight-overlay uses 
 - Create: `lib/editor/use-probe-index.ts`
 - Test: extend `tests/editor/editor-provider.test.tsx` (pickMode toggle + disable clears)
 
+> **DO THIS TASK'S Step 3 (provider edit) FIRST**, before Task 2's highlight-overlay refactor — that refactor
+> reads `pickMode`, so the provider must expose it for every commit to compile. (Task 1 is independent; Task 2's
+> hook is independent, but its highlight refactor needs `pickMode`.)
+
 - [ ] **Step 1: Provider test (failing)**
 
-Add to `tests/editor/editor-provider.test.tsx` (follow the file's existing render/act harness):
+The existing `tests/editor/editor-provider.test.tsx` uses a `Probe` component projecting state into
+`data-testid` spans + on-screen buttons (NOT an `api` capture). Match it: add to `Probe` a
+`<span data-testid="pick">{String(e.pickMode)}</span>`, a `<button onClick={() => e.togglePickMode()}>do-pick</button>`,
+and a `<button onClick={() => e.disable()}>do-disable</button>` (if not already present). Then add the test:
 
 ```tsx
 it("pickMode toggles and is cleared by disable()", () => {
-  // render the provider + a capture component exposing useEditor() (see existing tests' Capture pattern)
-  act(() => api!.enable());
-  expect(api!.pickMode).toBe(false);
-  act(() => api!.togglePickMode());
-  expect(api!.pickMode).toBe(true);
-  act(() => api!.disable());
-  expect(api!.pickMode).toBe(false);
+  setup();
+  fireEvent.click(screen.getByText("do-enable"));
+  expect(screen.getByTestId("pick").textContent).toBe("false");
+  act(() => { fireEvent.click(screen.getByText("do-pick")); });
+  expect(screen.getByTestId("pick").textContent).toBe("true");
+  act(() => { fireEvent.click(screen.getByText("do-disable")); });
+  expect(screen.getByTestId("pick").textContent).toBe("false");
 });
 ```
 
@@ -561,11 +568,11 @@ export function useProbeIndex() {
           probe.className = "";
         } else {
           const styleProp = STYLE_PROP[group]!;
-          // @ts-expect-error indexed style write
+          // styleProp is a writable union of CSSStyleDeclaration keys → these indexed writes type-check
+          // cleanly (do NOT add @ts-expect-error — the directive would be unused → TS2578 build error).
           probe.style[styleProp] = `var(${t.name})`;
           const canon = canonicalize(canonProp, read(probe, canonProp));
           if (canon) (index[group] ??= []).push({ token: t.name, canonical: canon });
-          // @ts-expect-error reset
           probe.style[styleProp] = "";
         }
       }
@@ -611,8 +618,54 @@ git commit -m "feat(editor): provider pickMode sub-mode + DOM probe-index hook"
 - Modify: `components/editor/editor-mount.tsx` (mount `<PickOverlay/>`)
 - Modify: `components/editor/panel-toolbar.tsx` (eyedropper toggle)
 - Modify: `components/editor/editor-chrome.css` (`.ed-pick-*`)
+- Test: `tests/editor/pick-menu.test.tsx`
 
-- [ ] **Step 1: Create the menu**
+- [ ] **Step 1: Write the failing PickMenu test** (covers rows + the honest empty state — deterministic, vs the unreliable e2e empty-state target)
+
+Create `tests/editor/pick-menu.test.tsx`:
+
+```tsx
+// @vitest-environment jsdom
+import { describe, it, expect, afterEach, vi } from "vitest";
+import { render, screen, fireEvent, cleanup } from "@testing-library/react";
+import { PickMenu } from "@/components/editor/pick-menu";
+import type { Match } from "@/lib/editor/resolve-token";
+
+afterEach(cleanup);
+
+describe("PickMenu", () => {
+  it("renders a row per (property, token) and fires onPickToken", () => {
+    const matches: Match[] = [
+      { property: "background-color", group: "color", value: "#171717", tokens: ["--primary"] },
+      { property: "border-radius", group: "radius", value: "8px", tokens: ["--radius"] },
+    ];
+    const onPickToken = vi.fn();
+    render(<PickMenu anchor={{ x: 10, y: 10 }} matches={matches} onPickToken={onPickToken} onClose={() => {}} />);
+    expect(screen.getByRole("menu", { name: /tokens for this element/i })).toBeTruthy();
+    expect(screen.getAllByRole("menuitem")).toHaveLength(2);
+    fireEvent.click(screen.getByRole("menuitem", { name: /--primary/ }));
+    expect(onPickToken).toHaveBeenCalledWith("--primary");
+  });
+  it("lists every token of a collision", () => {
+    const matches: Match[] = [
+      { property: "background-color", group: "color", value: "#ffffff", tokens: ["--card", "--background", "--popover"] },
+    ];
+    render(<PickMenu anchor={{ x: 0, y: 0 }} matches={matches} onPickToken={() => {}} onClose={() => {}} />);
+    expect(screen.getAllByRole("menuitem")).toHaveLength(3);
+  });
+  it("shows the honest empty state with no matches", () => {
+    render(<PickMenu anchor={{ x: 0, y: 0 }} matches={[]} onPickToken={() => {}} onClose={() => {}} />);
+    expect(screen.getByText(/no matching design token/i)).toBeTruthy();
+    expect(screen.queryAllByRole("menuitem")).toHaveLength(0);
+  });
+});
+```
+
+- [ ] **Step 2: Run → fails** (`pick-menu` missing).
+Run: `cd /Users/jason/Developer/vibe-design-system && npx vitest run tests/editor/pick-menu.test.tsx`
+Expected: FAIL.
+
+- [ ] **Step 3: Create the menu**
 
 Create `components/editor/pick-menu.tsx`:
 
@@ -704,7 +757,7 @@ export function PickMenu({
 }
 ```
 
-- [ ] **Step 2: Create the overlay**
+- [ ] **Step 4: Run PickMenu test → pass**, then create the overlay
 
 Create `components/editor/pick-overlay.tsx`:
 
@@ -819,7 +872,7 @@ export function PickOverlay() {
 }
 ```
 
-- [ ] **Step 3: Mount the overlay** — in `components/editor/editor-mount.tsx`, import `PickOverlay` and render it beside `<HighlightOverlay />` inside `EditorShell`'s returned tree:
+- [ ] **Step 5: Mount the overlay** — in `components/editor/editor-mount.tsx`, import `PickOverlay` and render it beside `<HighlightOverlay />` inside `EditorShell`'s returned tree:
 
 ```tsx
 import { PickOverlay } from "@/components/editor/pick-overlay";
@@ -830,7 +883,7 @@ import { PickOverlay } from "@/components/editor/pick-overlay";
       <EditorPanel />
 ```
 
-- [ ] **Step 4: Toolbar toggle** — in `components/editor/panel-toolbar.tsx`:
+- [ ] **Step 6: Toolbar toggle** — in `components/editor/panel-toolbar.tsx`:
 1. Import `Dropper`: `import { ChevronDown, Dropper, Moon01, Sun, X } from "@untitled-ui/icons-react";`
 2. Pull `pickMode, togglePickMode` from `useEditor()`.
 3. Add, as the first `.ed-iconbtn` in `.ed-toolbar-actions` (before the appearance button):
@@ -849,7 +902,7 @@ import { PickOverlay } from "@/components/editor/pick-overlay";
 </button>
 ```
 
-- [ ] **Step 5: Chrome CSS** — append to `components/editor/editor-chrome.css`:
+- [ ] **Step 7: Chrome CSS** — append to `components/editor/editor-chrome.css`:
 
 ```css
 /* Pick-anywhere */
@@ -911,11 +964,11 @@ import { PickOverlay } from "@/components/editor/pick-overlay";
 }
 ```
 
-- [ ] **Step 6: Type/compile gate**
+- [ ] **Step 8: Type/compile gate**
 Run: `cd /Users/jason/Developer/vibe-design-system && npm run check`
 Expected: PASS (chrome CSS excluded; no off-token classes added to app/components).
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
 cd /Users/jason/Developer/vibe-design-system
@@ -967,12 +1020,15 @@ test.describe("pick-anywhere", () => {
     }
   });
 
-  test("Escape exits pick mode; empty state on a transparent wrapper", async ({ page }) => {
+  test("layered Escape: popover closes, then pick mode exits", async ({ page }) => {
     await enterPick(page);
-    // a plain layout div with transparent bg + no token-backed size → no match.
-    await page.locator("main").click({ position: { x: 2, y: 2 }, force: true });
-    await expect(page.getByText(/no matching design token/i)).toBeVisible();
+    await page.getByRole("button", { name: "Default" }).first().click({ force: true });
+    await expect(page.getByRole("menu", { name: /tokens for this element/i })).toBeVisible();
     await page.keyboard.press("Escape"); // close popover
+    await expect(page.getByRole("menu", { name: /tokens for this element/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /pick token from element/i })).toHaveAttribute(
+      "aria-pressed", "true",
+    ); // still in pick mode
     await page.keyboard.press("Escape"); // exit pick mode
     await expect(page.getByRole("button", { name: /pick token from element/i })).toHaveAttribute(
       "aria-pressed", "false",
@@ -981,7 +1037,10 @@ test.describe("pick-anywhere", () => {
 });
 ```
 
-(If `main` resolves to a token-backed element, target a known transparent wrapper instead — inspect the page during the run and adjust the selector; the point is an element with no token-backed bg/text/size.)
+> **Empty-state is NOT e2e-tested** — `/design-system` is gate-enforced token-driven, so essentially every
+> element inherits a token-backed `color` (`<main className="… text-foreground">`), making a true no-match
+> target unreliable to find. The empty state is covered by the `PickMenu` render test in Task 4 (Step 1,
+> `matches=[]`) instead — honest and deterministic.
 
 - [ ] **Step 2: Run e2e**
 Run: `cd /Users/jason/Developer/vibe-design-system && npx playwright test e2e/pick-anywhere.spec.ts`
