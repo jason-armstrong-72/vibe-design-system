@@ -818,6 +818,11 @@
   flex: 1;
   min-width: 80px;
 }
+/* disabled (transparent stop): same themed slider, just faded back — not native grey */
+.ed-gradient-alpha input[type="range"]:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
 .ed-gradient-alpha-label {
   font-size: 11px;
   color: var(--ed-muted);
@@ -925,7 +930,7 @@
   height: 14px;
   padding: 0;
   transform: translateX(-50%);
-  border: 2px solid var(--ed-muted);
+  border: 1px solid var(--ed-muted);
   border-radius: 3px;
   box-shadow: 0 1px 3px oklch(0 0 0 / 0.5);
   cursor: ew-resize;
