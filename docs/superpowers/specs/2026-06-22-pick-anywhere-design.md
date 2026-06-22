@@ -55,6 +55,14 @@ dependency on which Tailwind utility class got emitted** and **no per-token pref
 - **fontSize** → `probe.style.fontSize = var(<token.name>)` (e.g. `var(--fs-sm)`), read `font-size`.
 - **fontFamily** → `probe.style.fontFamily = var(<token.name>)`, read `font-family`.
 - **shadow** → `probe.style.boxShadow = var(<token.name>)` (e.g. `var(--elevation-md)`), read `box-shadow`.
+  **Serialization caveat [R2: correctness-BLOCKER, verified in Chromium]:** Tailwind v4's `shadow-*` utility
+  composes `box-shadow` from **5 layers** (`--tw-inset-shadow, --tw-inset-ring-shadow, --tw-ring-offset-shadow,
+  --tw-ring-shadow, --tw-shadow`), so an element with `shadow-md` computes as **four empty prefix layers**
+  (`rgba(0, 0, 0, 0) 0px 0px 0px 0px, …`) + the real layers, while the `var(--elevation-md)` probe computes
+  **only the real layers**. A naive equality never matches. Therefore `canonicalize` for `box-shadow` MUST
+  **strip empty layers** — drop any comma-separated layer whose colour is zero-alpha AND all offsets/blur/spread
+  are `0px` — on **both** sides before comparing. This is a pure string op (unit-testable in `resolve-token.ts`,
+  not e2e-only).
 - **radius** → the **one** exception. `--radius` is a single knob; elements use the four *derived* steps
   (`rounded-sm/md/lg/xl` → `var(--radius-sm…xl)`, which are `@theme inline` and **not** emitted as standalone
   vars). So radius probes via the token's **manifest `utilities`** (`["rounded-sm","rounded-md","rounded-lg",
@@ -62,13 +70,25 @@ dependency on which Tailwind utility class got emitted** and **no per-token pref
   `--radius` token. (These classes are emitted — `/design-system` renders the radius steps; see the
   compiled-CSS note.)
 
-**Colours** are canonicalized through **culori** (parse → round in a fixed space, e.g. `formatRgb` rounded) so
-the two *computed* strings compare reliably across serialization differences. culori is applied to **computed**
-values on both sides — **not** to authored tokens **[R: correctness-B2]**.
+**Colours** are canonicalized through **culori** (parse → round in a fixed space, e.g. `formatRgb` → `rgb(r, g, b)`)
+so the two *computed* strings compare reliably across serialization differences (`oklch`↔`oklab`↔`rgb`). culori
+is applied to **computed** values on both sides — **not** to authored tokens **[R: correctness-B2]**. Note:
+`formatRgb`'s 8-bit rounding collapses two tokens that differ only in the 3rd+ oklch decimal to one key —
+harmless under option A (they're listed together as a genuine value-collision) **[R2: correctness]**.
+
+**Index freshness [R2: architecture — stale-after-live-edit].** The probe reads `var(<token.name>)` **live**, and
+an editor preview (`editValue → setVar` on `:root`) repaints both the page element *and* a freshly-built probe.
+But a **memoized** index built before an edit would go stale (cached old colour) while the element shows the new
+one → false no-match. Therefore the index is **rebuilt on each pick click** (cheap — N probe reads in one forced
+reflow, only on click, never on hover), **not** cached across edits. (A per-theme memo is still fine *within* a
+single pick; the point is: do not persist the index across `editValue`/block changes.)
 
 **Group → element-property source of truth [R: architecture-B1].** Do **not** hardcode a `property →
 token-prefix` map. Iterate the manifest tokens (each carries `group` — the generated single source); a small
-**closed, exhaustively-guarded `GROUP_PROPERTY` table keyed on `TokenGroup`** (beside `lib/editor/control-map.ts`)
+**`GROUP_PROPERTY` table** (beside `lib/editor/control-map.ts`). It is a **`Partial<Record<TokenGroup, …>>`**
+(only the in-scope groups), so it **cannot** use `control-map`'s total-`Record`/`never` exhaustiveness trick —
+guard it with a test that asserts the exact in-scope group set is present AND out-of-scope groups are absent
+(the *list-the-groups* pattern, cf. `tests/editor/control-map.test.ts`) **[R2: architecture]**. It
 maps the in-scope groups to the **element** properties to read+match: `color → ["background-color","color"]`,
 `radius → ["border-radius"]`, `fontSize → ["font-size"]`, `fontFamily → ["font-family"]`,
 `shadow → ["box-shadow"]`. Groups absent from the table (spacing, duration, zIndex, borderWidth, …) are not
@@ -82,9 +102,12 @@ background/text — harmless and honest under option A.
   skip, no match (don't round zero-alpha into a near-black token);
 - `box-shadow: none`, inherited default font where nothing token-backed applies → skip;
 - `border-radius`: read the **four per-corner** values (`borderTopLeftRadius`…); only match when all four are
-  equal (a single shorthand). `rounded-full` (9999px) and `rounded-none` (0px) are literals, **not**
-  `--radius`-backed → no match (note: `radius-sm`/`md` clamp to 0 at small knob values and may collide with
-  `none` — collision listing covers it, but a literal 0 with no radius token present is a no-match).
+  equal (a single shorthand). `rounded-full` (Chromium computes `calc(infinity*1px)` ≈ `3.3e7px` — do **not**
+  hardcode `9999`) and `rounded-none` (`0px`) are literals, **not** `--radius`-backed → no match. Likewise
+  Button's arbitrary `rounded-[min(var(--radius-md),10px)]` resolves to a `--radius` step at small knob values
+  (matches) but clamps to the `10px` literal at large knob values (no match) — expected, falls out of the
+  "literal → no match" rule **[R3: nit-8]**. (Edge: `radius-sm`/`md` clamp to `0px` at small knobs and may
+  collide with `none` — collision listing covers it.)
 
 **Compiled-CSS dependency [R: correctness-N3].** A probed utility only styles the probe if Tailwind emitted
 it. The editor runs over `/design-system`, which renders **every** token with its utility (M3), so all probed
@@ -101,19 +124,35 @@ framework- and DOM-free):
 - **`lib/editor/resolve-token.ts` — PURE.** `resolveMatches(elementValues, tokenIndex): Match[]` where
   `Match = { property: CssProperty; group: TokenGroup; value: string; tokens: string[] }`. Inputs are plain
   data (the element's canonical computed values + the token index). No DOM, no `getComputedStyle`. Also holds
-  the `GROUP_PROPERTY` table + a `canonicalize(property, raw)` helper (culori for colours, trim/normalize for
-  the rest — pure string/number ops). Unit-testable exactly like `oklch.ts`.
+  the `GROUP_PROPERTY` table + a `canonicalize(property, raw)` helper (culori for colours; **empty-layer strip
+  for box-shadow** — see §0; trim/normalize for the rest — all pure string/number ops). Unit-testable exactly
+  like `oklch.ts`.
 - **`lib/editor/use-probe-index.ts` — the DOM side (a hook, matching `use-draft-field.ts`/
-  `use-token-writeback.ts`/`pin-scroll.ts`).** Builds + memoizes the token index by probing (the only
-  `getComputedStyle`/DOM code). Re-probes when the editing block changes. Exposes
-  `readElementValues(el): elementValues` for the click handler. **[R: a DOM probe named `resolve-token.ts`
-  broke the boundary the design claimed to follow.]**
+  `use-token-writeback.ts`/`pin-scroll.ts`).** Builds the token index by probing (the only `getComputedStyle`/DOM
+  code). **Builds fresh on each pick** (a `buildIndex()` callback invoked in the click handler — NOT a memo
+  persisted across edits/blocks; see §0 "Index freshness"). Exposes `readElementValues(el): elementValues` for
+  the click handler. The probe element is created, read, and removed within the call (or kept hidden + reused,
+  but its style re-applied per build). **[R: a DOM probe named `resolve-token.ts` broke the boundary the design
+  claimed to follow.]**
 - **`lib/editor/use-hover-rect.ts` — extracted shared hook [R: architecture-S1 / DRY].** The hover/rect/
   scroll-reposition logic in `highlight-overlay.tsx` (the cohesive `useEffect` at lines 33-114, whose comments
-  document a real ~10-20px scroll-lag fix) is lifted to `useHoverRect({ active, match, onPick })` returning
-  `{ box, boxRef }`, parameterized by the match predicate (`el => el.closest("[data-token]")` vs `el => el`)
-  and the click action. **Both** overlays become thin renderers — no 80-line copy. `highlight-overlay.tsx` is
-  refactored onto it (guarded by the existing tests; behavior unchanged).
+  document a real ~10-20px scroll-lag fix) is lifted to a **generic** hook **[R2: architecture-S1]**:
+  ```
+  useHoverRect<M>({
+    active: boolean,
+    match: (target: EventTarget | null) => M | null,   // returns the matched PAYLOAD, not a boolean
+    onPick: (m: M, e: MouseEvent) => void,              // payload-typed
+    onScroll?: "reposition" | "dismiss",                // highlight repositions; pick dismisses
+    label?: (m: M) => string | null,                    // highlight renders data-token; pick → null
+  }): { box: (Box & { label: string | null }) | null, boxRef }
+  ```
+  - **highlight-overlay:** `M = string` (token name); `match = t => closest("[data-token]")?.getAttribute(...)`;
+    `onPick = name => select(name)`; `onScroll: "reposition"`; `label = name => name`. Behavior unchanged — its
+    existing tests assert only `.ed-highlight`/`.ed-highlight-label`/clear-on-leave/scroll-listener, all preserved.
+  - **pick-overlay:** `M = HTMLElement`; `match = t => (t instanceof HTMLElement ? t : null)`; `onPick = el => …`;
+    `onScroll: "dismiss"` (close popover on scroll — §2); `label` omitted. The pick fires on **capture-phase
+    `click`** (symmetry with highlight-overlay's existing click handler; pointerdown is only for suppression —
+    §3) **[R3: should-fix-2]**.
 
 ---
 
@@ -127,16 +166,20 @@ framework- and DOM-free):
 - **`components/editor/pick-menu.tsx`** — the popover. `role="menu"`; rows grouped by property
   (human labels: "background", "text colour", "border radius", "font size", "font family", "box shadow"),
   each listing its matching token(s) with a colour **swatch reusing the `.ed-reuse-swatch` markup**
-  (`color-oklch.tsx:343-355`) for colour rows **[R: architecture-N1]**. Row = `<button role="menuitem">`;
-  click → `select(token)` then close + clear highlight + **exit pick mode** (§3). Empty state names the why:
-  "No design token drives this element (hardcoded or off-token value)" **[R: ux-N1]**.
-  - **a11y [R: ux-S4]:** focus moves into the menu on open, restores to the eyedropper toggle on close;
-    Arrow/Home/End move between items, Enter activates, Escape closes. Pointer-only *entry* (hover-to-pick) is
-    the accepted stance (the bezier "pointer handles + keyboard via other controls" precedent); the popover
-    itself is fully keyboard-operable.
+  (`components/editor/controls/color-oklch.tsx:349`; style at `editor-chrome.css:546`) for colour rows
+  **[R: architecture-N1; R2/R3: path-fix]**. Row = `<button role="menuitem">`; click → `select(token)` then close
+  + clear highlight + **exit pick mode** (§3). Empty state — **honest copy** (the algorithm only knows "no
+  index hit", not the *cause*): **"No matching design token for this element"** (do NOT assert "hardcoded /
+  off-token" — unprovable) **[R3: should-fix-4]**.
+  - **a11y [R: ux-S4]:** focus moves into the menu on open, restores to the eyedropper toggle on close (after the
+    toggle re-renders, so focus lands on a live node) **[R3: nit-7]**; Arrow/Home/End move between items, Enter
+    activates, Escape closes. Pointer-only *entry* (hover-to-pick) is the accepted stance (the bezier "pointer
+    handles + keyboard via other controls" precedent); the popover itself is fully keyboard-operable.
   - **positioning [R: ux-S5]:** anchored at the click point, **clamped to the viewport** accounting for the
-    312px docked panel (`editor-chrome.css` panel width); **closes on scroll** (a momentary disambiguation
-    step — pinning at a stale point is worse than dismissing).
+    312px docked panel; **flips above** the point when it would overflow the bottom; **`max-height` +
+    `overflow-y:auto`** so a long collision list (Card neutrals) scrolls, and arrow-key focus scrolls items into
+    view **[R3: should-fix-5]**; **closes on scroll** (a momentary disambiguation step — pinning at a stale point
+    is worse). Editor chrome is LTR and the panel is always docked right — RTL is out of scope.
 - **`components/editor/editor-provider.tsx`** — add `pickMode: boolean` + `togglePickMode()`
   **[R: architecture-S2 / ux-S2]:**
   - `pickMode` **implies `enabled`** and is **mutually exclusive with the normal hover**: the normal
@@ -158,10 +201,16 @@ framework- and DOM-free):
 ## 3. Interaction flow & native-event suppression [R: ux-S1]
 
 Pick mode targets **real interactive elements** (buttons, links, inputs in the showcase). A click must
-resolve, never fire the element's native action or steal focus/scroll. The overlay binds **capture-phase**:
-- `pointerdown` → `preventDefault()` + `stopPropagation()` (suppresses native activation **and** focus-steal,
-  which also avoids the page's scroll-into-view excursion the editor already fights);
-- `click` and `submit` → swallowed too (belt-and-suspenders for keyboard/label-driven activation).
+resolve, never fire the element's native action or steal focus/scroll. **Pick mode is pointer-driven**
+(hover-to-pick); the resolve fires on **capture-phase `click`** (symmetry with the existing highlight-overlay
+click handler). The overlay binds, all **capture-phase**:
+- `pointerdown` → `preventDefault()` + `stopPropagation()` — suppresses native activation **and** focus-steal
+  (so no element gets focused → no scroll-into-view excursion, and no subsequent keyboard activation). On the
+  few engines where `<input>`/`<label>`/`contenteditable` can still focus on pointer-down, **defensively blur**
+  `document.activeElement` after the pick **[R3: should-fix-1]**;
+- `click` and `submit` → swallowed (`preventDefault`+`stopPropagation`) — and the resolve runs here;
+- `keydown` (Enter / Space) on the target → swallowed too, closing the keyboard-activation gap a `click`-only
+  guard misses (e.g. Enter on a focused `<a>` that navigates without a synthetic click) **[R3: should-fix-1]**.
 
 Flow: toggle eyedropper → page cursor `crosshair`, normal hover suspended → hover highlights any element
 (`--ed-warn`) → click → resolve → popover. Click a row → `select(token)` opens it in the docked panel; popover
@@ -195,7 +244,8 @@ Resolution reads the **live-rendered theme**; `select` opens in the current `edi
   `border-radius` only matches when the four corners are equal; the `GROUP_PROPERTY` table is exhaustive over
   the in-scope groups (a guard test, cf. the `control-map`/`utilitiesForToken` exhaustiveness guards).
 - `canonicalize`: two different computed colour serializations of the same colour canonicalize equal (culori);
-  zero-alpha is rejected.
+  zero-alpha is rejected; **box-shadow empty-layer strip** — a 5-layer `shadow-md` computed string (4 empty
+  prefix layers) canonicalizes equal to the 2-layer `var(--elevation-md)` probe string **[R2: correctness-BLOCKER]**.
 - **Honest scope [R: correctness-S4]:** unit tests cover the **matching algorithm only** with injected value
   indexes. Real value-fidelity (rgb/oklch/alpha/hashed-font/shadow serialization) **cannot** be tested in
   jsdom (no real computed styles / `var()` / `calc()`) and is covered by e2e.
@@ -207,8 +257,12 @@ clears on leave, calls `onPick` on click; parameterized match predicate works fo
 **`e2e/pick-anywhere.spec.ts`** (the real fidelity gate, Playwright on `/design-system`):
 - enable editor → toggle eyedropper → click a showcase **Button** → popover lists `background → --primary` (+
   `text colour → --primary-foreground`); click the row → panel opens `--primary`, pick mode exits.
-- click a **Card** surface → the neutral **collision** (several tokens) is listed.
-- click an element with a hardcoded/off-token value → "No design token drives this element".
+- click a **Card** surface → the neutral **collision** (several tokens) + a `box-shadow → --elevation-*` row
+  (proves the empty-layer strip works end-to-end).
+- **empty state:** click a plain layout `<div>` (transparent bg, inherited font with no token-backed size) →
+  "No matching design token for this element". (NB: `/design-system` is gate-enforced token-driven, so there is
+  **no** naturally hardcoded-colour element — the transparent-default wrapper is the honest, reachable trigger
+  **[R3: should-fix-3]**.)
 - Escape closes the popover; a second Escape exits pick mode; native button action does **not** fire on a pick
   click (assert no navigation/side-effect).
 - restore `app/globals.css` in a `finally` if any test commits an edit (per the editor e2e convention).
