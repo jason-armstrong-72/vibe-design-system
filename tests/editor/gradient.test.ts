@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   parseGradient, formatGradient, clampAngle, clampPct, stopColor, rampGradient,
-  positionFromPointer, type Gradient,
+  positionFromPointer, centerFromPointer, type Gradient,
 } from "@/lib/editor/gradient";
 
 // Canonical seed models ↔ exact globals strings (round-trip + manifest-fresh safety).
@@ -63,5 +63,10 @@ describe("ramp helpers", () => {
     expect(positionFromPointer(200, rect)).toBe(50);
     expect(positionFromPointer(400, rect)).toBe(100); // beyond → clamped
     expect(positionFromPointer(0, rect)).toBe(0);      // before → clamped
+  });
+  it("centerFromPointer maps + clamps both axes", () => {
+    const rect = { left: 0, top: 0, width: 100, height: 100 };
+    expect(centerFromPointer(50, 30, rect)).toEqual({ cx: 50, cy: 30 });
+    expect(centerFromPointer(-10, 200, rect)).toEqual({ cx: 0, cy: 100 });
   });
 });

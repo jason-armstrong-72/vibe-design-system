@@ -13,6 +13,7 @@ const TOKENS = [
 ] as unknown as ManifestToken[];
 
 const LINEAR = "linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%)";
+const RADIAL = "radial-gradient(circle at 50% 30%, var(--brand-500) 0%, transparent 70%)";
 
 function setup(value: string, extra: Partial<React.ComponentProps<typeof GradientBuilder>> = {}) {
   const onChange = vi.fn();
@@ -89,6 +90,41 @@ describe("GradientBuilder stops", () => {
     fireEvent.keyDown(pos, { key: "Enter" });
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange.mock.calls[0][0]).toMatch(/var\(--brand-500\) 100%/);
+  });
+
+  it("linear: angle slider emits a deg value", () => {
+    const onChange = setup(LINEAR);
+    const angle = screen.getByLabelText(/angle/i);
+    fireEvent.change(angle, { target: { value: "90" } });
+    expect(onChange).toHaveBeenCalledWith("linear-gradient(90deg, var(--brand-500) 0%, var(--brand-600) 100%)");
+  });
+
+  it("radial: shows a shape select + x/y position inputs + a pad", () => {
+    setup(RADIAL);
+    expect(screen.getByLabelText(/shape/i)).toBeTruthy();
+    expect(screen.getByLabelText(/position x/i)).toBeTruthy();
+    expect(screen.getByLabelText(/position y/i)).toBeTruthy();
+    expect(document.querySelector(".ed-gradient-pad")).toBeTruthy();
+  });
+
+  it("radial: changing shape emits", () => {
+    const onChange = setup(RADIAL);
+    fireEvent.change(screen.getByLabelText(/shape/i), { target: { value: "ellipse" } });
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange.mock.calls[0][0]).toMatch(/^radial-gradient\(ellipse at/);
+  });
+
+  it("radial: dragging the pad emits ONE cx/cy on pointerup, nothing mid-move", () => {
+    const onChange = setup(RADIAL);
+    const pad = document.querySelector(".ed-gradient-pad") as HTMLElement;
+    pad.getBoundingClientRect = () => ({ left: 0, top: 0, width: 100, height: 100, right: 100, bottom: 100, x: 0, y: 0, toJSON: () => {} });
+    pad.setPointerCapture = () => {};
+    fireEvent.pointerDown(pad, { clientX: 0, clientY: 0 });
+    fireEvent.pointerMove(window, { clientX: 25, clientY: 75 });
+    expect(onChange).not.toHaveBeenCalled();
+    fireEvent.pointerUp(window, { clientX: 25, clientY: 75 });
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange.mock.calls[0][0]).toMatch(/^radial-gradient\(circle at 25% 75%,/);
   });
 
   it("dragging a handle emits ONE value on pointerup and nothing mid-move", () => {

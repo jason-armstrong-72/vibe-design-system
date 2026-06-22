@@ -31,6 +31,15 @@ export function positionFromPointer(clientX: number, rect: { left: number; width
   if (rect.width <= 0) return 0;
   return clampPct(((clientX - rect.left) / rect.width) * 100);
 }
+
+/** Map a pointer within a square pad rect to a clamped {cx, cy} percentage pair (radial/conic center). */
+export function centerFromPointer(
+  clientX: number, clientY: number, rect: { left: number; top: number; width: number; height: number },
+): { cx: number; cy: number } {
+  const cx = rect.width <= 0 ? 0 : ((clientX - rect.left) / rect.width) * 100;
+  const cy = rect.height <= 0 ? 0 : ((clientY - rect.top) / rect.height) * 100;
+  return { cx: clampPct(cx), cy: clampPct(cy) };
+}
 export function formatGradient(g: Gradient): string {
   const stops = g.stops.map(formatStop).join(", ");
   if (g.type === "linear") return `linear-gradient(${round(clampAngle(g.angle))}deg, ${stops})`;

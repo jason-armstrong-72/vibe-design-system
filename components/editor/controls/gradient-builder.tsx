@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { ManifestToken } from "@/lib/tokens/generate";
 import {
-  parseGradient, formatGradient, rampGradient, stopColor, positionFromPointer,
-  clampPct, type Gradient, type Stop,
+  parseGradient, formatGradient, rampGradient, stopColor, positionFromPointer, centerFromPointer,
+  clampPct, clampAngle, type Gradient, type Stop,
 } from "@/lib/editor/gradient";
 import { useDraftField } from "@/lib/editor/use-draft-field";
 import { GradientStopPicker } from "@/components/editor/controls/gradient-stop-picker";
@@ -22,11 +22,32 @@ const FALLBACK: Gradient = {
 const isNum = (v: string) => v.trim().length > 0 && Number.isFinite(Number(v.trim()));
 const withStops = (g: Gradient, stops: Stop[]): Gradient => ({ ...g, stops });
 
+type DragMode = { kind: "stop"; index: number } | { kind: "pad" } | null;
+
 interface Props {
   token: string;
   value: string;
   onChange: (v: string) => void;
   tokens: ManifestToken[];
+}
+
+/** A labelled numeric input, commit-on-blur/Enter (the keyboard path for angle/x/y/position). */
+function NumField({ label, value, onCommit }: { label: string; value: number; onCommit: (n: number) => void }) {
+  const f = useDraftField(String(value), (v) => onCommit(Number(v)), isNum);
+  return (
+    <input
+      type="number"
+      className="ed-gradient-pos"
+      aria-label={label}
+      min={0}
+      max={100}
+      step={1}
+      value={f.draft}
+      onChange={f.onChange}
+      onBlur={f.onBlur}
+      onKeyDown={f.onKeyDown}
+    />
+  );
 }
 
 /** One precise stop row: color picker + position numeric input + remove (the keyboard path). */
@@ -37,26 +58,14 @@ function StopRow({
   canRemove: boolean; onStop: (s: Stop) => void; onRemove: () => void;
 }) {
   const n = index + 1;
-  const pos = useDraftField(
-    String(stop.position),
-    (v) => onStop({ ...stop, position: clampPct(Number(v)) }),
-    isNum,
-  );
   return (
     <div className="ed-gradient-stoprow">
       <GradientStopPicker stop={stop} tokens={tokens} onChange={onStop} label={`stop ${n}`} />
       <div className="ed-gradient-stoprow-foot">
-        <input
-          type="number"
-          className="ed-gradient-pos"
-          aria-label={`${token} stop ${n} position`}
-          min={0}
-          max={100}
-          step={1}
-          value={pos.draft}
-          onChange={pos.onChange}
-          onBlur={pos.onBlur}
-          onKeyDown={pos.onKeyDown}
+        <NumField
+          label={`${token} stop ${n} position`}
+          value={stop.position}
+          onCommit={(v) => onStop({ ...stop, position: clampPct(v) })}
         />
         <span className="ed-gradient-pos-unit" aria-hidden="true">%</span>
         <button
@@ -98,7 +107,6 @@ export function GradientBuilder({ token, value, onChange, tokens }: Props) {
     emit(withStops(display, display.stops.filter((_, j) => j !== i)));
   };
   const addStop = () => {
-    // insert at the midpoint of the largest gap between consecutive positions
     const sorted = [...display.stops].sort((a, b) => a.position - b.position);
     let gap = -1, at = 50, after = sorted[0];
     for (let i = 0; i < sorted.length - 1; i++) {
@@ -108,23 +116,30 @@ export function GradientBuilder({ token, value, onChange, tokens }: Props) {
     emit(withStops(display, [...display.stops, { color: after.color, alpha: after.alpha, position: clampPct(at) }]));
   };
 
-  // ---- ramp handle drag (commit once on pointer-up) ----
+  // ---- drag (stop handle OR radial pad): commit once on pointer-up ----
   const rampRef = useRef<HTMLDivElement>(null);
-  const dragIndex = useRef<number | null>(null);
+  const padRef = useRef<HTMLDivElement>(null);
+  const mode = useRef<DragMode>(null);
   const working = useRef<Gradient | null>(null);
   useEffect(() => {
     const move = (e: PointerEvent) => {
-      if (dragIndex.current === null || !rampRef.current || !working.current) return;
-      const pos = positionFromPointer(e.clientX, rampRef.current.getBoundingClientRect());
-      const g = working.current;
-      const next = withStops(g, g.stops.map((p, j) => (j === dragIndex.current ? { ...p, position: pos } : p)));
+      const m = mode.current, g = working.current;
+      if (!m || !g) return;
+      let next = g;
+      if (m.kind === "stop" && rampRef.current) {
+        const pos = positionFromPointer(e.clientX, rampRef.current.getBoundingClientRect());
+        next = withStops(g, g.stops.map((p, j) => (j === m.index ? { ...p, position: pos } : p)));
+      } else if (m.kind === "pad" && padRef.current && g.type === "radial") {
+        const { cx, cy } = centerFromPointer(e.clientX, e.clientY, padRef.current.getBoundingClientRect());
+        next = { ...g, cx, cy };
+      }
       working.current = next;
       setDrag(next);
     };
     const up = () => {
-      if (dragIndex.current === null || !working.current) return;
+      if (!mode.current || !working.current) return;
       emit(working.current);
-      dragIndex.current = null;
+      mode.current = null;
       working.current = null;
       setDrag(null);
     };
@@ -137,10 +152,10 @@ export function GradientBuilder({ token, value, onChange, tokens }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
-  const onHandleDown = (i: number) => (e: React.PointerEvent) => {
+  const startDrag = (m: DragMode) => (e: React.PointerEvent) => {
     e.preventDefault();
     e.currentTarget.setPointerCapture?.(e.pointerId);
-    dragIndex.current = i;
+    mode.current = m;
     working.current = display;
     setDrag(display);
   };
@@ -164,7 +179,40 @@ export function GradientBuilder({ token, value, onChange, tokens }: Props) {
         ))}
       </div>
 
-      {/* Geometry slot — filled in Task 6 */}
+      {display.type === "linear" ? (
+        <div className="ed-gradient-geom">
+          <span className="ed-label" aria-hidden="true">angle</span>
+          <input
+            type="range"
+            aria-label={`${token} angle`}
+            min={0}
+            max={360}
+            step={1}
+            value={display.angle}
+            onChange={(e) => emit({ ...display, angle: clampAngle(Number(e.target.value)) })}
+          />
+          <span className="ed-gradient-geom-val" aria-hidden="true">{display.angle}°</span>
+        </div>
+      ) : (
+        <div className="ed-gradient-geom ed-gradient-geom-radial">
+          <select
+            className="ed-gradient-shape"
+            aria-label={`${token} shape`}
+            value={display.shape}
+            onChange={(e) => emit({ ...display, shape: e.target.value as "circle" | "ellipse" })}
+          >
+            <option value="circle">circle</option>
+            <option value="ellipse">ellipse</option>
+          </select>
+          <div className="ed-gradient-pad" ref={padRef} aria-hidden="true" onPointerDown={startDrag({ kind: "pad" })}>
+            <span className="ed-gradient-pad-dot" style={{ left: `${clampPct(display.cx)}%`, top: `${clampPct(display.cy)}%` }} />
+          </div>
+          <div className="ed-gradient-center">
+            <NumField label={`${token} position x`} value={display.cx} onCommit={(n) => emit({ ...display, cx: clampPct(n) })} />
+            <NumField label={`${token} position y`} value={display.cy} onCommit={(n) => emit({ ...display, cy: clampPct(n) })} />
+          </div>
+        </div>
+      )}
 
       <div className="ed-gradient-stops">
         <div className="ed-gradient-ramp" ref={rampRef} style={{ backgroundImage: rampGradient(display.stops) }} aria-hidden="true">
@@ -177,7 +225,7 @@ export function GradientBuilder({ token, value, onChange, tokens }: Props) {
               data-checker={s.color === "transparent" ? "" : undefined}
               tabIndex={-1}
               aria-hidden="true"
-              onPointerDown={onHandleDown(i)}
+              onPointerDown={startDrag({ kind: "stop", index: i })}
             />
           ))}
         </div>

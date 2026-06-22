@@ -826,6 +826,52 @@
   color: var(--ed-muted);
 }
 
+/* geometry: angle slider / radial shape + pad */
+.ed-gradient-geom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ed-gradient-geom input[type="range"] {
+  flex: 1;
+}
+.ed-gradient-geom-val {
+  min-width: 34px;
+  text-align: right;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--ed-muted);
+}
+.ed-gradient-geom-radial {
+  flex-wrap: wrap;
+}
+.ed-gradient-pad {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border: 1px solid var(--ed-border);
+  border-radius: 6px;
+  background:
+    linear-gradient(var(--ed-border), var(--ed-border)) center / 1px 100% no-repeat,
+    linear-gradient(var(--ed-border), var(--ed-border)) center / 100% 1px no-repeat;
+  cursor: crosshair;
+  touch-action: none;
+  flex: none;
+}
+.ed-gradient-pad-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--ed-accent, var(--ed-fg));
+  box-shadow: 0 0 0 2px var(--ed-bg);
+}
+.ed-gradient-center {
+  display: flex;
+  gap: 6px;
+}
+
 /* stops: ramp + handles + rows */
 .ed-gradient-stops {
   display: flex;
