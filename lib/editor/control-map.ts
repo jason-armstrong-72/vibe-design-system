@@ -22,6 +22,7 @@ const MAP: Record<TokenGroup, ControlKind> = {
   duration: "duration",
   easing: "easing",
   shadow: "text",
+  gradient: "text", // Task 2 placeholder → raw TextField; flipped to "gradient" in Task 4
 };
 
 export function controlKindForGroup(group: TokenGroup): ControlKind {

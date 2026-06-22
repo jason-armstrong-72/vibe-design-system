@@ -31,6 +31,7 @@ export function groupForName(name: string, value?: string): TokenGroup {
   if (/^border-width-/.test(bare)) return "borderWidth";
   if (name === "--spacing-base") return "spacing";
   if (/^brand-/.test(bare) || /^chart-/.test(bare)) return "color";
+  if (/^gradient-/.test(bare)) return "gradient";
   if (/^font-(sans|mono|serif)$/.test(bare)) return "fontFamily";
   if (/^fs-/.test(bare)) return "fontSize";
   if (/^lh-/.test(bare)) return "lineHeight";
@@ -73,6 +74,7 @@ const CONTROL: Record<TokenGroup, ControlType> = {
   zIndex: "number",
   opacity: "opacity-slider",
   container: "length-slider",
+  gradient: "text",
 };
 
 export function controlForGroup(group: TokenGroup): ControlType {

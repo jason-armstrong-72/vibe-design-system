@@ -41,6 +41,8 @@ export function utilitiesForToken(t: Token, radiusSteps?: string[]): UtilityHint
       return { utilities: [], usage: `transition-duration via var(${t.name})` };
     case "easing":
       return { utilities: [`ease-${bare.replace(/^ease-/, "")}`] };
+    case "gradient":
+      return { utilities: [`bg-gradient-${bare.replace(/^gradient-/, "")}`] };
     default: {
       // exhaustiveness guard: a new TokenGroup must be handled here, not silently undefined
       const _never: never = t.group;
