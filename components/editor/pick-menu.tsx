@@ -13,7 +13,7 @@ const PROP_LABEL: Record<string, string> = {
 };
 
 const PANEL_WIDTH = 312;
-const MENU_WIDTH = 400;
+const MENU_WIDTH = 375;
 
 interface Row { property: string; token: string; value: string; isColor: boolean; }
 
