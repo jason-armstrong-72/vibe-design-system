@@ -825,3 +825,66 @@
   font-size: 11px;
   color: var(--ed-muted);
 }
+
+/* stops: ramp + handles + rows */
+.ed-gradient-stops {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ed-gradient-ramp {
+  position: relative;
+  height: 22px;
+  margin-bottom: 12px;
+  border-radius: 5px;
+  border: 1px solid var(--ed-border);
+}
+.ed-gradient-handle {
+  position: absolute;
+  top: 22px;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  transform: translateX(-50%);
+  border: 2px solid var(--ed-bg);
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px var(--ed-border);
+  cursor: ew-resize;
+  touch-action: none;
+}
+.ed-gradient-handle[data-checker] {
+  background-image: repeating-conic-gradient(var(--ed-muted) 0% 25%, var(--ed-bg) 0% 50%);
+  background-size: 8px 8px;
+}
+.ed-gradient-stoprow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--ed-border);
+  border-radius: 6px;
+}
+.ed-gradient-stoprow-foot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ed-gradient-pos {
+  width: 56px;
+}
+.ed-gradient-pos-unit {
+  font-size: 11px;
+  color: var(--ed-muted);
+}
+.ed-gradient-stoprow-foot .ed-iconbtn {
+  margin-left: auto;
+}
+.ed-gradient-addstop {
+  align-self: flex-start;
+  padding: 4px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--ed-accent, var(--ed-fg));
+  font-size: 12px;
+  cursor: pointer;
+}

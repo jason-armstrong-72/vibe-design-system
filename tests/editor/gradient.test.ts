@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
-  parseGradient, formatGradient, clampAngle, clampPct, type Gradient,
+  parseGradient, formatGradient, clampAngle, clampPct, stopColor, rampGradient,
+  positionFromPointer, type Gradient,
 } from "@/lib/editor/gradient";
 
 // Canonical seed models ↔ exact globals strings (round-trip + manifest-fresh safety).
@@ -42,4 +43,25 @@ describe("parseGradient", () => {
 describe("clamps", () => {
   it("angle ∈ [0,360]", () => { expect(clampAngle(400)).toBe(360); expect(clampAngle(-10)).toBe(0); });
   it("pct ∈ [0,100]", () => { expect(clampPct(120)).toBe(100); expect(clampPct(-5)).toBe(0); });
+});
+
+describe("ramp helpers", () => {
+  it("stopColor: var / color-mix / bare transparent", () => {
+    expect(stopColor({ color: "--brand-500", alpha: 100, position: 0 })).toBe("var(--brand-500)");
+    expect(stopColor({ color: "--brand-500", alpha: 45, position: 0 }))
+      .toBe("color-mix(in oklch, var(--brand-500) 45%, transparent)");
+    expect(stopColor({ color: "transparent", alpha: 0, position: 0 })).toBe("transparent");
+  });
+  it("rampGradient lays stops left-to-right", () => {
+    expect(rampGradient([
+      { color: "--brand-500", alpha: 100, position: 0 }, { color: "transparent", alpha: 0, position: 70 }]))
+      .toBe("linear-gradient(90deg, var(--brand-500) 0%, transparent 70%)");
+  });
+  it("positionFromPointer maps + clamps", () => {
+    const rect = { left: 100, width: 200 };
+    expect(positionFromPointer(100, rect)).toBe(0);
+    expect(positionFromPointer(200, rect)).toBe(50);
+    expect(positionFromPointer(400, rect)).toBe(100); // beyond → clamped
+    expect(positionFromPointer(0, rect)).toBe(0);      // before → clamped
+  });
 });

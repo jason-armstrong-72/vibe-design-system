@@ -58,3 +58,50 @@ describe("GradientBuilder shell", () => {
     expect(onChange.mock.calls[0][0]).toMatch(/^radial-gradient\(circle at 50% 50%,/);
   });
 });
+
+describe("GradientBuilder stops", () => {
+  it("renders one position input + remove button per stop, plus an add button", () => {
+    setup(LINEAR);
+    expect(screen.getByLabelText(/stop 1 position/i)).toBeTruthy();
+    expect(screen.getByLabelText(/stop 2 position/i)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /remove stop 1/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /add stop/i })).toBeTruthy();
+  });
+
+  it("remove is disabled when only 2 stops remain", () => {
+    setup(LINEAR);
+    expect((screen.getByRole("button", { name: /remove stop 1/i }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("add stop emits a gradient with an extra stop", () => {
+    const onChange = setup(LINEAR);
+    fireEvent.click(screen.getByRole("button", { name: /add stop/i }));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    // 3 stops now → 3 "var(...) N%" or "transparent N%" segments
+    const v: string = onChange.mock.calls[0][0];
+    expect(v.match(/%/g)?.length).toBe(3);
+  });
+
+  it("position numeric input commits a clamped value on Enter", () => {
+    const onChange = setup(LINEAR);
+    const pos = screen.getByLabelText(/stop 1 position/i);
+    fireEvent.change(pos, { target: { value: "150" } }); // out of range → clamps to 100
+    fireEvent.keyDown(pos, { key: "Enter" });
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange.mock.calls[0][0]).toMatch(/var\(--brand-500\) 100%/);
+  });
+
+  it("dragging a handle emits ONE value on pointerup and nothing mid-move", () => {
+    const onChange = setup(LINEAR);
+    const ramp = document.querySelector(".ed-gradient-ramp") as HTMLElement;
+    ramp.getBoundingClientRect = () => ({ left: 0, width: 200, top: 0, height: 20, right: 200, bottom: 20, x: 0, y: 0, toJSON: () => {} });
+    const handle = document.querySelector(".ed-gradient-handle") as HTMLElement; // stop 1 (position 0)
+    handle.setPointerCapture = () => {};
+    fireEvent.pointerDown(handle, { clientX: 0 });
+    fireEvent.pointerMove(window, { clientX: 100 }); // 50%
+    expect(onChange).not.toHaveBeenCalled(); // nothing mid-move
+    fireEvent.pointerUp(window, { clientX: 100 });
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange.mock.calls[0][0]).toMatch(/var\(--brand-500\) 50%/);
+  });
+});

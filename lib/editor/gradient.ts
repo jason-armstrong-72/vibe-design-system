@@ -11,12 +11,25 @@ export const clampAngle = (n: number) => Math.max(0, Math.min(360, n));
 export const clampPct = (n: number) => Math.max(0, Math.min(100, n));
 
 // ---- format ----
-function formatStop(s: Stop): string {
-  const pos = `${round(clampPct(s.position))}%`;
-  if (s.color === "transparent" || s.alpha <= 0) return `transparent ${pos}`;
+/** The CSS color expression for a stop (no position) — var(), color-mix(), or bare transparent. */
+export function stopColor(s: Stop): string {
+  if (s.color === "transparent" || s.alpha <= 0) return "transparent";
   const ref = `var(${s.color})`;
-  const col = s.alpha >= 100 ? ref : `color-mix(in oklch, ${ref} ${round(clampPct(s.alpha))}%, transparent)`;
-  return `${col} ${pos}`;
+  return s.alpha >= 100 ? ref : `color-mix(in oklch, ${ref} ${round(clampPct(s.alpha))}%, transparent)`;
+}
+function formatStop(s: Stop): string {
+  return `${stopColor(s)} ${round(clampPct(s.position))}%`;
+}
+
+/** A flat left-to-right `linear-gradient` of the stops, for the ramp bar preview (type-agnostic). */
+export function rampGradient(stops: Stop[]): string {
+  return `linear-gradient(90deg, ${stops.map(formatStop).join(", ")})`;
+}
+
+/** Map a pointer's clientX within a ramp rect to a clamped position percentage. */
+export function positionFromPointer(clientX: number, rect: { left: number; width: number }): number {
+  if (rect.width <= 0) return 0;
+  return clampPct(((clientX - rect.left) / rect.width) * 100);
 }
 export function formatGradient(g: Gradient): string {
   const stops = g.stops.map(formatStop).join(", ");
@@ -63,7 +76,7 @@ function parseStops(parts: string[]): Stop[] | null {
 
 export function parseGradient(value: string): Gradient | null {
   const v = value.trim();
-  const lin = /^linear-gradient\((.*)\)$/s.exec(v);
+  const lin = /^linear-gradient\((.*)\)$/.exec(v);
   if (lin) {
     const parts = splitTopLevel(lin[1]);
     let angle = 180, stopParts = parts;
@@ -72,7 +85,7 @@ export function parseGradient(value: string): Gradient | null {
     const stops = parseStops(stopParts);
     return stops ? { type: "linear", angle, stops } : null;
   }
-  const rad = /^radial-gradient\((.*)\)$/s.exec(v);
+  const rad = /^radial-gradient\((.*)\)$/.exec(v);
   if (rad) {
     const parts = splitTopLevel(rad[1]);
     const hm = /^(circle|ellipse) at (\d*\.?\d+)% (\d*\.?\d+)%$/.exec(parts[0] ?? "");
