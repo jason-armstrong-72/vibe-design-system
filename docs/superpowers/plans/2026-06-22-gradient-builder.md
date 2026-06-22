@@ -168,8 +168,8 @@ function parseStops(parts: string[]): Stop[] | null {
   if (parts.length < 2) return null;
   const stops: Stop[] = [];
   for (const p of parts) { const s = parseOneStop(p); if (!s) return null; stops.push(s); }
-  // fill any missing positions evenly by index (canonical seeds always have positions, so this is a fallback)
-  return stops.map((s, i) => ({ ...s, position: s.position }));
+  // parseOneStop defaults a missing position to 0 (canonical seeds always carry positions).
+  return stops;
 }
 
 export function parseGradient(value: string): Gradient | null {
