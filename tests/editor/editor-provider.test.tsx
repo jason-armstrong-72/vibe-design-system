@@ -19,6 +19,7 @@ function Probe() {
   return (
     <div>
       <span data-testid="enabled">{String(e.enabled)}</span>
+      <span data-testid="pick">{String(e.pickMode)}</span>
       <span data-testid="selected">{e.selectedToken ?? "none"}</span>
       <span data-testid="block">{e.editingBlock}</span>
       <span data-testid="pt-original">{pt?.original ?? "none"}</span>
@@ -29,6 +30,8 @@ function Probe() {
       <span data-testid="committed-primary-light">{e.committedValue("--primary", "light")}</span>
       <span data-testid="committed-ring-dark">{e.committedValue("--ring", "dark")}</span>
       <button onClick={() => e.enable()}>do-enable</button>
+      <button onClick={() => e.disable()}>do-disable</button>
+      <button onClick={() => e.togglePickMode()}>do-pick</button>
       <button onClick={() => e.select("--z-modal")}>do-select</button>
       <button onClick={() => e.select("--primary")}>do-select-primary</button>
       <button onClick={() => e.editValue("--primary", "oklch(0.5 0 0)")}>
@@ -58,6 +61,16 @@ function setup() {
 }
 
 describe("EditorProvider", () => {
+  it("pickMode toggles and is cleared by disable()", () => {
+    setup();
+    fireEvent.click(screen.getByText("do-enable"));
+    expect(screen.getByTestId("pick").textContent).toBe("false");
+    act(() => { fireEvent.click(screen.getByText("do-pick")); });
+    expect(screen.getByTestId("pick").textContent).toBe("true");
+    act(() => { fireEvent.click(screen.getByText("do-disable")); });
+    expect(screen.getByTestId("pick").textContent).toBe("false");
+  });
+
   it("defaults to disabled with nothing selected", () => {
     setup();
     expect(screen.getByTestId("enabled").textContent).toBe("false");

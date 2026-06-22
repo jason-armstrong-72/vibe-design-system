@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronDown, Moon01, Sun, X } from "@untitled-ui/icons-react";
+import { ChevronDown, Dropper, Moon01, Sun, X } from "@untitled-ui/icons-react";
 import { useEditor } from "@/components/editor/editor-provider";
 
 /** Width of the docked panel; mirrors PANEL_WIDTH in editor-mount.tsx. */
@@ -16,7 +16,7 @@ const PANEL_WIDTH = 312;
  * stop the two theme ideas getting confused (spec §4).
  */
 export function PanelToolbar() {
-  const { disable, editingBlock, setEditingBlock, panelAppearance, setPanelAppearance } =
+  const { disable, editingBlock, setEditingBlock, panelAppearance, setPanelAppearance, pickMode, togglePickMode } =
     useEditor();
   const isDark = editingBlock === "dark";
   const isPanelDark = panelAppearance === "dark";
@@ -37,6 +37,17 @@ export function PanelToolbar() {
       <div className="ed-toolbar-head">
         <span className="ed-title">Editor</span>
         <div className="ed-toolbar-actions">
+          <button
+            type="button"
+            className="ed-iconbtn"
+            aria-label="Pick token from element"
+            aria-pressed={pickMode}
+            data-on={pickMode ? "" : undefined}
+            title="Pick a token by clicking any element"
+            onClick={togglePickMode}
+          >
+            <Dropper aria-hidden="true" width={16} height={16} />
+          </button>
           <button
             type="button"
             className="ed-chip"

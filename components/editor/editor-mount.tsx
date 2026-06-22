@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { EditorProvider, useEditor } from "@/components/editor/editor-provider";
 import { EditToggle } from "@/components/editor/edit-toggle";
 import { HighlightOverlay } from "@/components/editor/highlight-overlay";
+import { PickOverlay } from "@/components/editor/pick-overlay";
 import { EditorPanel } from "@/components/editor/editor-panel";
 
 const PANEL_WIDTH = 312;
@@ -126,6 +127,7 @@ function EditorShell({ children }: { children: React.ReactNode }) {
       </div>
       <EditToggle />
       <HighlightOverlay />
+      <PickOverlay />
       <EditorPanel />
     </div>
   );
