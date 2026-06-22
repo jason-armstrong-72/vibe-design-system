@@ -54,6 +54,7 @@ export interface HistoryEntry {
 
 export interface EditorContextValue {
   enabled: boolean;
+  pickMode: boolean;
   selectedToken: string | null;
   editingBlock: Theme;
   panelAppearance: PanelAppearance;
@@ -61,6 +62,7 @@ export interface EditorContextValue {
   enable: () => void;
   disable: () => void;
   toggle: () => void;
+  togglePickMode: () => void;
   select: (name: string) => void;
   setEditingBlock: (block: Theme) => void;
   setPanelAppearance: (appearance: PanelAppearance) => void;
@@ -91,6 +93,7 @@ function currentValue(name: string, block: Theme): string {
 
 export function EditorProvider({ children }: { children: React.ReactNode }) {
   const [enabled, setEnabled] = useState(false);
+  const [pickMode, setPickMode] = useState(false);
   const [selectedToken, setSelectedToken] = useState<string | null>(null);
   const [editingBlock, setEditingBlockState] = useState<Theme>("light");
   // Lazy initializer is SSR-safe (guards window) and reads the persisted value on mount.
@@ -139,8 +142,13 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
   const queue = useTokenWriteback(onStatus);
 
   const enable = useCallback(() => setEnabled(true), []);
-  const disable = useCallback(() => setEnabled(false), []);
+  // Disabling edit mode also clears pick mode (no stale pickMode resurfacing on re-enable).
+  const disable = useCallback(() => {
+    setEnabled(false);
+    setPickMode(false);
+  }, []);
   const toggle = useCallback(() => setEnabled((e) => !e), []);
+  const togglePickMode = useCallback(() => setPickMode((p) => !p), []);
 
   const setEditingBlock = useCallback(
     (block: Theme) => {
@@ -308,6 +316,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<EditorContextValue>(
     () => ({
       enabled,
+      pickMode,
       selectedToken,
       editingBlock,
       panelAppearance,
@@ -315,6 +324,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       enable,
       disable,
       toggle,
+      togglePickMode,
       select,
       setEditingBlock,
       setPanelAppearance,
@@ -328,6 +338,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     }),
     [
       enabled,
+      pickMode,
       selectedToken,
       editingBlock,
       panelAppearance,
@@ -335,6 +346,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       enable,
       disable,
       toggle,
+      togglePickMode,
       select,
       setEditingBlock,
       setPanelAppearance,
