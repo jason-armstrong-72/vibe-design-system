@@ -13,7 +13,7 @@ const PROP_LABEL: Record<string, string> = {
 };
 
 const PANEL_WIDTH = 312;
-const MENU_WIDTH = 240;
+const MENU_WIDTH = 280;
 
 interface Row { property: string; token: string; value: string; isColor: boolean; }
 
@@ -76,7 +76,12 @@ export function PickMenu({
             onClick={() => onPickToken(r.token)}
           >
             <span className="ed-pick-prop">{PROP_LABEL[r.property] ?? r.property}</span>
-            {r.isColor && <span className="ed-reuse-swatch" style={{ background: r.value }} aria-hidden="true" />}
+            <span
+              className="ed-pick-swatch"
+              data-empty={r.isColor ? undefined : ""}
+              style={r.isColor ? { background: r.value } : undefined}
+              aria-hidden="true"
+            />
             <span className="ed-pick-token">{r.token}</span>
           </button>
         ))

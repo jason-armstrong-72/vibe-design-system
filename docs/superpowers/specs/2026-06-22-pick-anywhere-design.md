@@ -190,6 +190,9 @@ framework- and DOM-free):
 - **`components/editor/panel-toolbar.tsx`** — add an **eyedropper toggle** as an `.ed-iconbtn`
   (`Dropper` icon from `@untitled-ui/icons-react`), `aria-pressed={pickMode}` / `aria-label="Pick token from
   element"`, beside the existing icon buttons — **not** a second floating `.ed-toggle` **[R: architecture-S3]**.
+  Selected state (`.ed-iconbtn[data-on]`) reads as solid `var(--ed-accent)` + white icon — same affordance as
+  the primary `.ed-toggle[data-on]` — so on/off is unambiguous in both themes (the old `--ed-accent-soft` fill
+  was too subtle to tell selected from idle).
 - **`components/editor/editor-mount.tsx`** — mount `<PickOverlay/>` inside `EditorShell` (beside
   `HighlightOverlay`) so it tree-shakes out of prod with the island. Add **Escape** handling:
   document-level, layered — Escape closes the popover if open, else exits pick mode **[R: ux-S3]**. (Mirrors
