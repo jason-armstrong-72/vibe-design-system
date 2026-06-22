@@ -680,7 +680,7 @@
 .ed-pick-menu {
   position: fixed;
   z-index: 2147483647;
-  width: 280px;
+  width: 400px;
   max-height: 320px;
   overflow-y: auto;
   background: var(--ed-panel);
