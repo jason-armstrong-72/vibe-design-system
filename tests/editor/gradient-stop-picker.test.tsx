@@ -48,13 +48,18 @@ describe("GradientStopPicker", () => {
     expect(onChange).toHaveBeenCalledWith({ color: "transparent", alpha: 0, position: 0 });
   });
 
-  it("alpha slider (in the popover) emits on change and is disabled for a transparent stop", () => {
+  it("alpha slider (in the popover) emits on change for a color stop", () => {
     const onChange = vi.fn();
-    const { rerender } = render(<GradientStopPicker stop={stop} tokens={TOKENS} onChange={onChange} label="stop 1" />);
+    render(<GradientStopPicker stop={stop} tokens={TOKENS} onChange={onChange} label="stop 1" />);
     fireEvent.click(screen.getByRole("button", { name: /stop 1 color/i }));
     fireEvent.change(screen.getByRole("slider", { name: /stop 1 alpha/i }), { target: { value: "80" } });
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ alpha: 80 }));
-    rerender(<GradientStopPicker stop={{ color: "transparent", alpha: 0, position: 50 }} tokens={TOKENS} onChange={onChange} label="stop 1" />);
-    expect((screen.getByRole("slider", { name: /stop 1 alpha/i }) as HTMLInputElement).disabled).toBe(true);
+  });
+
+  it("transparent stop shows a 'no alpha' note instead of the slider", () => {
+    render(<GradientStopPicker stop={{ color: "transparent", alpha: 0, position: 50 }} tokens={TOKENS} onChange={() => {}} label="stop 1" />);
+    fireEvent.click(screen.getByRole("button", { name: /stop 1 color/i }));
+    expect(screen.queryByRole("slider", { name: /stop 1 alpha/i })).toBeNull();
+    expect(screen.getByText(/transparent — no alpha/i)).toBeTruthy();
   });
 });

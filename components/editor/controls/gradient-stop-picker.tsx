@@ -85,20 +85,23 @@ export function GradientStopPicker({ stop, tokens, onChange, label }: Props) {
               <span className="ed-gradient-swatch-fill" data-checker="" aria-hidden="true" />
             </button>
           </div>
-          <div className="ed-gradient-alpha">
-            <span className="ed-gradient-alpha-label" aria-hidden="true">alpha</span>
-            <input
-              type="range"
-              aria-label={`${label} alpha`}
-              min={0}
-              max={100}
-              step={1}
-              value={stop.alpha}
-              disabled={isTransparent}
-              onChange={(e) => onChange({ ...stop, alpha: Number(e.target.value) })}
-            />
-            <span className="ed-gradient-alpha-val" aria-hidden="true">{isTransparent ? "—" : `${stop.alpha}%`}</span>
-          </div>
+          {isTransparent ? (
+            <p className="ed-gradient-alpha-note">transparent — no alpha</p>
+          ) : (
+            <div className="ed-gradient-alpha">
+              <span className="ed-gradient-alpha-label" aria-hidden="true">alpha</span>
+              <input
+                type="range"
+                aria-label={`${label} alpha`}
+                min={0}
+                max={100}
+                step={1}
+                value={stop.alpha}
+                onChange={(e) => onChange({ ...stop, alpha: Number(e.target.value) })}
+              />
+              <span className="ed-gradient-alpha-val" aria-hidden="true">{`${stop.alpha}%`}</span>
+            </div>
+          )}
         </div>
       )}
     </div>
