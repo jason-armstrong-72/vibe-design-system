@@ -734,3 +734,94 @@
   font-size: 12px;
   color: var(--ed-muted);
 }
+
+/* ---- gradient builder ---- */
+.ed-gradient {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ed-gradient[data-editable="false"] .ed-gradient-stop,
+.ed-gradient[data-editable="false"] .ed-gradient-geom {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.ed-gradient-preview {
+  height: 72px;
+  border-radius: 8px;
+  border: 1px solid var(--ed-border);
+}
+.ed-gradient-types {
+  display: flex;
+  gap: 3px;
+  background: var(--ed-surface-2, var(--ed-border));
+  border-radius: 7px;
+  padding: 3px;
+}
+.ed-gradient-type {
+  flex: 1;
+  padding: 5px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ed-muted);
+  font-size: 12px;
+  text-transform: capitalize;
+  cursor: pointer;
+}
+.ed-gradient-type[aria-checked="true"] {
+  background: var(--ed-bg);
+  color: var(--ed-fg);
+}
+.ed-gradient-fallback {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ed-muted);
+}
+.ed-gradient-stop {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ed-gradient-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.ed-gradient-swatch {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--ed-border);
+  border-radius: 4px;
+  cursor: pointer;
+  overflow: hidden;
+}
+.ed-gradient-swatch[data-selected] {
+  outline: 2px solid var(--ed-accent, var(--ed-fg));
+  outline-offset: 1px;
+}
+.ed-gradient-swatch-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ed-gradient-swatch-fill[data-checker] {
+  background-image: repeating-conic-gradient(var(--ed-muted) 0% 25%, var(--ed-bg) 0% 50%);
+  background-size: 8px 8px;
+}
+.ed-gradient-alpha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ed-gradient-alpha input[type="range"] {
+  flex: 1;
+}
+.ed-gradient-alpha-val {
+  min-width: 34px;
+  text-align: right;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--ed-muted);
+}
