@@ -207,27 +207,29 @@ export function GradientBuilder({ token, value, onChange, tokens, disabled = fal
           <span className="ed-gradient-geom-val" aria-hidden="true">{display.angle}°</span>
         </div>
       ) : (
-        <div className="ed-gradient-geom ed-gradient-geom-radial">
-          <select
-            className="ed-gradient-shape"
-            aria-label={`${token} shape`}
-            value={display.shape}
-            onChange={(e) => emit({ ...display, shape: e.target.value as "circle" | "ellipse" })}
-          >
-            <option value="circle">circle</option>
-            <option value="ellipse">ellipse</option>
-          </select>
+        <div className="ed-gradient-geom-radial">
           <div className="ed-gradient-pad" ref={padRef} aria-hidden="true" onPointerDown={(e) => startDrag(e, { kind: "pad" })}>
             <span className="ed-gradient-pad-dot" style={{ left: `${clampPct(display.cx)}%`, top: `${clampPct(display.cy)}%` }} />
           </div>
-          <div className="ed-gradient-center">
+          <div className="ed-gradient-radial-fields">
+            <select
+              className="ed-gradient-shape"
+              aria-label={`${token} shape`}
+              value={display.shape}
+              onChange={(e) => emit({ ...display, shape: e.target.value as "circle" | "ellipse" })}
+            >
+              <option value="circle">circle</option>
+              <option value="ellipse">ellipse</option>
+            </select>
             <label className="ed-gradient-axis">
               <span aria-hidden="true">x</span>
               <NumField label={`${token} position x`} value={display.cx} onCommit={(n) => emit({ ...display, cx: clampPct(n) })} />
+              <span className="ed-gradient-pos-unit" aria-hidden="true">%</span>
             </label>
             <label className="ed-gradient-axis">
               <span aria-hidden="true">y</span>
               <NumField label={`${token} position y`} value={display.cy} onCommit={(n) => emit({ ...display, cy: clampPct(n) })} />
+              <span className="ed-gradient-pos-unit" aria-hidden="true">%</span>
             </label>
           </div>
         </div>
