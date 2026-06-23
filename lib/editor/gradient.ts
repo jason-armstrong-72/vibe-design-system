@@ -1,4 +1,5 @@
 // Pure gradient model + parse/format/clamp. No React, no DOM, no culori. The testable core.
+import { splitTopLevel } from "@/lib/editor/css-list";
 
 export type GradientType = "linear" | "radial";
 export interface Stop { color: string; alpha: number; position: number } // color: "--name" | "transparent"
@@ -47,19 +48,6 @@ export function formatGradient(g: Gradient): string {
 }
 
 // ---- parse ----
-/** Split on commas at paren-depth 0 (so color-mix(...) inner commas survive). */
-function splitTopLevel(s: string): string[] {
-  const out: string[] = [];
-  let depth = 0, start = 0;
-  for (let i = 0; i < s.length; i++) {
-    const c = s[i];
-    if (c === "(") depth++;
-    else if (c === ")") depth--;
-    else if (c === "," && depth === 0) { out.push(s.slice(start, i)); start = i + 1; }
-  }
-  out.push(s.slice(start));
-  return out.map((p) => p.trim()).filter((p) => p.length > 0);
-}
 
 function parseOneStop(raw: string): Stop | null {
   // trailing "<pos>%" (optional)

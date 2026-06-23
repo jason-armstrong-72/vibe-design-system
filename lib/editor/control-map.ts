@@ -1,12 +1,12 @@
 import type { TokenGroup } from "@/lib/tokens/types";
 
 export const CONTROL_KINDS = [
-  "color", "length", "number", "opacity", "select", "duration", "easing", "text", "gradient",
+  "color", "length", "number", "opacity", "select", "duration", "easing", "gradient", "shadow",
 ] as const;
 export type ControlKind = (typeof CONTROL_KINDS)[number];
 
-// UI control per group. Richer/looser than ControlType — easing/shadow use v1 fallbacks
-// (rich curve editor + layered shadow builder are fast-follow, spec §7).
+// UI control per group. Richer/looser than ControlType — easing → curve editor,
+// shadow → layered shadow builder, gradient → gradient builder.
 const MAP: Record<TokenGroup, ControlKind> = {
   color: "color",
   fontFamily: "select",
@@ -21,7 +21,7 @@ const MAP: Record<TokenGroup, ControlKind> = {
   opacity: "opacity",
   duration: "duration",
   easing: "easing",
-  shadow: "text",
+  shadow: "shadow",
   gradient: "gradient",
 };
 

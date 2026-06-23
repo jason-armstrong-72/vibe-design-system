@@ -22,9 +22,9 @@ The full design is the spec: **[docs/specs/2026-06-16-design-system-starter-desi
 - ✅ **M4** — dev-only visual token editor over `/design-system`. Click a `data-token` → docked panel edits it; live preview (`setProperty`) + per-token-debounced persist to `globals.css` via a **dev-only, write-only** `POST /api/ds/token` (`NODE_ENV`-guarded; validates + allowlist + `writeToken`; **does NOT regenerate** — the watcher owns regen). Editor is a client island (`components/editor/*`) tree-shaken out of prod (verified). Controls: OKLCH color (L/C/H + hex + eyedropper + reuse-a-token swatches + read-only contrast badge), length/opacity/duration/number/select sliders, easing (preset + `cubic-bezier()` text — **superseded by the draggable curve editor, 2026-06-22, see M4 fast-follows**), shadow/font text. Editor chrome = own namespaced `--ed-*` tokens (light+dark, `@untitled-ui/icons-react` icons). Two toolbar toggles: **panel appearance** (cosmetic) + **editing block** (which DS light/dark block writes land in, forces a truthful dark preview). Reset + save-state + **undo/redo** (buttons + ⌘Z/⌘⇧Z). Typed fields commit on blur/Enter; hover overlay tracks on scroll. Control-map is disjoint+exhaustive over all 14 groups.
 - ✅ **M5** — LLM contract + blocking lint. `npm run check` (`scripts/check.ts` → pure sub-checks in `lib/check/`): **hardcoded-color**, **arbitrary-tailwind + off-scale-spacing**, **both-theme** (all color tokens by value — ramps/non-color exempt), **manifest-fresh** (in-process; CI also git-dirty), **off-token-scale** (F3 fast-follow — named scale steps not defined in `@theme`). `/* ds-disable: <reason> */` escape hatch (reason required, counted). Scans `app`+`components` only; excludes `components/ui/**` (vendored), `editor-chrome.css`, token sources. `AGENTS.md` has a `design-system` contract block (pointer to generated `design-system.md` + failure→fix recovery table); `.cursor/rules/design-system.mdc` mirrors it; `CLAUDE.md` `@AGENTS.md`-includes. **Husky** pre-commit runs `npm run check`. **CI** (`.github/workflows/ci.yml`): blocking gate (check+lint+test+build+manifest-git-dirty) + non-blocking e2e job. eslint `.next`/`.claude` scan fixed; `lint` pinned to source. Dogfood self-pass test: the template passes its own gate (4 justified `ds-disable`s on sub-12px labels). Honest scope: M5 **enforces the procedure was followed + backstops drift** (the M0 cleared-namespace compile-gate is the strongest layer; this makes drift loud).
 - ✅ **M6 — Dogfood gate (the last v1 milestone). QUALIFIED PASS (2026-06-19).** A pre-registered run protocol (spec + plan + 2 review rounds each), executed: 4 blind building runs (`/pricing` ×2, `/settings` ×3 incl. one re-run) + a **seeded red-gate recovery run** + a brownfield observation + a direct gate-hole probe. **Validated the headline loop with zero contract hand-fixes:** a fresh LLM builds a real feature with tokens gate-green, **color-extends end-to-end unaided** (`:root`+`.dark`→`npm run tokens`→manifest+AA), and **recovers from a red `npm run check` unaided** (the genuinely-new M5 machinery, never tested before — works). **Findings (full ledger in [docs/M6-DOGFOOD.md](M6-DOGFOOD.md)):** non-color extension is unreliable (F2); a silent-no-op gate blind-spot (F3); the earlier "invented-color ships green" flag was **overstated** — the full `check && test` gate catches it (F5); brownfield has no baseline mode (F6). **Kept:** `/pricing` worked-example route (token-only). See the M6 fast-follows block below.
-- **Status: 458 vitest + 31 Playwright e2e passing (+1 gallery, skipped without GALLERY=1). 98 tokens (incl. 4 gradients). `/pricing` + `/design-system` routes.** Run **`npm run verify`** (= `check && test && lint && build`) before any merge — `next build` (type-check + Tailwind CSS compile) catches what check/test/lint miss; the fast-follow loop skipping it let two build breaks reach local main (2026-06-21). Plus `npx playwright test` for e2e.
+- **Status: 476 vitest + 25 Playwright e2e passing (1 gallery skipped without GALLERY=1). 98 tokens (incl. 4 gradients). `/pricing` + `/design-system` routes.** Run **`npm run verify`** (= `check && test && lint && build`) before any merge — `next build` (type-check + Tailwind CSS compile) catches what check/test/lint miss; the fast-follow loop skipping it let two build breaks reach local main (2026-06-21). Plus `npx playwright test` for e2e.
 
-**v1 is COMPLETE (M0–M6).** Plans/specs live in `docs/superpowers/`. **Fast-follows F2 + F3 + F5 DONE (2026-06-19/20)** — "silently breaks features" items closed (F3 = off-token-scale check; F2 = one-step non-color extension, also fixes F4; F5 = honest standalone `check`). Remaining fast-follows: multi-model **run** (portable rules surface SHIPPED 2026-06-21; the cross-model run is deferred — see below), brownfield baseline (F6), 5 more themes, **shadow editor** (the last M4 builder; bezier + pick-anywhere DONE 2026-06-22, gradient builder DONE 2026-06-23), Claude skill, stylelint.
+**v1 is COMPLETE (M0–M6).** Plans/specs live in `docs/superpowers/`. **Fast-follows F2 + F3 + F5 DONE (2026-06-19/20)** — "silently breaks features" items closed (F3 = off-token-scale check; F2 = one-step non-color extension, also fixes F4; F5 = honest standalone `check`). Remaining fast-follows: multi-model **run** (portable rules surface SHIPPED 2026-06-21; the cross-model run is deferred — see below), brownfield baseline (F6), 5 more themes, Claude skill, stylelint. **All M4 editor builders DONE** (bezier + pick-anywhere 2026-06-22, gradient 2026-06-23, **shadow 2026-06-23 — the last one**).
 
 ### M5 fast-follows (deferred)
 - Bundled **Claude Code skill** (§6.3 bonus — md guide + lint stand alone without it).
@@ -43,7 +43,32 @@ M6 validated the headline loop (LLM builds with tokens + **color-extends** + **r
 - **Kept from M6:** `/pricing` worked-example route (token-only, no new tokens). `/settings` + a `--radius-2xl` step were built+validated but dropped (layout not reference-worthy / token only needed by the dropped page).
 
 ### M4 fast-follows (deferred, all on the same machinery)
-- **layered shadow builder** (shadow is text now) — the **last** remaining builder.
+- ✅ **Layered shadow builder — DONE 2026-06-23. The LAST M4 builder → M4 editor fast-follows COMPLETE.**
+  Replaced the plain-text shadow control with a layered `box-shadow` builder editing the existing `--elevation-*`
+  group (no new TokenGroup — every exhaustive `Record<TokenGroup>`/switch already carried `shadow`; only
+  `control-map.ts` + `control-host.tsx` changed). Pure `lib/editor/shadow.ts` (parse/format/clamp +
+  `offsetFromPointer`/`dotPercent`) ↔ thin `shadow-builder.tsx` (in-file `LayerCard`/`LayerSummaryRow`) +
+  purpose-built `shadow-color-picker.tsx`. **Color model = `BLACK` sentinel (renders `oklch(0 0 0 / a)`, the
+  3 literal-black seeds) OR a color-token ref + alpha → tinted glows are first-class** (user wanted them);
+  `formatShadow` emits `oklch(0 0 0 / dec)` for black / `var()` / `color-mix(…N%…,transparent)` for tokens —
+  decimal(black) vs percent(token) alpha, exact **seed round-trip** (manifest-fresh safe). Per layer:
+  inset toggle (`aria-pressed`+`data-on`, not a bare checkbox — `.ed-row input{all:unset}` kills native), 2D
+  offset pad (drag commits **once** on pointer-up, `aria-hidden`, live x/y badge) + **visible numeric
+  x/y/blur/spread** (the canonical readable values + keyboard/a11y path, per-layer-disambiguated labels) +
+  color picker + remove. **Accordion** (one layer expanded at a time + collapsed summary rows — the 312px panel
+  can't hold N expanded; open-index is transient UI state, clamps on shrink, expand emits nothing) with a
+  **sticky preview** (light/dark surface toggle, local-only) and an aria-live add/remove announcer. Raw
+  escape-hatch row (shaped-but-lenient validator). Dark-block **disabled "switch to Light" state**
+  (`--elevation-*` are `:root`-only). **Shared `lib/editor/css-list.ts`** `splitTopLevel` extracted (gradient's
+  was private + resolve-token had a 2nd copy → rule-of-three). Removed the now-dead `text` ControlKind +
+  `TextField` (shadow was its last consumer; schema `CONTROL` ControlType `"text"` is separate, unchanged).
+  2× 3-agent review (design + spec) + spec-review + plan-review; user approved screenshots (aesthetic pass
+  deferred to real use). Spec/plan under `docs/superpowers/`.
+  - **Documented limitations:** non-black, non-token literal colors (raw `oklch`/`rgb`/hex/keyword), `%`/non-px
+    lengths, the leading-color grammar, and `none` are not visually modellable → raw row only (parse returns
+    `null` → dimmed fallback). No layer reorder; no extra blur/spread/alpha sliders (numeric only). Dark-block
+    edits disabled (editor-wide light-only-token limitation, unchanged). Layer-color alpha slider is live (not
+    drag-coalesced) — parity with the gradient stop picker.
 - ✅ **Gradient builder + named gradient tokens — DONE 2026-06-23.** Introduced a new `gradient` TokenGroup
   (`--gradient-*`): 4 token-ref seeds (`subtle`/`brand`/`glow`/`fade`) in `:root` + all 3 theme presets, exposed
   via hand-written `@utility bg-gradient-*` (not a Tailwind namespace; mirrors border/z/opacity — sync auto-gen
@@ -107,7 +132,7 @@ M6 validated the headline loop (LLM builds with tokens + **color-extends** + **r
 **v1 (M0–M6) is COMPLETE.** Remaining work is fast-follows. Recommended near-term, in priority order:
 1. ✅ **M6 F2 + F3 + F5 DONE.** F2: one-step non-color extension + radius-knob nudge + manifest lists derived/@theme steps. F3: `check` flags named off-token utilities outside the system's scale. F5: `check` is now honest standalone (contrast sub-check over globals; both-theme over all color tokens).
 2. **Multi-model run** (Cursor+GPT / Gemini) + portable rules surface — proves "point your LLM at it" beyond Claude.
-3. Other per-milestone fast-follows: 5 more themes, **shadow editor** (last M4 builder; bezier + pick-anywhere DONE 2026-06-22, gradient builder DONE 2026-06-23), Claude skill, stylelint, brownfield baseline (F6). Plan → review → execute as always.
+3. Other per-milestone fast-follows: 5 more themes, Claude skill, stylelint, brownfield baseline (F6). Plan → review → execute as always. **All M4 editor builders are DONE** (shadow builder 2026-06-23 was the last). A near-term aesthetic pass on the editor visualizations (gradient/shadow) during real use is the natural next polish — user hasn't hands-on-tested them yet.
 
 ### M3a follow-ups (fast, deferred)
 - **5 more themes** (Editorial, Warm, Pastel, Technical, Corporate) on the same machinery — Editorial needs a serif face added to `lib/fonts.ts` (the only non-value coupling).
