@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { parseShadow, formatShadow } from "@/lib/editor/shadow";
+import {
+  parseShadow, formatShadow, clampPct, clampBlur, offsetFromPointer, dotPercent,
+} from "@/lib/editor/shadow";
 
 const SEED_SM = "0 1px 2px 0 oklch(0 0 0 / 0.05)";
 const SEED_MD = "0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.1)";
@@ -53,5 +55,22 @@ describe("formatShadow", () => {
       .toBe("0 2px 4px 0 var(--brand-500)");
     expect(formatShadow([{ inset: true, x: 0, y: 2, blur: 4, spread: 0, color: "--brand-500", alpha: 30 }]))
       .toBe("inset 0 2px 4px 0 color-mix(in oklch, var(--brand-500) 30%, transparent)");
+  });
+});
+
+describe("clamps + pad coords", () => {
+  it("clampPct/clampBlur", () => {
+    expect(clampPct(150)).toBe(100); expect(clampPct(-3)).toBe(0);
+    expect(clampBlur(-4)).toBe(0); expect(clampBlur(7)).toBe(7);
+  });
+  const rect = { left: 0, top: 0, width: 100, height: 100 };
+  it("offsetFromPointer: centre = origin, edges = ±range, y down-positive", () => {
+    expect(offsetFromPointer(50, 50, rect, 32)).toEqual({ x: 0, y: 0 });
+    expect(offsetFromPointer(100, 100, rect, 32)).toEqual({ x: 32, y: 32 });
+    expect(offsetFromPointer(0, 0, rect, 32)).toEqual({ x: -32, y: -32 });
+  });
+  it("dotPercent pins to [0,100]% when value exceeds range", () => {
+    expect(dotPercent(0, 0, 32)).toEqual({ left: 50, top: 50 });
+    expect(dotPercent(64, -64, 32)).toEqual({ left: 100, top: 0 }); // beyond range → pinned
   });
 });
