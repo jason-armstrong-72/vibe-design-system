@@ -39,6 +39,12 @@ name is a breaking change to the design system's API. Pin once; change deliberat
 14. **Container**: `--container-<size>` (sm,md,lg) → `--container-<size>` namespace.
 15. **Breakpoints**: `--breakpoint-<size>` in `@theme` — documented reference, NOT
     runtime-editable (CSS media queries can't read runtime vars).
+16. **Gradient**: `--gradient-<name>` (subtle,brand,glow,fade) → `bg-gradient-<name>` utility.
+    Stops are **token-ref + alpha + transparent** (`var(--brand-500)` / `color-mix(in oklch,
+    var(--brand-500) N%, transparent)` / `transparent`) so the gradient themes via its referenced
+    colors — it lives only in `:root`. `background-image` is not a Tailwind namespace, so the utility
+    is **hand-wired** (`@utility`), NOT auto-synced (see the gradient note below). Edited visually in
+    the editor's gradient builder (linear/radial).
 
 ## Extending a scale (one step — F2)
 Adding a value to a scale is the **same one step as color**: add the **value token** to `:root`
@@ -51,6 +57,12 @@ the utility (`--elevation-xl` → `shadow-xl`); use the prefix above or the util
 shift with it); for spacing density, change `--spacing-base`. A genuinely new radius step is the exception —
 add `--radius-<step>` to the `@theme inline` block directly (not `:root`), then `npm run tokens` (the manifest
 will report it). Scales are deliberately small — reach for an existing step before extending.
+
+**Gradients are the one TWO-step group.** `background-image` has no Tailwind theme namespace, so the sync pass
+can't auto-wire it. Add a `--gradient-<name>` to `:root` **and** a matching
+`@utility bg-gradient-<name> { background-image: var(--gradient-<name>); }` (alongside the other `@utility`
+blocks), then `npm run tokens`. Auto-generating these blocks via a separate sync module is a deferred
+fast-follow; until then the `@utility` line is manual (the same precedent as `border-*`/`z-*`/`opacity-*`).
 
 ## fg/bg pairing
 Every color with a `-foreground` counterpart is a pair. The schema (M1) models these as

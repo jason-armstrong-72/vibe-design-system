@@ -31,6 +31,8 @@ then `npm run tokens` → use `shadow-xl`.
 
 **Roundness & spacing are KNOBS — radius is NOT like the other scales.** To make corners rounder/softer, **increase `--radius`** (e.g. `0.625rem` → `1rem`) then `npm run tokens` — it shifts every step. **Do NOT reach for `rounded-2xl`/`rounded-3xl`** (cleared namespace → no CSS → the gate rejects it). For spacing density, edit `--spacing-base`. Only add a `--radius-<step>` to the `@theme` block (not `:root`) for a genuine one-off extra step.
 
+**Gradients — the one TWO-step group** (background-image is not a Tailwind namespace, so the utility is hand-wired). Add a `--gradient-<name>` to `:root` **and** a matching `@utility bg-gradient-<name> { background-image: var(--gradient-<name>); }` (next to the other `@utility` blocks), then `npm run tokens`. Compose stops from **color tokens** so the gradient themes for free: `var(--brand-500)` (full), `color-mix(in oklch, var(--brand-500) 45%, transparent)` (alpha), or bare `transparent`. Edit gradients visually in the editor's gradient builder (linear/radial). Use `bg-gradient-<name>` — do **not** hand-roll `bg-[linear-gradient(...)]`.
+
 **Token names are a contract** (kebab-case; `<name>-foreground` pairs; the `--fs-`/`--lh-`/`--elevation-`/`--fw-` value-token prefixes for scales). Full rules in `docs/NAMING-CONVENTION.md`.
 
 ## Tokens
