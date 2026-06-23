@@ -78,6 +78,10 @@ then `npm run tokens` → use `shadow-xl`.
 | `--success-foreground` | color | `oklch(0.985 0 0)` / `oklch(0.205 0 0)` | text-success-foreground |
 | `--warning` | color | `oklch(0.79 0.16 80)` / `oklch(0.83 0.15 80)` | bg-warning text-warning border-warning |
 | `--warning-foreground` | color | `oklch(0.205 0 0)` / `oklch(0.205 0 0)` | text-warning-foreground |
+| `--gradient-brand` | gradient | `linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%)` | bg-gradient-brand |
+| `--gradient-fade` | gradient | `linear-gradient(180deg, var(--brand-500) 0%, transparent 100%)` | bg-gradient-fade |
+| `--gradient-glow` | gradient | `radial-gradient(circle at 50% 30%, color-mix(in oklch, var(--brand-500) 45%, transparent) 0%, transparent 70%)` | bg-gradient-glow |
+| `--gradient-subtle` | gradient | `linear-gradient(180deg, var(--brand-50) 0%, var(--card) 100%)` | bg-gradient-subtle |
 | `--font-mono` | fontFamily | `var(--font-bundled-mono), ui-monospace, SFMono-Regular, monospace` | font-mono |
 | `--font-sans` | fontFamily | `var(--font-bundled-sans), ui-sans-serif, system-ui, sans-serif` | font-sans |
 | `--fs-2xl` | fontSize | `1.5rem` | text-2xl |

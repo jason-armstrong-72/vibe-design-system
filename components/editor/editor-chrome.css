@@ -734,3 +734,254 @@
   font-size: 12px;
   color: var(--ed-muted);
 }
+
+/* ---- gradient builder ---- */
+.ed-gradient {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ed-gradient[data-editable="false"] .ed-gradient-stops,
+.ed-gradient[data-editable="false"] .ed-gradient-geom {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.ed-gradient[data-disabled] .ed-gradient-preview {
+  opacity: 0.6;
+}
+.ed-gradient-preview {
+  height: 72px;
+  border-radius: 8px;
+  border: 1px solid var(--ed-border);
+}
+.ed-gradient-types {
+  display: flex;
+  gap: 3px;
+  background: var(--ed-field);
+  border-radius: 7px;
+  padding: 3px;
+}
+.ed-gradient-type {
+  flex: 1;
+  padding: 5px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ed-muted);
+  font-size: 12px;
+  text-transform: capitalize;
+  cursor: pointer;
+}
+.ed-gradient-type[aria-checked="true"] {
+  background: var(--ed-panel-raised);
+  color: var(--ed-text);
+}
+.ed-gradient-fallback {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ed-muted);
+}
+/* consistent themed range sliders across the builder */
+.ed-gradient input[type="range"] {
+  accent-color: var(--ed-accent);
+}
+/* compact stop control: just the trigger chip; the token grid + alpha live in the popover */
+.ed-gradient-stop {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+}
+.ed-gradient-trigger[data-checker] {
+  background-image: repeating-conic-gradient(var(--ed-muted) 0% 25%, var(--ed-panel) 0% 50%);
+  background-size: 8px 8px;
+}
+.ed-gradient-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  background: var(--ed-panel-raised);
+  border: 1px solid var(--ed-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px oklch(0 0 0 / 0.4);
+}
+.ed-gradient-alpha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ed-gradient-alpha input[type="range"] {
+  flex: 1;
+  min-width: 80px;
+}
+.ed-gradient-alpha-note {
+  margin: 0;
+  font-size: 11px;
+  color: var(--ed-muted);
+}
+.ed-gradient-alpha-label {
+  font-size: 11px;
+  color: var(--ed-muted);
+}
+.ed-gradient-alpha-val {
+  min-width: 34px;
+  text-align: right;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--ed-muted);
+}
+.ed-gradient-swatches {
+  display: grid;
+  grid-template-columns: repeat(8, 18px);
+  gap: 4px;
+}
+.ed-gradient-swatch {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--ed-border);
+  border-radius: 4px;
+  cursor: pointer;
+  overflow: hidden;
+}
+.ed-gradient-swatch[data-selected] {
+  outline: 2px solid var(--ed-accent);
+  outline-offset: 1px;
+}
+.ed-gradient-swatch-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ed-gradient-swatch-fill[data-checker] {
+  background-image: repeating-conic-gradient(var(--ed-muted) 0% 25%, var(--ed-panel) 0% 50%);
+  background-size: 8px 8px;
+}
+
+/* geometry: angle slider / radial shape + pad */
+.ed-gradient-geom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ed-gradient-geom input[type="range"] {
+  flex: 1;
+}
+.ed-gradient-geom-val {
+  min-width: 34px;
+  text-align: right;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--ed-muted);
+}
+.ed-gradient-geom-radial {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.ed-gradient-radial-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ed-gradient-pad {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border: 1px solid var(--ed-border);
+  border-radius: 6px;
+  background:
+    linear-gradient(var(--ed-border), var(--ed-border)) center / 1px 100% no-repeat,
+    linear-gradient(var(--ed-border), var(--ed-border)) center / 100% 1px no-repeat;
+  cursor: crosshair;
+  touch-action: none;
+  flex: none;
+}
+.ed-gradient-pad-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--ed-accent);
+  box-shadow: 0 0 0 2px var(--ed-panel);
+}
+/* stops: ramp + handles + rows */
+.ed-gradient-stops {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ed-gradient-ramp {
+  position: relative;
+  height: 22px;
+  margin-bottom: 26px;
+  border-radius: 5px;
+  border: 1px solid var(--ed-border);
+}
+.ed-gradient-handle {
+  position: absolute;
+  top: 27px;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  transform: translateX(-50%);
+  border: 1px solid var(--ed-muted);
+  border-radius: 3px;
+  box-shadow: 0 1px 3px oklch(0 0 0 / 0.5);
+  cursor: ew-resize;
+  touch-action: none;
+}
+/* upward pointer triangle bridging the chip to the ramp (the demo shape) */
+.ed-gradient-handle::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -7px;
+  transform: translateX(-50%);
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 6px solid var(--ed-muted);
+}
+.ed-gradient-handle[data-checker] {
+  background-image: repeating-conic-gradient(var(--ed-muted) 0% 25%, var(--ed-panel) 0% 50%);
+  background-size: 8px 8px;
+}
+.ed-gradient-stoprow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--ed-border);
+  border-radius: 6px;
+}
+.ed-gradient-pos {
+  width: 48px;
+}
+.ed-gradient-pos-unit {
+  font-size: 11px;
+  color: var(--ed-muted);
+}
+.ed-gradient-axis {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--ed-muted);
+}
+.ed-gradient-axis .ed-gradient-pos {
+  width: 44px;
+}
+.ed-gradient-addstop {
+  align-self: flex-start;
+  padding: 4px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--ed-accent);
+  font-size: 12px;
+  cursor: pointer;
+}

@@ -12,6 +12,7 @@ import { DurationSlider } from "@/components/editor/controls/duration-slider";
 import { SelectField } from "@/components/editor/controls/select-field";
 import { EasingField } from "@/components/editor/controls/easing-field";
 import { TextField } from "@/components/editor/controls/text-field";
+import { GradientBuilder } from "@/components/editor/controls/gradient-builder";
 
 const MANIFEST = designSystem as Manifest;
 
@@ -107,5 +108,19 @@ export function ControlHost() {
           onChange={(v) => editValue(token.name, v)}
         />
       );
+    case "gradient":
+      return (
+        <GradientBuilder
+          token={token.name}
+          value={value}
+          onChange={(v) => editValue(token.name, v)}
+          tokens={MANIFEST.tokens}
+          disabled={editingBlock === "dark" && token.values.dark === undefined}
+        />
+      );
+    default: {
+      const _never: never = kind;
+      throw new Error(`ControlHost: unhandled control kind ${_never}`);
+    }
   }
 }

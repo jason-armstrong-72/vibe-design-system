@@ -51,6 +51,8 @@ function preview(token: ManifestToken): ReactNode {
       return box({ borderWidth: v, borderStyle: "solid", borderColor: "var(--foreground)" });
     case "shadow":
       return box({ boxShadow: v });
+    case "gradient":
+      return box({ background: v });
     case "spacing":
       return <div data-preview="bar" className="h-6 bg-primary" style={{ width: `calc(${v} * 16)` }} />;
     case "opacity":

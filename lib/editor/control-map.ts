@@ -1,7 +1,7 @@
 import type { TokenGroup } from "@/lib/tokens/types";
 
 export const CONTROL_KINDS = [
-  "color", "length", "number", "opacity", "select", "duration", "easing", "text",
+  "color", "length", "number", "opacity", "select", "duration", "easing", "text", "gradient",
 ] as const;
 export type ControlKind = (typeof CONTROL_KINDS)[number];
 
@@ -22,6 +22,7 @@ const MAP: Record<TokenGroup, ControlKind> = {
   duration: "duration",
   easing: "easing",
   shadow: "text",
+  gradient: "gradient",
 };
 
 export function controlKindForGroup(group: TokenGroup): ControlKind {

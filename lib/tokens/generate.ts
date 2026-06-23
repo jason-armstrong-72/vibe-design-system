@@ -14,7 +14,7 @@ export interface Manifest {
 }
 
 const GROUP_ORDER: TokenGroup[] = [
-  "color", "fontFamily", "fontSize", "lineHeight", "fontWeight",
+  "color", "gradient", "fontFamily", "fontSize", "lineHeight", "fontWeight",
   "spacing", "radius", "borderWidth", "shadow", "duration", "easing",
   "zIndex", "opacity", "container",
 ];

@@ -499,6 +499,46 @@
       ]
     },
     {
+      "name": "--gradient-brand",
+      "group": "gradient",
+      "values": {
+        "light": "linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%)"
+      },
+      "utilities": [
+        "bg-gradient-brand"
+      ]
+    },
+    {
+      "name": "--gradient-fade",
+      "group": "gradient",
+      "values": {
+        "light": "linear-gradient(180deg, var(--brand-500) 0%, transparent 100%)"
+      },
+      "utilities": [
+        "bg-gradient-fade"
+      ]
+    },
+    {
+      "name": "--gradient-glow",
+      "group": "gradient",
+      "values": {
+        "light": "radial-gradient(circle at 50% 30%, color-mix(in oklch, var(--brand-500) 45%, transparent) 0%, transparent 70%)"
+      },
+      "utilities": [
+        "bg-gradient-glow"
+      ]
+    },
+    {
+      "name": "--gradient-subtle",
+      "group": "gradient",
+      "values": {
+        "light": "linear-gradient(180deg, var(--brand-50) 0%, var(--card) 100%)"
+      },
+      "utilities": [
+        "bg-gradient-subtle"
+      ]
+    },
+    {
       "name": "--font-mono",
       "group": "fontFamily",
       "values": {

@@ -25,6 +25,7 @@ function checkGroup(group: TokenGroup, v: string): boolean {
       return Number.isInteger(n) && n >= 100 && n <= 900 && n % 100 === 0;
     }
     case "shadow":
+    case "gradient":
       return v.length > 0;
     case "duration":
       return /^(\d*\.?\d+)(ms|s)$/.test(v);

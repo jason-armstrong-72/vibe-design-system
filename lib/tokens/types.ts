@@ -14,7 +14,8 @@ export type TokenGroup =
   | "spacing"
   | "zIndex"
   | "opacity"
-  | "container";
+  | "container"
+  | "gradient";
 
 export type ControlType =
   | "color"

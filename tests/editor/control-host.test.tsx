@@ -17,6 +17,7 @@ const REP: Record<ControlKind, string> = {
   duration: "--duration-base",
   easing: "--ease-standard",
   text: "--elevation-md",
+  gradient: "--gradient-brand",
 };
 
 let api: ReturnType<typeof useEditor> | null = null;

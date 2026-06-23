@@ -94,6 +94,12 @@
   --elevation-md: 0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.1);
   --elevation-lg: 0 10px 15px -3px oklch(0 0 0 / 0.1), 0 4px 6px -4px oklch(0 0 0 / 0.1);
 
+  /* ---- gradient (token-ref stops → theme for free; :root only) ---- */
+  --gradient-subtle: linear-gradient(180deg, var(--brand-50) 0%, var(--card) 100%);
+  --gradient-brand: linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%);
+  --gradient-glow: radial-gradient(circle at 50% 30%, color-mix(in oklch, var(--brand-500) 45%, transparent) 0%, transparent 70%);
+  --gradient-fade: linear-gradient(180deg, var(--brand-500) 0%, transparent 100%);
+
   /* ---- motion ---- */
   --duration-fast: 150ms;
   --duration-base: 250ms;
@@ -280,6 +286,12 @@
 @utility opacity-muted    { opacity: var(--opacity-muted); }
 @utility opacity-overlay  { opacity: var(--opacity-overlay); }
 @utility opacity-hover    { opacity: var(--opacity-hover); }
+
+/* gradient: not a Tailwind namespace — expose as utilities (hand-wired, like border/z/opacity) */
+@utility bg-gradient-subtle { background-image: var(--gradient-subtle); }
+@utility bg-gradient-brand  { background-image: var(--gradient-brand); }
+@utility bg-gradient-glow   { background-image: var(--gradient-glow); }
+@utility bg-gradient-fade   { background-image: var(--gradient-fade); }
 
 @layer base {
   * {

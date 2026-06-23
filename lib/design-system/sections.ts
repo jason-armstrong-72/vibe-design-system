@@ -8,13 +8,13 @@ export interface Section {
 }
 
 const ORDER: TokenGroup[] = [
-  "color", "fontFamily", "fontSize", "lineHeight", "fontWeight",
+  "color", "gradient", "fontFamily", "fontSize", "lineHeight", "fontWeight",
   "spacing", "radius", "borderWidth", "shadow", "duration", "easing",
   "zIndex", "opacity", "container",
 ];
 
 const TITLES: Record<TokenGroup, string> = {
-  color: "Color", fontFamily: "Font family", fontSize: "Type scale",
+  color: "Color", gradient: "Gradient", fontFamily: "Font family", fontSize: "Type scale",
   lineHeight: "Line height", fontWeight: "Font weight", spacing: "Spacing",
   radius: "Radius", borderWidth: "Border width", shadow: "Shadow",
   duration: "Duration", easing: "Easing", zIndex: "Z-index",
