@@ -584,17 +584,21 @@ describe("ShadowBuilder", () => {
     expect(onChange.mock.calls[0][0]).not.toContain("inset");
   });
 
-  it("accordion: collapsed layer inputs not in tree; expander toggles aria-expanded; expand emits nothing", () => {
+  it("accordion: collapsed layer inputs not in tree; expanding swaps which layer is open; emits nothing", () => {
     const onChange = vi.fn();
     render(<ShadowBuilder {...props("0 4px 6px 0 oklch(0 0 0 / 0.1), 0 2px 4px 0 oklch(0 0 0 / 0.1)", onChange)} />);
-    // layer 1 open by default, layer 2 collapsed
+    // layer 1 open by default (card), layer 2 collapsed (summary row)
+    expect(screen.getByLabelText(/layer 1 blur/i)).toBeTruthy();
     expect(screen.queryByLabelText(/layer 2 blur/i)).toBeNull();
     const exp2 = screen.getByRole("button", { name: /expand layer 2/i });
     expect(exp2.getAttribute("aria-expanded")).toBe("false");
     fireEvent.click(exp2);
-    expect(exp2.getAttribute("aria-expanded")).toBe("true");
+    // layer 2 now expanded (card with its inputs); layer 1 collapsed to a summary row with its own expander.
+    // NOTE: exp2 is now detached (replaced by the card) — re-query the live tree, never assert the stale node.
     expect(screen.getByLabelText(/layer 2 blur/i)).toBeTruthy();
-    expect(onChange).not.toHaveBeenCalled();                       // pure UI
+    expect(screen.queryByLabelText(/layer 1 blur/i)).toBeNull();
+    expect(screen.getByRole("button", { name: /expand layer 1/i })).toBeTruthy();
+    expect(onChange).not.toHaveBeenCalled();                       // pure UI, no value change
   });
 
   it("unmodellable value → dimmed fallback, raw row holds it, emits nothing on mount; raw commit emits", () => {
