@@ -1,6 +1,7 @@
 /** Pure reverse-resolution: match an element's canonical computed values to design tokens. No DOM. */
 import { parse, formatHex } from "culori";
 import type { TokenGroup } from "@/lib/tokens/types";
+import { splitTopLevel } from "@/lib/editor/css-list";
 
 export type CssProperty =
   | "background-color" | "color" | "border-radius" | "font-size" | "font-family" | "box-shadow";
@@ -41,18 +42,7 @@ export interface Match { property: CssProperty; group: TokenGroup; value: string
 const isColorProp = (p: CssProperty) => p === "background-color" || p === "color";
 
 /** Paren-aware comma split (box-shadow layers may contain `rgb(0, 0, 0)`). */
-function splitLayers(s: string): string[] {
-  const out: string[] = [];
-  let depth = 0, cur = "";
-  for (const ch of s) {
-    if (ch === "(") depth++;
-    else if (ch === ")") depth--;
-    if (ch === "," && depth === 0) { out.push(cur.trim()); cur = ""; }
-    else cur += ch;
-  }
-  if (cur.trim()) out.push(cur.trim());
-  return out;
-}
+const splitLayers = splitTopLevel;
 
 /** A composed shadow layer with all-zero offsets/blur/spread contributes nothing — drop it. */
 function stripEmptyShadowLayers(s: string): string {
