@@ -11,8 +11,8 @@ import { OpacitySlider } from "@/components/editor/controls/opacity-slider";
 import { DurationSlider } from "@/components/editor/controls/duration-slider";
 import { SelectField } from "@/components/editor/controls/select-field";
 import { EasingField } from "@/components/editor/controls/easing-field";
-import { TextField } from "@/components/editor/controls/text-field";
 import { GradientBuilder } from "@/components/editor/controls/gradient-builder";
+import { ShadowBuilder } from "@/components/editor/controls/shadow-builder";
 
 const MANIFEST = designSystem as Manifest;
 
@@ -100,17 +100,19 @@ export function ControlHost() {
           tokens={MANIFEST.tokens}
         />
       );
-    case "text":
-      return (
-        <TextField
-          token={token.name}
-          value={value}
-          onChange={(v) => editValue(token.name, v)}
-        />
-      );
     case "gradient":
       return (
         <GradientBuilder
+          token={token.name}
+          value={value}
+          onChange={(v) => editValue(token.name, v)}
+          tokens={MANIFEST.tokens}
+          disabled={editingBlock === "dark" && token.values.dark === undefined}
+        />
+      );
+    case "shadow":
+      return (
+        <ShadowBuilder
           token={token.name}
           value={value}
           onChange={(v) => editValue(token.name, v)}

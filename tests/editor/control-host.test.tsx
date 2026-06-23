@@ -16,7 +16,7 @@ const REP: Record<ControlKind, string> = {
   select: "--fw-bold",
   duration: "--duration-base",
   easing: "--ease-standard",
-  text: "--elevation-md",
+  shadow: "--elevation-md",
   gradient: "--gradient-brand",
 };
 

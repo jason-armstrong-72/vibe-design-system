@@ -14,9 +14,9 @@ describe("control-map", () => {
       expect(CONTROL_KINDS).toContain(kind);
     }
   });
-  it("uses v1 fallbacks for the deferred rich editors", () => {
+  it("maps the rich editors to their control kinds", () => {
     expect(controlKindForGroup("easing")).toBe("easing");
-    expect(controlKindForGroup("shadow")).toBe("text");
+    expect(controlKindForGroup("shadow")).toBe("shadow");
   });
   it("color/length/select/number/opacity/duration map as specified", () => {
     expect(controlKindForGroup("color")).toBe("color");
