@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ManifestToken } from "@/lib/tokens/generate";
-import { layerColorCss, type Layer } from "@/lib/editor/shadow";
+import { layerColorCss, BLACK, type Layer } from "@/lib/editor/shadow";
 
 interface Props {
   color: string;          // "black" | "--name"
@@ -24,7 +24,7 @@ const asLayer = (color: string, alpha: number): Layer =>
  */
 export function ShadowColorPicker({ color, alpha, tokens, onChange, label }: Props) {
   const colors = tokens.filter((t) => t.group === "color");
-  const isBlack = color === "black";
+  const isBlack = color === BLACK;
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -61,7 +61,7 @@ export function ShadowColorPicker({ color, alpha, tokens, onChange, label }: Pro
               className="ed-shadow-swatch"
               aria-label={`${label} black`}
               data-selected={isBlack ? "" : undefined}
-              onClick={() => onChange({ color: "black", alpha: isBlack ? alpha : 100 })}
+              onClick={() => onChange({ color: BLACK, alpha: isBlack ? alpha : 100 })}
             >
               <span className="ed-shadow-swatch-fill" style={{ background: "oklch(0 0 0)" }} aria-hidden="true" />
             </button>

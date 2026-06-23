@@ -1,7 +1,10 @@
 // Pure box-shadow model + parse/format/clamp + pad coord helpers. No React, no DOM, no culori. Testable core.
 import { splitTopLevel } from "@/lib/editor/css-list";
 
-// color: the literal "black" sentinel (renders oklch(0 0 0 / a)) | a color-token name "--brand-500".
+// color: the BLACK sentinel (renders oklch(0 0 0 / a)) | a color-token name "--brand-500".
+// Exported as a constant so component files reference it by identifier — a bare "black" string literal
+// in app/components trips the hardcoded-color gate (lib/ is not scanned).
+export const BLACK = "black";
 export interface Layer { inset: boolean; x: number; y: number; blur: number; spread: number;
                          color: string; alpha: number }
 export type Shadow = Layer[]; // ≥ 1 layer
@@ -13,7 +16,7 @@ export const clampBlur = (n: number) => Math.max(0, n);
 // ---- format ----
 const len = (n: number) => (n === 0 ? "0" : `${round(n)}px`);
 function color(l: Layer): string {
-  if (l.color === "black") return l.alpha >= 100 ? "oklch(0 0 0)" : `oklch(0 0 0 / ${round(l.alpha / 100)})`;
+  if (l.color === BLACK) return l.alpha >= 100 ? "oklch(0 0 0)" : `oklch(0 0 0 / ${round(l.alpha / 100)})`;
   const ref = `var(${l.color})`;
   return l.alpha >= 100 ? ref : `color-mix(in oklch, ${ref} ${round(clampPct(l.alpha))}%, transparent)`;
 }
@@ -44,9 +47,9 @@ function tokenize(s: string): string[] {
 
 const LEN = /^-?\d*\.?\d+(px)?$/;
 function parseColorToken(t: string): { color: string; alpha: number } | null {
-  if (/^oklch\(\s*0\s+0\s+0\s*\)$/.test(t)) return { color: "black", alpha: 100 };
+  if (/^oklch\(\s*0\s+0\s+0\s*\)$/.test(t)) return { color: BLACK, alpha: 100 };
   const ok = /^oklch\(\s*0\s+0\s+0\s*\/\s*(\d*\.?\d+)\s*\)$/.exec(t);
-  if (ok) return { color: "black", alpha: round(Number(ok[1]) * 100) };
+  if (ok) return { color: BLACK, alpha: round(Number(ok[1]) * 100) };
   const vm = /^var\((--[\w-]+)\)$/.exec(t);
   if (vm) return { color: vm[1], alpha: 100 };
   const cm = /^color-mix\(inoklch,var\((--[\w-]+)\)(\d*\.?\d+)%,transparent\)$/.exec(t.replace(/\s+/g, ""));

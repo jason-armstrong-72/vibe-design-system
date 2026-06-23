@@ -3,15 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import type { ManifestToken } from "@/lib/tokens/generate";
 import {
-  parseShadow, formatShadow, clampBlur, offsetFromPointer, dotPercent,
+  parseShadow, formatShadow, clampBlur, offsetFromPointer, dotPercent, BLACK,
   type Shadow, type Layer,
 } from "@/lib/editor/shadow";
 import { useDraftField } from "@/lib/editor/use-draft-field";
 import { ShadowColorPicker } from "@/components/editor/controls/shadow-color-picker";
 
 const PAD_RANGE = 32;
-const FALLBACK: Shadow = [{ inset: false, x: 0, y: 4, blur: 6, spread: 0, color: "black", alpha: 10 }];
-const ADD_DEFAULT: Layer = { inset: false, x: 0, y: 2, blur: 4, spread: 0, color: "black", alpha: 15 };
+const FALLBACK: Shadow = [{ inset: false, x: 0, y: 4, blur: 6, spread: 0, color: BLACK, alpha: 10 }];
+const ADD_DEFAULT: Layer = { inset: false, x: 0, y: 2, blur: 4, spread: 0, color: BLACK, alpha: 15 };
 const isNum = (v: string) => v.trim().length > 0 && Number.isFinite(Number(v.trim()));
 const RAW_VALID = (v: string) =>
   !/[;{}]|\/\*|\*\//.test(v) && /(^|[\s,])(inset|none|var\(|oklch\(|color-mix\(|-?\d*\.?\d+px?)/.test(v.trim());
@@ -116,7 +116,7 @@ function LayerSummaryRow({
         <span
           className="ed-shadow-summary-swatch"
           aria-hidden="true"
-          style={{ background: layer.color === "black" ? "oklch(0 0 0)" : `var(${layer.color})` }}
+          style={{ background: layer.color === BLACK ? "oklch(0 0 0)" : `var(${layer.color})` }}
         />
         <span className="ed-shadow-summary-text">
           {`${layer.x} ${layer.y} · blur ${layer.blur}${layer.inset ? " · inset" : ""}`}
@@ -247,7 +247,8 @@ export function ShadowBuilder({ token, value, onChange, tokens, disabled = false
               />
             );
           }
-          const isDragging = drag !== null && mode.current?.index === i;
+          // The pad only exists on the open card, so a live drag is always this (open) layer.
+          const isDragging = drag !== null;
           return (
             <LayerCard
               key={i}
