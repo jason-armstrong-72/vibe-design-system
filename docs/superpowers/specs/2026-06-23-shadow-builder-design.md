@@ -70,7 +70,12 @@ shared by every sub-control (pad, numeric inputs, color pick, inset toggle, add/
   `rgb(0, 0, 0)`"). That's three would-be consumers (gradient, resolve-token, shadow) — rule-of-three.
   Extract once.]** `shadow.ts` and `gradient.ts` both import it; `resolve-token.ts` `splitLayers` is
   refactored to delegate to it (behaviour-equivalent — guarded by the existing `resolve-token`/`probe` tests,
-  which must stay green). This is the **only** generic, non-domain helper extracted. `round`,
+  which must stay green). The two splitters diverge **only** on degenerate empty interior segments (`"a,,b"`):
+  gradient's ends `.map(trim).filter(length>0)` (drops empties), `splitLayers` keeps them. The shared impl uses
+  gradient's **filter-empties** behaviour (the safe superset) — `splitLayers`'s only caller
+  (`stripEmptyShadowLayers`, fed `getComputedStyle` box-shadow, which never has empty inter-comma segments) is
+  unaffected. **[R: correctness/DRY P2 — preserve filter-empties; the divergence is unreachable in real
+  input.]** This is the **only** generic, non-domain helper extracted. `round`,
   `clampPct`/`clampBlur` etc. stay **per-file** in `shadow.ts` — the house style (`gradient.ts:9`,
   `bezier.ts:27-30`, `oklch.ts:9` each declare their own; a shared `num.ts` would fight a clear, intentional
   convention). **[R: DRY P1 — `num.ts` rejected.]**
@@ -83,7 +88,15 @@ shared by every sub-control (pad, numeric inputs, color pick, inset toggle, add/
 - **New `components/editor/controls/shadow-builder.tsx`** — the thin view, props
   `{ token: string; value: string; onChange: (v: string) => void; tokens: ManifestToken[]; disabled?: boolean }`
   (same shape as `GradientBuilder`). New CSS in `editor-chrome.css`, `--ed-*` namespace (excluded from
-  `npm run check`), prefixed `.ed-shadow-*`.
+  `npm run check`), prefixed `.ed-shadow-*`. **Decompose into in-file subcomponents** `LayerCard` (the expanded
+  card: pad + numeric twins + color picker + inset toggle + remove) and `LayerSummaryRow` (the collapsed
+  one-liner), mirroring how `gradient-builder.tsx` keeps `NumField`/`StopRow` in-file — this control is
+  strictly more UI than its ~288-line template, and a flat component would land ~400–450 lines.
+  **[R: DRY P1 (soft) — pre-plan the cohesion; in-file functions, NOT separate files (over-fragmenting vs the
+  gradient precedent).]** **Hooks constraint:** each layer's `useDraftField` calls (x/y/blur/spread) **MUST**
+  live inside `LayerCard`, never in a `.map()` over `display` in the parent — otherwise the hook count varies
+  with layer count and add/remove-layer crashes rules-of-hooks (the `StopRow`/`NumField` boundary at
+  `gradient-builder.tsx:37,56` is exactly this). **[R: correctness P2-2.]**
 - **New `components/editor/controls/shadow-color-picker.tsx`** — a purpose-built sibling of
   `GradientStopPicker` (§4.4).
 
@@ -124,7 +137,11 @@ Per layer: `${inset ? "inset " : ""}${len(x)} ${len(y)} ${len(blur)} ${len(sprea
   decimal: `10`→`0.1`, `5`→`0.05`); **token** → `alpha >= 100 ? ` `var(${color})` ` : `
   `color-mix(in oklch, var(${color}) ${round(alpha)}%, transparent)` ` ` (percent stays percent). Two distinct
   alpha branches. **[R: correctness P0-2 / P1-1 / P1-2 — the decimal(black, `/0.1`) vs percent(token,
-  `color-mix N%`) split is the subtlest correctness point; the terse brainstorm spec glossed it.]**
+  `color-mix N%`) split is the subtlest correctness point; the terse brainstorm spec glossed it.]** The token
+  branch's `var()` / `color-mix(…, transparent)` body is **near-identical to `gradient.ts:15-19` `stopColor`**;
+  this is its **2nd** consumer (not a 3rd), and `stopColor` carries `Stop`/`position` baggage + a `transparent`
+  branch shadow doesn't want + lacks the `black`→`oklch` branch shadow needs — so leaving it duplicated is the
+  **conscious** choice (consistent with the per-file `round` decision), not an oversight. **[R: DRY P2.]**
 - `round(n) = Math.round(n * 100) / 100` — 2dp, **NOT `toFixed`** (`toFixed(2)` emits `0.10`/`0.20`, differing
   from the seed `0.1` and from the `editValue` no-op guard → breaks `manifest-fresh`). Copied from
   `gradient.ts:9`. **[R: correctness P1-2.]**
@@ -165,9 +182,10 @@ not history. So:
   `// eslint-disable-next-line react-hooks/exhaustive-deps`** — the hazard is the exhaustive-deps lint on the
   effect (refs read in handlers are fine), and `startDrag` is called at `onPointerDown` event time, never
   during render. **[R: correctness P2-2 — the "refs during render" eslint trap; the proven shape avoids it.]**
-- **Discrete edits** (numeric commit on blur/Enter, add/remove layer, inset toggle, color pick, accordion
-  expand) each call `onChange` **once** — one history entry each. **Never emits on mount** (an unparseable
-  value shows the dimmed fallback + raw string, never clobbered).
+- **Discrete edits** (numeric commit on blur/Enter, add/remove layer, inset toggle, color pick) each call
+  `onChange` **once** — one history entry each. **Accordion expand/collapse is pure UI** (transient open-index
+  state, §4) and does **NOT** call `onChange`. **Never emits on mount** (an unparseable value shows the dimmed
+  fallback + raw string, never clobbered).
 
 A shadow has a meaningful static preview, so the live page-var preview on commit is useful — but only on
 commit, not per pad-move.
@@ -196,7 +214,7 @@ that every exhaustive site already carries `shadow`:
 | # | File | Change | If omitted |
 |---|---|---|---|
 | 1 | `lib/editor/control-map.ts` | add `"shadow"` to `CONTROL_KINDS`; flip `MAP.shadow` `"text"` → `"shadow"` | the control stays the plain text field |
-| 2 | `components/editor/controls/control-host.tsx` | add `case "shadow": return <ShadowBuilder … disabled={editingBlock==="dark" && token.values.dark===undefined} />` | silent blank panel (no `default`) |
+| 2 | `components/editor/controls/control-host.tsx` | add `case "shadow": return <ShadowBuilder … disabled={editingBlock==="dark" && token.values.dark===undefined} />` | **compile error** — the `_never: never` guard + the `default` that throws (`control-host.tsx:121-123`); there is no silent-blank path |
 
 **Atomicity note:** the `_never: never = kind` guard at `control-host.tsx:122` **already exists**. The moment
 `"shadow"` is added to `CONTROL_KINDS`, that guard becomes a **compile error** until the `case "shadow"` is
@@ -214,19 +232,35 @@ No change to `sections.ts` `SectionBody`, `token-item.tsx` (preview already rend
 The panel renders, top to bottom:
 
 1. **Live preview (sticky)** — a filled card with real margin, floating on a neutral mid-tone surface, backed
-   by the **live edited value** (`boxShadow: value`). **Sticky** at the top of the scroll region so it stays
-   visible while editing lower layers. A **light/dark preview-surface toggle** (independent of the editing
-   block) — a black drop shadow and a colored glow read differently per background, and a glow vanishes on a
-   same-hue surface. The filled card lets **inset** read (inner shadows read against the element's own fill). A
-   caption notes a soft large-blur shadow reads differently at full-bleed. **[R: UX P2-4 — preview honesty.]**
+   by the **live edited value** (`boxShadow: value`). **Sticky** so it stays visible while editing lower layers.
+   **Sticky mechanics [R: UX P1-2]:** the scroll container is `.ed-panel` (`editor-chrome.css:100`,
+   `overflow-y:auto`); the preview's containing block is the `ShadowBuilder` root, so `position:sticky; top:0`
+   on the preview sticks for the whole control. **Constraint:** no ancestor between the preview and `.ed-panel`
+   (the builder root, `.ed-body`) may set `overflow` other than visible — state this so nobody adds
+   `overflow:hidden` to the builder root and silently kills the stick. A **light/dark preview-surface toggle**
+   — **local preview state only, NEVER touches `editingBlock`/writeback** (a different axis from the
+   `panel-toolbar.tsx:56` editing-block switch) — because a black drop shadow and a colored glow read
+   differently per background and a glow vanishes on a same-hue surface. The filled card lets **inset** read
+   (inner shadows read against the element's own fill). A caption notes a soft large-blur shadow reads
+   differently at full-bleed. **[R: UX P2-4 / scope — preview honesty; surface toggle is local-only.]**
 2. **Layer list — an accordion.** Layers stack in source order; **one expanded at a time**, the rest collapse
    to a one-line **summary row** (resolved-color swatch + `"{x} {y} · blur {b}{ · inset}"` + expand + remove).
    **[R: UX P1-1 — the 312px panel (`editor-chrome.css:92`, single column, `overflow-y:auto`) cannot hold N
    fully-expanded layers (pad + 4 inputs + color popover + alpha + inset + remove each); without the accordion
-   the control is unusable past ~2 layers, and the seeds already have 2.]** The **expanded** layer card holds:
+   the control is unusable past ~2 layers, and the seeds already have 2.]**
+   **Accordion a11y contract [R: UX P1-1 — named but underspecified]:** the summary row's expander is a
+   `<button aria-expanded={isOpen} aria-controls="{cardBodyId}" aria-label="Expand layer {n}">` (chip shell per
+   `panel-toolbar.tsx:51-61`); the expanded card body carries the matching stable `id`. **Accepted tradeoff:**
+   a collapsed layer's inputs are **removed from the DOM** (hence out of tab order) — reachable only via its
+   expander; acceptable because the summary announces enough (swatch + `x y · blur`) and the expander is always
+   reachable. **The open-index is transient local state** (like `drag`): expand/collapse is pure UI and does
+   **NOT** call `onChange`; on an external `value` change that yields fewer layers (undo/reset), clamp the open
+   index to a valid layer (or none). The **expanded** layer card holds:
    - a **2D offset pad** — an SVG/div square the user drags to set `x`/`y` (centre origin, ±32px range to match
      `.ed-gradient-pad`'s 64px; y down-positive). The pad is **`aria-hidden`** + pointer-only (drag per §2);
-     a live `x · y` badge follows the dot during drag. **[R: UX P1-3 — range + edge-pin mapping per §1.]**
+     a live `x · y` badge follows the dot during drag — the badge shows the **real** value, not the
+     edge-pinned dot position, so a drag past range isn't misleading. **[R: UX P1-3 / P2-1 — range + edge-pin
+     mapping per §1; badge = real value.]**
    - **visible numeric inputs** `x` / `y` / `blur` / `spread` (signed, `useDraftField` commit-on-blur/Enter,
      Escape-revert) — the canonical readable values **and** the keyboard/a11y path (the pad is aria-hidden).
      `x`/`y` are the pad's twins, ticking live during drag. Each has a **layer-disambiguated accessible name**:
@@ -235,7 +269,9 @@ The panel renders, top to bottom:
    - a **color picker** (§4.4) — black chip (default) + token grid + alpha.
    - an **inset toggle** — a real toggle button (`aria-pressed`, `aria-label="{token} layer {n} inset"`), NOT
      a bare `<input type="checkbox">`: `.ed-row input { all: unset }` (`editor-chrome.css:399`) removes native
-     checkbox rendering entirely. Mirrors the `panel-toolbar.tsx:51-61` chip idiom. **[R: UX P0-3.]**
+     checkbox rendering entirely. Mirrors the `panel-toolbar.tsx:51-61` chip idiom — incl. a **styled visual
+     on/off state** via `data-on`/`[data-pressed]` (filled vs outline), so "inset on" is unambiguous to a
+     sighted user, not only via `aria-pressed`. **[R: UX P0-3 / P2-2 — pin the visual affordance.]**
    - a **remove** `<button aria-label="Remove layer {n}">` (glyph `aria-hidden`); disabled when only **1 layer**
      remains (a `box-shadow` needs ≥ 1 layer; cf. gradient's ≥ 2 stops).
 3. **"+ Add layer"** — inserts a **visible** default layer `0 2px 4px 0 black@15%`
@@ -248,8 +284,11 @@ The panel renders, top to bottom:
    value the builder can't model (raw-color layers, `%`, leading-color grammar, `none`). **Shaped-but-lenient**
    validation (a `box-shadow` has no wrapping function, so the gradient `RAW_VALID` regex does not transfer):
    reject empty, reject the injection set `/[;{}]|\/\*|\*\//` (the server screen, `validate.ts`), and require it
-   look shadow-ish (`inset`/a length/`none`/a color token). Rejected on blur/Enter, **not** silently written.
-   **[R: UX P2-3 / correctness P1-3 — "permissive" as first drafted is a footgun.]**
+   look shadow-ish. **Pin the literal validator** (as `easing-field.tsx:28` `RAW_VALID` does — prose like "a
+   length" lets two implementers diverge and makes the §7 "rejects garbage" test pass vacuously): after the
+   injection screen, require a match of
+   `/(^|[\s,])(inset|none|var\(|oklch\(|color-mix\(|-?\d*\.?\d+px?)/`. Rejected on blur/Enter, **not** silently
+   written. **[R: UX P2-3 / correctness P1-3 — "permissive" as first drafted is a footgun; pin the regex.]**
 
 ### 4.1 Focus rings — not automatic [R: UX P0-2]
 `.ed-row input { all: unset }` (`editor-chrome.css:399-404`) strips the focus ring; the bezier control had to
@@ -342,8 +381,12 @@ asserts the seeds keep `npm run check` green and `npm run tokens` idempotent (§
   on Escape; blur clamps negative to 0.
 - add layer → one `onChange` with an extra (visible-default) layer; remove → one `onChange`; remove disabled at
   1 layer; add/remove announce via aria-live.
-- inset toggle flips `aria-pressed` and emits once with `inset`; color picker black↔token + alpha produce the
-  `oklch(0 0 0 / dec)` / `var()` / `color-mix` encodings.
+- inset toggle reads the model's `inset` on render (correct **initial** `aria-pressed`), flips it, and emits
+  once with `inset`; color picker black↔token + alpha produce the `oklch(0 0 0 / dec)` / `var()` / `color-mix`
+  encodings.
+- **accordion**: the expander exposes `aria-expanded` and toggles it on click; a **collapsed** layer's blur
+  input is **not** queryable (out of the accessible tree), an **expanded** one is; expand/collapse emits **no**
+  `onChange`; an external `value` change to fewer layers clamps the open index (no crash, no stale-open).
 - a raw/un-modellable value (`rgb(...)` layer): renders the dimmed fallback + the raw string in the raw row,
   emits **nothing** on mount; raw-row commit of a valid shadow emits it; raw-row rejects an injection/garbage
   paste on Enter.
@@ -352,6 +395,9 @@ asserts the seeds keep `npm run check` green and `npm run tokens` idempotent (§
   the "switch to Light" message and emits nothing on interaction.
 - a11y: every numeric/raw input + the inset toggle + remove buttons have **layer-disambiguated** accessible
   names; the pad SVG + dot are `aria-hidden`; the color grid is a `menu` with `menuitemradio` swatches.
+  **Focus ring** (§4.1) can't be asserted in jsdom (no layout/`:focus-visible` outline) — make it an explicit
+  **e2e-shot / reviewer checkpoint** that the x/y/blur/spread inputs show a visible focus ring, so the gradient
+  `.ed-gradient-pos` miss isn't repeated. **[R: UX P1-3.]**
 
 **`tests/editor/control-host.test.tsx`** — assert the `shadow` kind resolves `ShadowBuilder` (and the existing
 `never` guard still compiles with `"shadow"` added).
