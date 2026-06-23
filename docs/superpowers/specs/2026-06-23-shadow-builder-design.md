@@ -327,7 +327,8 @@ asserts the seeds keep `npm run check` green and `npm run tokens` idempotent (§
 - `formatShadow`: black `alpha<100` → `oklch(0 0 0 / dec)` (decimal: `10`→`0.1`, `5`→`0.05`); black
   `alpha===100` → `oklch(0 0 0)`; token `alpha<100` → `color-mix(…, N%, transparent)`; token `alpha===100` →
   `var(--x)`; zero length → bare `0`; **the 3 seeds round-trip to their exact `globals.css` strings** (no
-  `0.10`/`0px` drift → `manifest-fresh` safe); `parseShadow(formatShadow(s)) ≈ s`.
+  `0.10`/`0px` drift → `manifest-fresh` safe); `parseShadow(formatShadow(s)) ≈ s`. A unit-less `0` and a `0px`
+  input parse equivalently but **format back to bare `0`** (pin `"0px 1px …"` input → `"0 1px …"` output).
 - `clampPct`/`clampBlur`; `offsetFromPointer` known point ↔ known x/y (centre origin, y down-positive);
   `dotPercent` pins to `[0,100]%` when the value exceeds range (the validator won't catch an out-of-range
   regression — §1).
