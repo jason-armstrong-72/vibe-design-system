@@ -49,7 +49,7 @@ export function checkOffTokenScale(defined: ThemeSteps, path: string, content: s
       if (!hit) continue;
       if (VOCAB[hit.family].has(hit.step) && !defined[hit.family].has(hit.step)) {
         out.push({
-          file: path, line, rule: "off-token-scale",
+          file: path, line, rule: "off-token-scale", key: cls,
           message: MSG.offTokenScale(cls, FAMILY_LABEL[hit.family], [...defined[hit.family]]),
         });
       }
