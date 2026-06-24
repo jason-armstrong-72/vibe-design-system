@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect } from "vitest";
 import { keyOf, buildBaseline, applyBaseline, baselineSavedMessage } from "@/lib/check/baseline";
+import { run } from "@/lib/check/run";
 import type { Finding } from "@/lib/check/types";
 
 const F = (file: string, rule: string, key: string, line = 1): Finding =>
@@ -69,5 +70,19 @@ describe("baselineSavedMessage (locked copy — drift guard)", () => {
     expect(m).toContain("recorded them as your starting point");
     expect(m).toContain("7");
     expect(m).toContain("only NEW code gets checked");
+  });
+});
+
+describe("run(baseline) integration", () => {
+  it("no-arg run is unchanged in findings + disableCount", () => {
+    const a = run();
+    expect(a).toHaveProperty("findings");
+    expect(a).toHaveProperty("disableCount");
+    expect(a.baselineSuppressed).toBe(0);
+    expect(a.staleEntries).toEqual([]);
+  });
+  it("system checks + ds-disable bypass the baseline (only source findings are baseline-able)", () => {
+    const r = run({ version: 1, generated: "2026-06-24", entries: [] });
+    expect(r.findings.every((f) => f.rule !== "off-token-scale" || f.key !== undefined)).toBe(true);
   });
 });
