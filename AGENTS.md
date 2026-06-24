@@ -29,4 +29,11 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | deliberate one-off | `/* ds-disable: <reason> */` on the line above (reason required) |
 
 _The gate runs on `npm run check` / pre-commit / CI — not as live editor squiggles._
+
+**Adopting onto an existing codebase (brownfield).** `npm run check:baseline` records the project's *current* violations to `.ds-baseline.json` so the gate then only flags **new** code. It is a **one-time human adoption step**, run once when the template is first added to a pre-existing repo — **not** a tool you reach for when the gate goes red on your work.
+
+- The **Law above is unchanged for any code you write or edit.** Baseline mode only means: don't treat *pre-existing, human-authored* debt as yours to refactor unless asked.
+- If the gate goes red on code **you** wrote this session, that is **never** baseline-eligible — **fix it** (or extend the system per the procedure).
+- **Never run `check:baseline` yourself to clear errors.** If you believe the baseline genuinely needs regenerating, **stop and ask the human** — re-baselining to silence your own violations defeats the design system and silently ships broken styling.
+- Don't auto-refactor a brownfield repo's legacy code to tokens unless the human asks; automatic conversion isn't part of this template yet.
 <!-- END:design-system -->

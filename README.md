@@ -56,3 +56,10 @@ builds.
 check), F5 (honest standalone `check`). The token system, living `/design-system` page, visual editor, and
 blocking lint are all in place. See [docs/HANDOFF.md](docs/HANDOFF.md) for the live status and remaining
 fast-follows.
+
+## Adopting on an existing codebase?
+
+This template assumes a fresh start — that's the intended path. Bringing it to an app you've already built?
+Run `npm run check:baseline` once. It snapshots your current code so the gate only checks what you build
+**next**; your existing code is left as-is and keeps working. It's a starting line, not an auto-converter —
+bringing old code in line with the system is yours to do when you want.

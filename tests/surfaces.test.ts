@@ -40,4 +40,14 @@ describe("portable rules surface", () => {
     expect(r, "stale 'In progress' Status block must be replaced").not.toContain("In progress");
     expect(r, "README should point to the live status doc").toContain("docs/HANDOFF.md");
   });
+
+  it("AGENTS.md carries the brownfield baseline directive inside the design-system block", () => {
+    const a = read("AGENTS.md");
+    expect(a).toContain("check:baseline");
+    expect(a).toContain("one-time human adoption step");
+  });
+
+  it("README documents brownfield adoption", () => {
+    expect(read("README.md")).toContain("check:baseline");
+  });
 });
