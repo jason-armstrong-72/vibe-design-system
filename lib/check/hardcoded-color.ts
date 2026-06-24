@@ -20,12 +20,12 @@ export function checkHardcodedColor(path: string, content: string): Finding[] {
   content.split("\n").forEach((ln, i) => {
     if (EXEMPT.test(ln)) return;
     for (const hex of ln.matchAll(HEX))
-      out.push({ file: path, line: i + 1, rule: "hardcoded-color", message: MSG.hardcodedColor(hex[0]) });
+      out.push({ file: path, line: i + 1, rule: "hardcoded-color", key: hex[0], message: MSG.hardcodedColor(hex[0]) });
     for (const fn of ln.matchAll(FUNC))
-      out.push({ file: path, line: i + 1, rule: "hardcoded-color", message: MSG.hardcodedColor(fn[0]) });
+      out.push({ file: path, line: i + 1, rule: "hardcoded-color", key: fn[0], message: MSG.hardcodedColor(fn[0]) });
     for (const kw of ln.matchAll(KEYWORD))
       if (isNamedColor(kw[2]))
-        out.push({ file: path, line: i + 1, rule: "hardcoded-color", message: MSG.hardcodedColor(kw[2]) });
+        out.push({ file: path, line: i + 1, rule: "hardcoded-color", key: kw[2], message: MSG.hardcodedColor(kw[2]) });
   });
   return out;
 }

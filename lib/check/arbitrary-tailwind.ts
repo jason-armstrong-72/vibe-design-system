@@ -36,18 +36,18 @@ export function checkArbitrary(path: string, content: string): Finding[] {
         const inner = arb[1];
         if (/var\(|color-mix\(|calc\(|min\(|max\(|clamp\(/.test(inner)) continue; // token/computed → allowed
         if (reArbColorPrefix.test(base) && (/^(#|rgba?\(|hsla?\(|oklch\(|oklab\()/.test(inner) || isNamedColor(inner)))
-          out.push({ file: path, line, rule: "arbitrary-color", message: MSG.arbitraryColor(cls) });
+          out.push({ file: path, line, rule: "arbitrary-color", key: cls, message: MSG.arbitraryColor(cls) });
         else if (reArbLengthPrefix.test(base) && /^\d*\.?\d+(px|rem|em|%)$/.test(inner))
-          out.push({ file: path, line, rule: "arbitrary-length", message: MSG.arbitraryLength(cls) });
+          out.push({ file: path, line, rule: "arbitrary-length", key: cls, message: MSG.arbitraryLength(cls) });
         continue; // other arbitraries (layout/size) allowed
       }
       const sp = base.match(reSpacingNum);
       if (sp && !ALLOWED_SPACING_STEPS.has(Number(sp[1]))) {
-        out.push({ file: path, line, rule: "off-scale-spacing", message: MSG.offScaleSpacing(cls) });
+        out.push({ file: path, line, rule: "off-scale-spacing", key: cls, message: MSG.offScaleSpacing(cls) });
         continue;
       }
       if (rePalette.test(base))
-        out.push({ file: path, line, rule: "default-palette", message: MSG.defaultPalette(cls) });
+        out.push({ file: path, line, rule: "default-palette", key: cls, message: MSG.defaultPalette(cls) });
     }
   }
   return out;

@@ -9,6 +9,7 @@ import { checkBothTheme } from "./both-theme";
 import { checkContrast } from "./contrast";
 import { checkManifestFresh } from "./manifest-fresh";
 import { checkOffTokenScale } from "./off-token-scale";
+import { applyBaseline, type Baseline, type BaselineEntry } from "./baseline";
 import { parseThemeSteps } from "@/lib/tokens/theme-steps";
 
 const SOURCE_ROOTS = ["app", "components"]; // product/UI surface. NOT lib/ (template machinery that
@@ -19,8 +20,14 @@ const EXCLUDE_DIRS = ["ui"]; // components/ui (vendored shadcn) — by dir name 
 const EXCLUDE_FILES = ["app/globals.css", "components/editor/editor-chrome.css"];
 // themes/*.css aren't under SOURCE_ROOTS, so not walked. both-theme/manifest read globals directly.
 
-export function run(): { findings: Finding[]; disableCount: number } {
-  const all: Finding[] = [];
+export function run(baseline?: Baseline): {
+  findings: Finding[];
+  disableCount: number;
+  baselineSuppressed: number; // 0 when no baseline
+  staleEntries: BaselineEntry[]; // [] when no baseline
+} {
+  const source: Finding[] = []; // per-file check findings — baseline-able
+  const bareDisables: Finding[] = []; // never baseline-able (D5)
   let disableCount = 0;
   const globals = readFileSync(resolve("app/globals.css"), "utf8");
   const definedSteps = parseThemeSteps(globals);
@@ -32,14 +39,23 @@ export function run(): { findings: Finding[]; disableCount: number } {
     ];
     const [kept, n] = applySuppressions(raw, f.content);
     disableCount += n;
-    all.push(...kept, ...bareDisableFindings(f.path, f.content));
+    source.push(...kept);
+    bareDisables.push(...bareDisableFindings(f.path, f.content));
   }
-  all.push(...checkBothTheme(globals));
-  all.push(...checkContrast(globals));
-  all.push(...checkManifestFresh(
-    globals,
-    readFileSync(resolve("design-system.json"), "utf8"),
-    readFileSync(resolve("design-system.md"), "utf8"),
-  ));
-  return { findings: all, disableCount };
+
+  let kept = source;
+  let baselineSuppressed = 0;
+  let staleEntries: BaselineEntry[] = [];
+  if (baseline) ({ kept, suppressed: baselineSuppressed, staleEntries } = applyBaseline(source, baseline));
+
+  const system = [
+    ...checkBothTheme(globals),
+    ...checkContrast(globals),
+    ...checkManifestFresh(
+      globals,
+      readFileSync(resolve("design-system.json"), "utf8"),
+      readFileSync(resolve("design-system.md"), "utf8"),
+    ),
+  ];
+  return { findings: [...kept, ...bareDisables, ...system], disableCount, baselineSuppressed, staleEntries };
 }
