@@ -183,3 +183,15 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 <Checkbox id="terms" defaultChecked />
 ```
+
+## RadioGroup
+
+- **Purpose:** Pick exactly one option from a small set.
+- **When to use:** 2–5 mutually-exclusive choices, all visible. Pair each item with a Label. For many options use Select; for multi-select use Checkbox.
+- **Exports:** RadioGroup, RadioGroupItem
+
+```tsx
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+
+<RadioGroup defaultValue="a"><RadioGroupItem value="a" id="a" /><RadioGroupItem value="b" id="b" /></RadioGroup>
+```

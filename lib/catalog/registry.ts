@@ -92,4 +92,9 @@ export const CATALOG: CatalogEntry[] = [
     whenToUse: "Opt-ins, multi-select lists, 'I agree' boxes. Pair with a Label (htmlFor). For mutually-exclusive choices use RadioGroup; for an instant setting use Switch.",
     import: `import { Checkbox } from "@/components/ui/checkbox"`,
     snippet: `<Checkbox id="terms" defaultChecked />` },
+  { name: "RadioGroup", file: "components/ui/radio-group.tsx", exports: ["RadioGroup","RadioGroupItem"],
+    purpose: "Pick exactly one option from a small set.",
+    whenToUse: "2–5 mutually-exclusive choices, all visible. Pair each item with a Label. For many options use Select; for multi-select use Checkbox.",
+    import: `import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"`,
+    snippet: `<RadioGroup defaultValue="a"><RadioGroupItem value="a" id="a" /><RadioGroupItem value="b" id="b" /></RadioGroup>` },
 ];
