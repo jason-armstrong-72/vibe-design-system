@@ -52,4 +52,10 @@ export const CATALOG: CatalogEntry[] = [
     whenToUse: "Confirmations, short forms, focused tasks. Always include a DialogTitle (a11y).",
     import: `import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"`,
     snippet: `<Dialog><DialogTrigger>Open</DialogTrigger><DialogContent><DialogHeader><DialogTitle>Are you sure?</DialogTitle></DialogHeader></DialogContent></Dialog>` },
+  { name: "AlertDialog", file: "components/ui/alert-dialog.tsx",
+    exports: ["AlertDialog","AlertDialogTrigger","AlertDialogContent","AlertDialogHeader","AlertDialogFooter","AlertDialogTitle","AlertDialogDescription","AlertDialogAction","AlertDialogCancel"],
+    purpose: "Confirm a destructive/irreversible action (action + cancel).",
+    whenToUse: "Destructive confirmations (delete, discard). Blocks until the user chooses; always include a title.",
+    import: `import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog"`,
+    snippet: `<AlertDialog><AlertDialogTrigger>Delete</AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete?</AlertDialogTitle></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction>Delete</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>` },
 ];
