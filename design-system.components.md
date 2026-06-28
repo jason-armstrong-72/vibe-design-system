@@ -147,3 +147,15 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 
 <Tooltip><TooltipTrigger>?</TooltipTrigger><TooltipContent>Helpful hint</TooltipContent></Tooltip>
 ```
+
+## DropdownMenu
+
+- **Purpose:** Menu of actions/options anchored to a trigger — items, checkbox/radio items, labels, separators, shortcuts.
+- **When to use:** Action menus (row actions, account menu, overflow). For form selection use Select; for rich panels use Popover.
+- **Exports:** DropdownMenu, DropdownMenuTrigger, DropdownMenuGroup, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut
+
+```tsx
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+
+<DropdownMenu><DropdownMenuTrigger>Open</DropdownMenuTrigger><DropdownMenuContent><DropdownMenuItem>Profile</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
+```

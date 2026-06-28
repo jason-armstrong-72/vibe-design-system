@@ -76,4 +76,10 @@ export const CATALOG: CatalogEntry[] = [
     whenToUse: "Label an icon-only control or add a short hint. Not for rich/interactive content (use Popover). Keep it terse.",
     import: `import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"`,
     snippet: `<Tooltip><TooltipTrigger>?</TooltipTrigger><TooltipContent>Helpful hint</TooltipContent></Tooltip>` },
+  { name: "DropdownMenu", file: "components/ui/dropdown-menu.tsx",
+    exports: ["DropdownMenu","DropdownMenuTrigger","DropdownMenuGroup","DropdownMenuContent","DropdownMenuItem","DropdownMenuCheckboxItem","DropdownMenuRadioGroup","DropdownMenuRadioItem","DropdownMenuLabel","DropdownMenuSeparator","DropdownMenuShortcut"],
+    purpose: "Menu of actions/options anchored to a trigger — items, checkbox/radio items, labels, separators, shortcuts.",
+    whenToUse: "Action menus (row actions, account menu, overflow). For form selection use Select; for rich panels use Popover.",
+    import: `import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"`,
+    snippet: `<DropdownMenu><DropdownMenuTrigger>Open</DropdownMenuTrigger><DropdownMenuContent><DropdownMenuItem>Profile</DropdownMenuItem></DropdownMenuContent></DropdownMenu>` },
 ];
