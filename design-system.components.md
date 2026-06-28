@@ -87,3 +87,15 @@ import { Code, Kbd } from "@/components/ui/code"
 
 Run <Code>npm run dev</Code> or press <Kbd>⌘</Kbd> <Kbd>K</Kbd>
 ```
+
+## Dialog
+
+- **Purpose:** Modal dialog over a dimmed (--overlay) scrim.
+- **When to use:** Confirmations, short forms, focused tasks. Always include a DialogTitle (a11y).
+- **Exports:** Dialog, DialogTrigger, DialogPortal, DialogClose, DialogOverlay, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription
+
+```tsx
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+
+<Dialog><DialogTrigger>Open</DialogTrigger><DialogContent><DialogHeader><DialogTitle>Are you sure?</DialogTitle></DialogHeader></DialogContent></Dialog>
+```

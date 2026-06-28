@@ -46,4 +46,10 @@ export const CATALOG: CatalogEntry[] = [
     whenToUse: "Inline command/code (Code) or a shortcut key (Kbd).",
     import: `import { Code, Kbd } from "@/components/ui/code"`,
     snippet: `Run <Code>npm run dev</Code> or press <Kbd>⌘</Kbd> <Kbd>K</Kbd>` },
+  { name: "Dialog", file: "components/ui/dialog.tsx",
+    exports: ["Dialog","DialogTrigger","DialogPortal","DialogClose","DialogOverlay","DialogContent","DialogHeader","DialogFooter","DialogTitle","DialogDescription"],
+    purpose: "Modal dialog over a dimmed (--overlay) scrim.",
+    whenToUse: "Confirmations, short forms, focused tasks. Always include a DialogTitle (a11y).",
+    import: `import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"`,
+    snippet: `<Dialog><DialogTrigger>Open</DialogTrigger><DialogContent><DialogHeader><DialogTitle>Are you sure?</DialogTitle></DialogHeader></DialogContent></Dialog>` },
 ];
