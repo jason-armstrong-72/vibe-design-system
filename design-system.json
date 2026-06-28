@@ -475,6 +475,30 @@
       ]
     },
     {
+      "name": "--surface",
+      "group": "color",
+      "values": {
+        "light": "oklch(0.985 0 0)",
+        "dark": "oklch(0.19 0 0)"
+      },
+      "utilities": [
+        "bg-surface",
+        "text-surface",
+        "border-surface"
+      ]
+    },
+    {
+      "name": "--surface-foreground",
+      "group": "color",
+      "values": {
+        "light": "oklch(0.145 0 0)",
+        "dark": "oklch(0.985 0 0)"
+      },
+      "utilities": [
+        "text-surface-foreground"
+      ]
+    },
+    {
       "name": "--warning",
       "group": "color",
       "values": {

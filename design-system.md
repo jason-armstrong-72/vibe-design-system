@@ -78,6 +78,8 @@ then `npm run tokens` → use `shadow-xl`.
 | `--secondary-foreground` | color | `oklch(0.205 0 0)` / `oklch(0.985 0 0)` | text-secondary-foreground |
 | `--success` | color | `oklch(0.535 0.17 145)` / `oklch(0.7 0.16 145)` | bg-success text-success border-success |
 | `--success-foreground` | color | `oklch(0.985 0 0)` / `oklch(0.205 0 0)` | text-success-foreground |
+| `--surface` | color | `oklch(0.985 0 0)` / `oklch(0.19 0 0)` | bg-surface text-surface border-surface |
+| `--surface-foreground` | color | `oklch(0.145 0 0)` / `oklch(0.985 0 0)` | text-surface-foreground |
 | `--warning` | color | `oklch(0.79 0.16 80)` / `oklch(0.83 0.15 80)` | bg-warning text-warning border-warning |
 | `--warning-foreground` | color | `oklch(0.205 0 0)` / `oklch(0.205 0 0)` | text-warning-foreground |
 | `--gradient-brand` | gradient | `linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%)` | bg-gradient-brand |

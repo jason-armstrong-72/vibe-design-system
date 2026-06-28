@@ -8,6 +8,7 @@ export const COLOR_ROLES = new Set([
   "accent", "accent-foreground", "destructive", "destructive-foreground",
   "success", "success-foreground", "warning", "warning-foreground",
   "info", "info-foreground", "border", "input", "ring",
+  "surface", "surface-foreground",
 ]);
 
 /** True if a value is a CSS color (the shapes the system stores). */
