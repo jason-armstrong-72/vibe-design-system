@@ -70,4 +70,10 @@ export const CATALOG: CatalogEntry[] = [
     whenToUse: "Rich content on click — pickers, forms, extra detail. For plain hover hints use Tooltip; for menus use DropdownMenu.",
     import: `import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"`,
     snippet: `<Popover><PopoverTrigger>Open</PopoverTrigger><PopoverContent>Panel content</PopoverContent></Popover>` },
+  { name: "Tooltip", file: "components/ui/tooltip.tsx",
+    exports: ["Tooltip","TooltipTrigger","TooltipContent","TooltipProvider"],
+    purpose: "Brief hover/focus hint anchored to a trigger.",
+    whenToUse: "Label an icon-only control or add a short hint. Not for rich/interactive content (use Popover). Keep it terse.",
+    import: `import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"`,
+    snippet: `<Tooltip><TooltipTrigger>?</TooltipTrigger><TooltipContent>Helpful hint</TooltipContent></Tooltip>` },
 ];

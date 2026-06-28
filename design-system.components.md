@@ -135,3 +135,15 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 
 <Popover><PopoverTrigger>Open</PopoverTrigger><PopoverContent>Panel content</PopoverContent></Popover>
 ```
+
+## Tooltip
+
+- **Purpose:** Brief hover/focus hint anchored to a trigger.
+- **When to use:** Label an icon-only control or add a short hint. Not for rich/interactive content (use Popover). Keep it terse.
+- **Exports:** Tooltip, TooltipTrigger, TooltipContent, TooltipProvider
+
+```tsx
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
+
+<Tooltip><TooltipTrigger>?</TooltipTrigger><TooltipContent>Helpful hint</TooltipContent></Tooltip>
+```
