@@ -111,3 +111,15 @@ import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
 
 <AlertDialog><AlertDialogTrigger>Delete</AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete?</AlertDialogTitle></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction>Delete</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
 ```
+
+## Sheet
+
+- **Purpose:** Side panel (drawer) sliding in from an edge over the --overlay scrim — top/right/bottom/left.
+- **When to use:** Secondary tasks, filters, or nav that shouldn't replace the page. Set side; include a SheetTitle.
+- **Exports:** Sheet, SheetTrigger, SheetClose, SheetContent, SheetHeader, SheetFooter, SheetTitle, SheetDescription
+
+```tsx
+import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+
+<Sheet><SheetTrigger>Open</SheetTrigger><SheetContent side="right"><SheetHeader><SheetTitle>Filters</SheetTitle></SheetHeader></SheetContent></Sheet>
+```

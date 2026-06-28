@@ -58,4 +58,10 @@ export const CATALOG: CatalogEntry[] = [
     whenToUse: "Destructive confirmations (delete, discard). Blocks until the user chooses; always include a title.",
     import: `import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog"`,
     snippet: `<AlertDialog><AlertDialogTrigger>Delete</AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete?</AlertDialogTitle></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction>Delete</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>` },
+  { name: "Sheet", file: "components/ui/sheet.tsx",
+    exports: ["Sheet","SheetTrigger","SheetClose","SheetContent","SheetHeader","SheetFooter","SheetTitle","SheetDescription"],
+    purpose: "Side panel (drawer) sliding in from an edge over the --overlay scrim — top/right/bottom/left.",
+    whenToUse: "Secondary tasks, filters, or nav that shouldn't replace the page. Set side; include a SheetTitle.",
+    import: `import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"`,
+    snippet: `<Sheet><SheetTrigger>Open</SheetTrigger><SheetContent side="right"><SheetHeader><SheetTitle>Filters</SheetTitle></SheetHeader></SheetContent></Sheet>` },
 ];
