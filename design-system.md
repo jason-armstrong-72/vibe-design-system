@@ -69,6 +69,7 @@ then `npm run tokens` → use `shadow-xl`.
 | `--input` | color | `oklch(0.922 0 0)` / `oklch(1 0 0 / 0.15)` | border-input |
 | `--muted` | color | `oklch(0.97 0 0)` / `oklch(0.269 0 0)` | bg-muted text-muted border-muted |
 | `--muted-foreground` | color | `oklch(0.556 0 0)` / `oklch(0.708 0 0)` | text-muted-foreground |
+| `--overlay` | color | `oklch(0 0 0 / 0.5)` / `oklch(0 0 0 / 0.7)` | bg-overlay text-overlay border-overlay |
 | `--popover` | color | `oklch(1 0 0)` / `oklch(0.205 0 0)` | bg-popover text-popover border-popover |
 | `--popover-foreground` | color | `oklch(0.145 0 0)` / `oklch(0.985 0 0)` | text-popover-foreground |
 | `--primary` | color | `oklch(0.205 0 0)` / `oklch(0.922 0 0)` | bg-primary text-primary border-primary |

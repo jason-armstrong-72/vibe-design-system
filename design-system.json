@@ -367,6 +367,19 @@
       ]
     },
     {
+      "name": "--overlay",
+      "group": "color",
+      "values": {
+        "light": "oklch(0 0 0 / 0.5)",
+        "dark": "oklch(0 0 0 / 0.7)"
+      },
+      "utilities": [
+        "bg-overlay",
+        "text-overlay",
+        "border-overlay"
+      ]
+    },
+    {
       "name": "--popover",
       "group": "color",
       "values": {
