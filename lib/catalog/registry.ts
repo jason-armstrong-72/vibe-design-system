@@ -87,4 +87,9 @@ export const CATALOG: CatalogEntry[] = [
     whenToUse: "Always label inputs. Set htmlFor to the control id (or wrap the control). Pairs with Input/Textarea/Select/Checkbox.",
     import: `import { Label } from "@/components/ui/label"`,
     snippet: `<Label htmlFor="email">Email</Label>` },
+  { name: "Checkbox", file: "components/ui/checkbox.tsx", exports: ["Checkbox"],
+    purpose: "Binary on/off toggle for a single option.",
+    whenToUse: "Opt-ins, multi-select lists, 'I agree' boxes. Pair with a Label (htmlFor). For mutually-exclusive choices use RadioGroup; for an instant setting use Switch.",
+    import: `import { Checkbox } from "@/components/ui/checkbox"`,
+    snippet: `<Checkbox id="terms" defaultChecked />` },
 ];

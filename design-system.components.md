@@ -171,3 +171,15 @@ import { Label } from "@/components/ui/label"
 
 <Label htmlFor="email">Email</Label>
 ```
+
+## Checkbox
+
+- **Purpose:** Binary on/off toggle for a single option.
+- **When to use:** Opt-ins, multi-select lists, 'I agree' boxes. Pair with a Label (htmlFor). For mutually-exclusive choices use RadioGroup; for an instant setting use Switch.
+- **Exports:** Checkbox
+
+```tsx
+import { Checkbox } from "@/components/ui/checkbox"
+
+<Checkbox id="terms" defaultChecked />
+```
