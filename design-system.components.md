@@ -123,3 +123,15 @@ import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/co
 
 <Sheet><SheetTrigger>Open</SheetTrigger><SheetContent side="right"><SheetHeader><SheetTitle>Filters</SheetTitle></SheetHeader></SheetContent></Sheet>
 ```
+
+## Popover
+
+- **Purpose:** Floating panel anchored to a trigger (non-modal).
+- **When to use:** Rich content on click — pickers, forms, extra detail. For plain hover hints use Tooltip; for menus use DropdownMenu.
+- **Exports:** Popover, PopoverTrigger, PopoverAnchor, PopoverContent
+
+```tsx
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+
+<Popover><PopoverTrigger>Open</PopoverTrigger><PopoverContent>Panel content</PopoverContent></Popover>
+```

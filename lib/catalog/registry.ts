@@ -64,4 +64,10 @@ export const CATALOG: CatalogEntry[] = [
     whenToUse: "Secondary tasks, filters, or nav that shouldn't replace the page. Set side; include a SheetTitle.",
     import: `import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"`,
     snippet: `<Sheet><SheetTrigger>Open</SheetTrigger><SheetContent side="right"><SheetHeader><SheetTitle>Filters</SheetTitle></SheetHeader></SheetContent></Sheet>` },
+  { name: "Popover", file: "components/ui/popover.tsx",
+    exports: ["Popover","PopoverTrigger","PopoverAnchor","PopoverContent"],
+    purpose: "Floating panel anchored to a trigger (non-modal).",
+    whenToUse: "Rich content on click — pickers, forms, extra detail. For plain hover hints use Tooltip; for menus use DropdownMenu.",
+    import: `import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"`,
+    snippet: `<Popover><PopoverTrigger>Open</PopoverTrigger><PopoverContent>Panel content</PopoverContent></Popover>` },
 ];
