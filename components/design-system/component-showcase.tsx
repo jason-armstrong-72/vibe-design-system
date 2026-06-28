@@ -604,7 +604,7 @@ export function ComponentShowcase() {
         </Group>
 
         <Group label="Carousel">
-          <Carousel className="w-full max-w-xs">
+          <Carousel className="w-full max-w-md">
             <CarouselContent>
               {[1, 2, 3, 4, 5].map((n) => (
                 <CarouselItem key={n} className="basis-1/3">
@@ -620,7 +620,7 @@ export function ComponentShowcase() {
         </Group>
 
         <Group label="Sidebar (contained, collapsible=none)">
-          <div className="w-full max-w-2xl overflow-hidden rounded-md border border-border">
+          <div className="w-full max-w-lg overflow-hidden rounded-md border border-border">
             <SidebarProvider className="h-64! min-h-0!">
               <Sidebar collapsible="none" className="border-r border-sidebar-border">
                 <SidebarHeader className="px-2 py-1.5 text-sm font-semibold">Vector</SidebarHeader>
