@@ -159,10 +159,11 @@ describe("--surface role", () => {
 
 - [ ] **Step 3: implement**
   1. `lib/tokens/schema.ts` — add to `COLOR_ROLES` set (after `"ring",`): `"surface", "surface-foreground",`.
-  2. In EACH theme file + globals, add to BOTH `:root` and `.dark` color blocks (after `--ring`):
-     - `:root`: `--surface: oklch(0.985 0 0); --surface-foreground: oklch(0.145 0 0);` (neutral; adapt per theme bg/fg).
-     - `.dark`: `--surface: oklch(0.19 0 0); --surface-foreground: oklch(0.985 0 0);`
-  3. `npm run tokens` (auto-wires `--color-surface*` + manifest).
+  2. Add to BOTH `:root` and `.dark` color blocks (after `--ring`) in each file — **explicit values per theme** (all verified ≥17:1 AA; `tests/themes/contrast.test.ts` checks swiss+brutalist too, so don't guess):
+     - **`app/globals.css` + `themes/neutral.css`:** `:root` `--surface: oklch(0.985 0 0); --surface-foreground: oklch(0.145 0 0);` · `.dark` `--surface: oklch(0.19 0 0); --surface-foreground: oklch(0.985 0 0);`
+     - **`themes/swiss.css`:** `:root` `--surface: oklch(0.97 0 0); --surface-foreground: oklch(0.145 0 0);` · `.dark` `--surface: oklch(0.2 0 0); --surface-foreground: oklch(0.985 0 0);`
+     - **`themes/brutalist.css`:** `:root` `--surface: oklch(0.96 0 0); --surface-foreground: oklch(0 0 0);` · `.dark` `--surface: oklch(0.21 0 0); --surface-foreground: oklch(1 0 0);`
+  3. `npm run tokens` (regenerates from `app/globals.css` → auto-wires `--color-surface*` in `@theme` + manifest; theme files carry only `:root`/`.dark` defs, no `@theme`).
 
 - [ ] **Step 4: run → PASS.** `npm run check` green (both-theme + contrast satisfied).
 
@@ -198,7 +199,7 @@ describe("button hover uses the accent surface", () => {
 - [ ] **Step 2: run → FAIL** (`npx vitest run tests/ui/button-hover.test.tsx`).
 
 - [ ] **Step 3: implement**
-  1. `components/ui/button.tsx` — in `outline` (line 14) and `ghost` (line 18): replace `hover:bg-muted` → `hover:bg-accent` and `dark:hover:bg-muted/50` → `dark:hover:bg-accent/50`. (Keep `aria-expanded:bg-muted`? Change those to `aria-expanded:bg-accent` too for consistency.)
+  1. `components/ui/button.tsx` — in `outline` (line 14) and `ghost` (line 18): replace `hover:bg-muted` → `hover:bg-accent`, `dark:hover:bg-muted/50` → `dark:hover:bg-accent/50`, **and** `aria-expanded:bg-muted` → `aria-expanded:bg-accent` (consistency with the un-overload goal). Note `swiss`/`brutalist`/neutral all keep `--accent` ≠ `--muted`, so this is a real visual change everywhere.
   2. `app/globals.css` + `themes/neutral.css` — tune `--accent` so it differs from `--muted` (visible hover): `:root` `--accent: oklch(0.94 0 0);` (was 0.97); `.dark` `--accent: oklch(0.32 0 0);` (was 0.269). Leave swiss/brutalist (already distinct).
   3. `npm run tokens` (accent value changed → manifest stale → regen).
 
@@ -563,7 +564,8 @@ git commit -m "docs: document surface role, 2xs step, accent-as-hover, icon set"
 
 ## Notes for the executor
 - **`npm run tokens` after ANY token edit** — value changes (like `--accent`) make the manifest stale → `manifest-fresh` red until regenerated; stage `design-system.{json,md}` with the change.
-- **All 4 theme surfaces** (globals + neutral + swiss + brutalist) must carry every new COLOR token in BOTH blocks or `both-theme`/`parity` go red. The `2xs` type step is `:root`-only (type isn't themed per-block).
+- **All 4 theme surfaces** (globals + neutral + swiss + brutalist) must carry every new COLOR token in BOTH blocks or `both-theme`/`parity`/`contrast` go red. Note: `npm run check`'s `both-theme`+`contrast` read **only `app/globals.css`**; the THEME files (swiss/brutalist) are gated by `tests/themes/{parity,contrast}.test.ts` (run via `npm test`) — so a missing/under-contrast theme token reds the **test suite**, not `npm run check`. The `2xs` type step is `:root`-only (type isn't themed per-block).
+- **`npm run tokens` regenerates from `app/globals.css` alone** (the only file with an `@theme inline` block); theme files just hold `:root`/`.dark` value-sets applied later via `npm run theme`.
 - **`next build` is load-bearing** — always `npm run verify`, never just check+test.
 - **Radix unified import** — `import { Avatar } from "radix-ui"`, matching `button.tsx`'s `import { Slot } from "radix-ui"`. Not `@radix-ui/react-*`.
 - **Shared-tree hazard** — never `git checkout <paths>` to discard; use `git restore` after confirming identity.
