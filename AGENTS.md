@@ -37,5 +37,7 @@ _The gate runs on `npm run check` / pre-commit / CI — not as live editor squig
 - **Never run `check:baseline` yourself to clear errors.** If you believe the baseline genuinely needs regenerating, **stop and ask the human** — re-baselining to silence your own violations defeats the design system and silently ships broken styling.
 - Don't auto-refactor a brownfield repo's legacy code to tokens unless the human asks; automatic conversion isn't part of this template yet.
 
+**Components:** the available UI primitives (with imports + usage) are catalogued in [`design-system.components.md`](design-system.components.md) (generated). **Import and use them — do not hand-roll dialogs, dropdowns, toggles, etc.** New primitives go in `components/ui/*` and MUST be registered in `lib/catalog/registry.ts` (the `catalog-fresh` gate enforces this).
+
 **Icons:** the bundled icon set is `@untitled-ui/icons-react` (1173 icons), default `size-4`, color via `text-*` tokens. (`lucide-react` is present but a broken version — do not use it.)
 <!-- END:design-system -->

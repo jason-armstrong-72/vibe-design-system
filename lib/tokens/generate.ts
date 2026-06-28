@@ -51,6 +51,7 @@ const PREAMBLE = `# Design System — token reference
 - Style with the Tailwind utilities in the **Utilities** column below (\`bg-primary\`, \`text-lg\`, \`p-4\`, \`rounded-lg\`).
 - **Never hardcode** a color / size / font / duration, and **never use a non-token Tailwind class** like \`bg-red-500\` or \`text-[#abc]\`. Off-token color & type classes produce **no styles** (the namespace is cleared) — your element renders unstyled, and a blocking lint will reject them.
 - Components live in \`components/ui/\` (shadcn: \`Button\`, \`Card\`/\`CardHeader\`/\`CardContent\`/\`CardFooter\`, \`Input\`, …). Import and compose them; they are already token-themed.
+- **Components:** the available UI primitives (with imports + usage) are catalogued in [\`design-system.components.md\`](design-system.components.md) (generated). **Import and use them — do not hand-roll dialogs, dropdowns, toggles, etc.** New primitives go in \`components/ui/*\` and MUST be registered in \`lib/catalog/registry.ts\` (the \`catalog-fresh\` gate enforces this).
 
 ## Extension procedure (add a value the system lacks)
 One procedure for everything: **add the value token to \`:root\` in \`app/globals.css\`, then run \`npm run tokens\`** — it auto-wires the Tailwind utility and refreshes this manifest. **Never hardcode; never use an off-scale class** (it produces no styles and the blocking lint rejects it). **If no existing token fits the *meaning* (not just the syntax), extend — don't repurpose a semantically-wrong token (e.g. \`warning\` for a celebratory promo).**

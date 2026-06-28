@@ -12,6 +12,7 @@
     "verify": "npm run check && npm run test && npm run lint && npm run build",
     "test": "vitest run",
     "tokens": "tsx scripts/generate-tokens.ts",
+    "catalog": "tsx scripts/generate-catalog.ts",
     "tokens:watch": "tsx scripts/watch-tokens.ts",
     "theme": "tsx scripts/apply-theme.ts",
     "e2e": "playwright test",

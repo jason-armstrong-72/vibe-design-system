@@ -13,6 +13,12 @@ export const MSG = {
     `${name} is missing from ${missingIn === "dark" ? ".dark" : ":root"} — add it to both blocks, then npm run tokens`,
   manifestStale: (file: string) =>
     `${file} is stale — run npm run tokens and commit`,
+  catalogUnregistered: (sym: string) =>
+    `export ${sym} has no catalog entry — add it to lib/catalog/registry.ts and run npm run catalog`,
+  catalogPruned: (sym: string) =>
+    `registry lists ${sym} which is not exported — prune lib/catalog/registry.ts and run npm run catalog`,
+  catalogStale: () =>
+    `design-system.components.md is stale — run npm run catalog and commit`,
   offTokenScale: (cls: string, family: string, defined: string[]) =>
     family === "radius"
       ? `off-token scale step "${cls}" produces no styles — the radius scale is ${defined.join("/")}. To make corners rounder/softer overall, increase --radius in app/globals.css then npm run tokens (it shifts every step); for a one-off, add --radius-<step> to @theme. (see design-system.md)`
