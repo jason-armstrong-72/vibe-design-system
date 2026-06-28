@@ -8,6 +8,10 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarGroup } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { Code, Kbd } from "@/components/ui/code";
 
 function Group({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -39,19 +43,31 @@ export function ComponentShowcase() {
         <Button size="lg">Large</Button>
       </Group>
 
-      <Group label="Status (token utilities)">
-        <span className="inline-flex items-center rounded-md bg-success px-2.5 py-1 text-xs font-medium text-success-foreground">
-          Success
-        </span>
-        <span className="inline-flex items-center rounded-md bg-warning px-2.5 py-1 text-xs font-medium text-warning-foreground">
-          Warning
-        </span>
-        <span className="inline-flex items-center rounded-md bg-info px-2.5 py-1 text-xs font-medium text-info-foreground">
-          Info
-        </span>
-        <span className="inline-flex items-center rounded-md bg-destructive px-2.5 py-1 text-xs font-medium text-destructive-foreground">
-          Error
-        </span>
+      <Group label="Badges">
+        <Badge>Default</Badge>
+        <Badge variant="secondary">Secondary</Badge>
+        <Badge variant="success"><span className="size-1.5 rounded-full bg-current" />Done</Badge>
+        <Badge variant="warning"><span className="size-1.5 rounded-full bg-current" />In progress</Badge>
+        <Badge variant="info">Info</Badge>
+        <Badge variant="destructive">Error</Badge>
+        <Badge variant="outline">Outline</Badge>
+      </Group>
+
+      <Group label="Avatars">
+        <Avatar aria-label="Jane Doe"><AvatarFallback aria-hidden>JD</AvatarFallback></Avatar>
+        <AvatarGroup>
+          <Avatar aria-label="A"><AvatarFallback aria-hidden>A</AvatarFallback></Avatar>
+          <Avatar aria-label="B"><AvatarFallback aria-hidden>B</AvatarFallback></Avatar>
+          <Avatar aria-label="2 more"><AvatarFallback aria-hidden>+2</AvatarFallback></Avatar>
+        </AvatarGroup>
+      </Group>
+
+      <Group label="Inline code & keys">
+        <span className="text-sm text-foreground">Run <Code>npm run tokens</Code> or press <Kbd>⌘</Kbd> <Kbd>K</Kbd></span>
+      </Group>
+
+      <Group label="Separator">
+        <div className="flex h-5 items-center gap-3 text-sm text-muted-foreground">Docs <Separator orientation="vertical" /> API <Separator orientation="vertical" /> Blog</div>
       </Group>
 
       <Group label="Inputs">
