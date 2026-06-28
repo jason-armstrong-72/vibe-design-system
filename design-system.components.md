@@ -459,3 +459,27 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 
 <Alert variant="info"><InfoCircle /><AlertTitle>Heads up</AlertTitle><AlertDescription>Saved.</AlertDescription></Alert>
 ```
+
+## Command
+
+- **Purpose:** Composable command palette (cmdk) with fuzzy-filtered, keyboard-navigable items, groups, and shortcuts.
+- **When to use:** Building a searchable command menu or quick-action launcher (Cmd+K), inline or in a dialog.
+- **Exports:** Command, CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandShortcut, CommandSeparator
+
+```tsx
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command"
+
+<Command><CommandInput placeholder="Search..." /><CommandList><CommandEmpty>No results.</CommandEmpty><CommandGroup heading="Actions"><CommandItem>New File</CommandItem></CommandGroup></CommandList></Command>
+```
+
+## Calendar
+
+- **Purpose:** Month-grid date calendar (react-day-picker v10) styled with design-system tokens.
+- **When to use:** Pick single dates, multiples, or ranges; pair inside a Popover to build a date-picker field.
+- **Exports:** Calendar
+
+```tsx
+import { Calendar } from "@/components/ui/calendar"
+
+<Calendar mode="single" selected={date} onSelect={setDate} />
+```
