@@ -340,14 +340,14 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 <ScrollArea className="h-72 w-48 rounded-md border border-border">{content}</ScrollArea>
 ```
 
-## Toast
+## Toaster
 
-- **Purpose:** Transient notification popup with title, description, optional action and dismiss, animated in from the corner.
-- **When to use:** Show brief, non-blocking feedback after an action (saved, error, undo) without interrupting the user's flow.
-- **Exports:** ToastProvider, ToastViewport, Toast, ToastTitle, ToastDescription, ToastAction, ToastClose
+- **Purpose:** Toast notifications via sonner — imperative toast() calls, auto-stacking, swipe-dismiss; token-themed.
+- **When to use:** Brief non-blocking feedback after an action (saved, error, undo). Mount <Toaster /> once at the app root, then call toast() anywhere.
+- **Exports:** Toaster
 
 ```tsx
-import { ToastProvider, ToastViewport, Toast, ToastTitle, ToastDescription } from "@/components/ui/toast"
+import { Toaster, toast } from "@/components/ui/sonner"
 
-<ToastProvider><Toast open={open} onOpenChange={setOpen}><ToastTitle>Saved</ToastTitle><ToastDescription>Your changes were saved.</ToastDescription></Toast><ToastViewport /></ToastProvider>
+<Toaster /> // at root; then: toast("Saved")
 ```
