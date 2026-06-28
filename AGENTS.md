@@ -36,4 +36,6 @@ _The gate runs on `npm run check` / pre-commit / CI — not as live editor squig
 - If the gate goes red on code **you** wrote this session, that is **never** baseline-eligible — **fix it** (or extend the system per the procedure).
 - **Never run `check:baseline` yourself to clear errors.** If you believe the baseline genuinely needs regenerating, **stop and ask the human** — re-baselining to silence your own violations defeats the design system and silently ships broken styling.
 - Don't auto-refactor a brownfield repo's legacy code to tokens unless the human asks; automatic conversion isn't part of this template yet.
+
+**Icons:** the bundled icon set is `@untitled-ui/icons-react` (1173 icons), default `size-4`, color via `text-*` tokens. (`lucide-react` is present but a broken version — do not use it.)
 <!-- END:design-system -->
