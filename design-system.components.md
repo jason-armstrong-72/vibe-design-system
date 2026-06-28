@@ -483,3 +483,15 @@ import { Calendar } from "@/components/ui/calendar"
 
 <Calendar mode="single" selected={date} onSelect={setDate} />
 ```
+
+## DatePicker
+
+- **Purpose:** Date field composite — readonly Input trigger opens a Popover-hosted Calendar; value formatted via date-fns.
+- **When to use:** Single-date selection in a form. Controlled (value/onChange) or uncontrolled (defaultValue). For the raw grid use Calendar.
+- **Exports:** DatePicker
+
+```tsx
+import { DatePicker } from "@/components/ui/date-picker"
+
+<DatePicker value={date} onChange={setDate} />
+```

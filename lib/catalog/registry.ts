@@ -227,4 +227,9 @@ export const CATALOG: CatalogEntry[] = [
     whenToUse: "Pick single dates, multiples, or ranges; pair inside a Popover to build a date-picker field.",
     import: `import { Calendar } from "@/components/ui/calendar"`,
     snippet: `<Calendar mode="single" selected={date} onSelect={setDate} />` },
+  { name: "DatePicker", file: "components/ui/date-picker.tsx", exports: ["DatePicker"],
+    purpose: "Date field composite — readonly Input trigger opens a Popover-hosted Calendar; value formatted via date-fns.",
+    whenToUse: "Single-date selection in a form. Controlled (value/onChange) or uncontrolled (defaultValue). For the raw grid use Calendar.",
+    import: `import { DatePicker } from "@/components/ui/date-picker"`,
+    snippet: `<DatePicker value={date} onChange={setDate} />` },
 ];
