@@ -49,3 +49,6 @@ next-env.d.ts
 /test-results/
 
 .superpowers/
+
+# local dev screenshots (not committed)
+.screenshots/

@@ -6,6 +6,7 @@
 - Style with the Tailwind utilities in the **Utilities** column below (`bg-primary`, `text-lg`, `p-4`, `rounded-lg`).
 - **Never hardcode** a color / size / font / duration, and **never use a non-token Tailwind class** like `bg-red-500` or `text-[#abc]`. Off-token color & type classes produce **no styles** (the namespace is cleared) — your element renders unstyled, and a blocking lint will reject them.
 - Components live in `components/ui/` (shadcn: `Button`, `Card`/`CardHeader`/`CardContent`/`CardFooter`, `Input`, …). Import and compose them; they are already token-themed.
+- **Components:** the available UI primitives (with imports + usage) are catalogued in [`design-system.components.md`](design-system.components.md) (generated). **Import and use them — do not hand-roll dialogs, dropdowns, toggles, etc.** New primitives go in `components/ui/*` and MUST be registered in `lib/catalog/registry.ts` (the `catalog-fresh` gate enforces this).
 
 ## Extension procedure (add a value the system lacks)
 One procedure for everything: **add the value token to `:root` in `app/globals.css`, then run `npm run tokens`** — it auto-wires the Tailwind utility and refreshes this manifest. **Never hardcode; never use an off-scale class** (it produces no styles and the blocking lint rejects it). **If no existing token fits the *meaning* (not just the syntax), extend — don't repurpose a semantically-wrong token (e.g. `warning` for a celebratory promo).**
@@ -69,6 +70,7 @@ then `npm run tokens` → use `shadow-xl`.
 | `--input` | color | `oklch(0.922 0 0)` / `oklch(1 0 0 / 0.15)` | border-input |
 | `--muted` | color | `oklch(0.97 0 0)` / `oklch(0.269 0 0)` | bg-muted text-muted border-muted |
 | `--muted-foreground` | color | `oklch(0.556 0 0)` / `oklch(0.708 0 0)` | text-muted-foreground |
+| `--overlay` | color | `oklch(0 0 0 / 0.5)` / `oklch(0 0 0 / 0.7)` | bg-overlay text-overlay border-overlay |
 | `--popover` | color | `oklch(1 0 0)` / `oklch(0.205 0 0)` | bg-popover text-popover border-popover |
 | `--popover-foreground` | color | `oklch(0.145 0 0)` / `oklch(0.985 0 0)` | text-popover-foreground |
 | `--primary` | color | `oklch(0.205 0 0)` / `oklch(0.922 0 0)` | bg-primary text-primary border-primary |
@@ -76,6 +78,14 @@ then `npm run tokens` → use `shadow-xl`.
 | `--ring` | color | `oklch(0.708 0 0)` / `oklch(0.556 0 0)` | ring-ring outline-ring |
 | `--secondary` | color | `oklch(0.97 0 0)` / `oklch(0.269 0 0)` | bg-secondary text-secondary border-secondary |
 | `--secondary-foreground` | color | `oklch(0.205 0 0)` / `oklch(0.985 0 0)` | text-secondary-foreground |
+| `--sidebar` | color | `oklch(0.985 0 0)` / `oklch(0.205 0 0)` | bg-sidebar text-sidebar border-sidebar |
+| `--sidebar-accent` | color | `oklch(0.94 0 0)` / `oklch(0.32 0 0)` | bg-sidebar-accent text-sidebar-accent border-sidebar-accent |
+| `--sidebar-accent-foreground` | color | `oklch(0.205 0 0)` / `oklch(0.985 0 0)` | text-sidebar-accent-foreground |
+| `--sidebar-border` | color | `oklch(0.922 0 0)` / `oklch(1 0 0 / 0.1)` | bg-sidebar-border text-sidebar-border border-sidebar-border |
+| `--sidebar-foreground` | color | `oklch(0.145 0 0)` / `oklch(0.985 0 0)` | text-sidebar-foreground |
+| `--sidebar-primary` | color | `oklch(0.205 0 0)` / `oklch(0.922 0 0)` | bg-sidebar-primary text-sidebar-primary border-sidebar-primary |
+| `--sidebar-primary-foreground` | color | `oklch(0.985 0 0)` / `oklch(0.205 0 0)` | text-sidebar-primary-foreground |
+| `--sidebar-ring` | color | `oklch(0.708 0 0)` / `oklch(0.556 0 0)` | bg-sidebar-ring text-sidebar-ring border-sidebar-ring |
 | `--success` | color | `oklch(0.535 0.17 145)` / `oklch(0.7 0.16 145)` | bg-success text-success border-success |
 | `--success-foreground` | color | `oklch(0.985 0 0)` / `oklch(0.205 0 0)` | text-success-foreground |
 | `--surface` | color | `oklch(0.985 0 0)` / `oklch(0.19 0 0)` | bg-surface text-surface border-surface |

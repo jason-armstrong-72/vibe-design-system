@@ -367,6 +367,19 @@
       ]
     },
     {
+      "name": "--overlay",
+      "group": "color",
+      "values": {
+        "light": "oklch(0 0 0 / 0.5)",
+        "dark": "oklch(0 0 0 / 0.7)"
+      },
+      "utilities": [
+        "bg-overlay",
+        "text-overlay",
+        "border-overlay"
+      ]
+    },
+    {
       "name": "--popover",
       "group": "color",
       "values": {
@@ -448,6 +461,104 @@
       },
       "utilities": [
         "text-secondary-foreground"
+      ]
+    },
+    {
+      "name": "--sidebar",
+      "group": "color",
+      "values": {
+        "light": "oklch(0.985 0 0)",
+        "dark": "oklch(0.205 0 0)"
+      },
+      "utilities": [
+        "bg-sidebar",
+        "text-sidebar",
+        "border-sidebar"
+      ]
+    },
+    {
+      "name": "--sidebar-accent",
+      "group": "color",
+      "values": {
+        "light": "oklch(0.94 0 0)",
+        "dark": "oklch(0.32 0 0)"
+      },
+      "utilities": [
+        "bg-sidebar-accent",
+        "text-sidebar-accent",
+        "border-sidebar-accent"
+      ]
+    },
+    {
+      "name": "--sidebar-accent-foreground",
+      "group": "color",
+      "values": {
+        "light": "oklch(0.205 0 0)",
+        "dark": "oklch(0.985 0 0)"
+      },
+      "utilities": [
+        "text-sidebar-accent-foreground"
+      ]
+    },
+    {
+      "name": "--sidebar-border",
+      "group": "color",
+      "values": {
+        "light": "oklch(0.922 0 0)",
+        "dark": "oklch(1 0 0 / 0.1)"
+      },
+      "utilities": [
+        "bg-sidebar-border",
+        "text-sidebar-border",
+        "border-sidebar-border"
+      ]
+    },
+    {
+      "name": "--sidebar-foreground",
+      "group": "color",
+      "values": {
+        "light": "oklch(0.145 0 0)",
+        "dark": "oklch(0.985 0 0)"
+      },
+      "utilities": [
+        "text-sidebar-foreground"
+      ]
+    },
+    {
+      "name": "--sidebar-primary",
+      "group": "color",
+      "values": {
+        "light": "oklch(0.205 0 0)",
+        "dark": "oklch(0.922 0 0)"
+      },
+      "utilities": [
+        "bg-sidebar-primary",
+        "text-sidebar-primary",
+        "border-sidebar-primary"
+      ]
+    },
+    {
+      "name": "--sidebar-primary-foreground",
+      "group": "color",
+      "values": {
+        "light": "oklch(0.985 0 0)",
+        "dark": "oklch(0.205 0 0)"
+      },
+      "utilities": [
+        "text-sidebar-primary-foreground"
+      ]
+    },
+    {
+      "name": "--sidebar-ring",
+      "group": "color",
+      "values": {
+        "light": "oklch(0.708 0 0)",
+        "dark": "oklch(0.556 0 0)"
+      },
+      "utilities": [
+        "bg-sidebar-ring",
+        "text-sidebar-ring",
+        "border-sidebar-ring"
       ]
     },
     {

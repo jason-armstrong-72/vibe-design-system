@@ -1,7 +1,8 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import type { Finding } from "./types";
 import { walkSource } from "./files";
+import { checkCatalogFresh } from "./catalog-fresh";
 import { applySuppressions, bareDisableFindings } from "./ds-disable";
 import { checkHardcodedColor } from "./hardcoded-color";
 import { checkArbitrary } from "./arbitrary-tailwind";
@@ -48,6 +49,12 @@ export function run(baseline?: Baseline): {
   let staleEntries: BaselineEntry[] = [];
   if (baseline) ({ kept, suppressed: baselineSuppressed, staleEntries } = applyBaseline(source, baseline));
 
+  // components/ui is walk-excluded (vendored), so read it directly for the catalog gate.
+  const uiDir = resolve("components/ui");
+  const uiFiles = readdirSync(uiDir)
+    .filter((n) => n.endsWith(".tsx"))
+    .map((n) => ({ path: `components/ui/${n}`, content: readFileSync(resolve(uiDir, n), "utf8") }));
+
   const system = [
     ...checkBothTheme(globals),
     ...checkContrast(globals),
@@ -56,6 +63,7 @@ export function run(baseline?: Baseline): {
       readFileSync(resolve("design-system.json"), "utf8"),
       readFileSync(resolve("design-system.md"), "utf8"),
     ),
+    ...checkCatalogFresh(uiFiles, readFileSync(resolve("design-system.components.md"), "utf8")),
   ];
   return { findings: [...kept, ...bareDisables, ...system], disableCount, baselineSuppressed, staleEntries };
 }
