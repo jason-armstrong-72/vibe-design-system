@@ -243,3 +243,111 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 
 <Tabs defaultValue="a"><TabsList><TabsTrigger value="a">A</TabsTrigger><TabsTrigger value="b">B</TabsTrigger></TabsList><TabsContent value="a">…</TabsContent><TabsContent value="b">…</TabsContent></Tabs>
 ```
+
+## Accordion
+
+- **Purpose:** Vertically stacked, collapsible sections that expand to reveal content.
+- **When to use:** Condense long content into toggleable sections (FAQs, settings groups, disclosure lists).
+- **Exports:** Accordion, AccordionItem, AccordionTrigger, AccordionContent
+
+```tsx
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
+
+<Accordion type="single" collapsible><AccordionItem value="a"><AccordionTrigger>Title</AccordionTrigger><AccordionContent>Body</AccordionContent></AccordionItem></Accordion>
+```
+
+## Skeleton
+
+- **Purpose:** Pulsing placeholder block shown while content is loading.
+- **When to use:** Use as a loading state stand-in for text, images, or UI regions before data arrives.
+- **Exports:** Skeleton
+
+```tsx
+import { Skeleton } from "@/components/ui/skeleton"
+
+<Skeleton className="h-4 w-32" />
+```
+
+## Progress
+
+- **Purpose:** Horizontal progress bar showing completion of a task from 0 to 100.
+- **When to use:** Use to indicate determinate progress of an operation such as uploads, downloads, or multi-step flows.
+- **Exports:** Progress
+
+```tsx
+import { Progress } from "@/components/ui/progress"
+
+<Progress value={60} />
+```
+
+## Slider
+
+- **Purpose:** Range/value input with a draggable thumb along a track, single or multi-thumb.
+- **When to use:** Let users pick a numeric value (or range) within bounds, e.g. volume, price filters, or settings.
+- **Exports:** Slider
+
+```tsx
+import { Slider } from "@/components/ui/slider"
+
+<Slider defaultValue={[50]} max={100} step={1} />
+```
+
+## Table
+
+- **Purpose:** Semantic, slot-based styled HTML table primitives for tabular data.
+- **When to use:** Use to render structured rows and columns of data with consistent design-system styling, hoverable and selectable rows.
+- **Exports:** Table, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell, TableCaption
+
+```tsx
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+
+<Table><TableHeader><TableRow><TableHead>Name</TableHead></TableRow></TableHeader><TableBody><TableRow><TableCell>Acme</TableCell></TableRow></TableBody></Table>
+```
+
+## Toggle
+
+- **Purpose:** A two-state button that can be toggled on or off.
+- **When to use:** For a single standalone on/off control such as a formatting toggle (bold, italic) or a binary view switch.
+- **Exports:** Toggle
+
+```tsx
+import { Toggle } from "@/components/ui/toggle"
+
+<Toggle aria-label="Toggle bold"><Bold01 /></Toggle>
+```
+
+## ToggleGroup
+
+- **Purpose:** A set of toggle buttons grouped as a single- or multi-select control sharing variant/size.
+- **When to use:** For a related set of toggles like a text-alignment or formatting toolbar where one or more options can be active.
+- **Exports:** ToggleGroup, ToggleGroupItem
+
+```tsx
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+
+<ToggleGroup type="single"><ToggleGroupItem value="a">A</ToggleGroupItem></ToggleGroup>
+```
+
+## ScrollArea
+
+- **Purpose:** Scrollable region with a styled, cross-browser custom scrollbar.
+- **When to use:** Wrap overflowing content (lists, panels, code blocks) when you want consistent themed scrollbars instead of native ones.
+- **Exports:** ScrollArea, ScrollBar
+
+```tsx
+import { ScrollArea } from "@/components/ui/scroll-area"
+
+<ScrollArea className="h-72 w-48 rounded-md border border-border">{content}</ScrollArea>
+```
+
+## Toast
+
+- **Purpose:** Transient notification popup with title, description, optional action and dismiss, animated in from the corner.
+- **When to use:** Show brief, non-blocking feedback after an action (saved, error, undo) without interrupting the user's flow.
+- **Exports:** ToastProvider, ToastViewport, Toast, ToastTitle, ToastDescription, ToastAction, ToastClose
+
+```tsx
+import { ToastProvider, ToastViewport, Toast, ToastTitle, ToastDescription } from "@/components/ui/toast"
+
+<ToastProvider><Toast open={open} onOpenChange={setOpen}><ToastTitle>Saved</ToastTitle><ToastDescription>Your changes were saved.</ToastDescription></Toast><ToastViewport /></ToastProvider>
+```
