@@ -6,6 +6,9 @@ import {
   Settings01,
   InfoCircle,
   Star01,
+  Inbox01,
+  LayersThree01,
+  SearchMd,
 } from "@untitled-ui/icons-react";
 
 import { Button } from "@/components/ui/button";
@@ -131,6 +134,58 @@ import {
 } from "@/components/ui/resizable";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Toaster, toast } from "@/components/ui/sonner";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+} from "@/components/ui/carousel";
+import {
+  Command,
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+} from "@/components/ui/context-menu";
+import {
+  Menubar,
+  MenubarMenu,
+  MenubarTrigger,
+  MenubarContent,
+  MenubarItem,
+  MenubarSeparator,
+  MenubarShortcut,
+} from "@/components/ui/menubar";
+import {
+  NavigationMenu,
+  NavigationMenuList,
+  NavigationMenuItem,
+  NavigationMenuTrigger,
+  NavigationMenuContent,
+  NavigationMenuLink,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+} from "@/components/ui/sidebar";
 
 function Group({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -142,6 +197,8 @@ function Group({ label, children }: { label: string; children: React.ReactNode }
 }
 
 export function ComponentShowcase() {
+  const [cmdOpen, setCmdOpen] = React.useState(false);
+
   return (
     <TooltipProvider>
       <section className="flex flex-col gap-6">
@@ -451,6 +508,139 @@ export function ComponentShowcase() {
             </ResizablePanel>
           </ResizablePanelGroup>
         </Group>
+
+        <Separator />
+
+        <h2 className="text-2xl font-semibold text-foreground">Patterns</h2>
+
+        <Group label="Menubar">
+          <Menubar>
+            <MenubarMenu>
+              <MenubarTrigger>File</MenubarTrigger>
+              <MenubarContent>
+                <MenubarItem>New<MenubarShortcut>⌘N</MenubarShortcut></MenubarItem>
+                <MenubarItem>Open</MenubarItem>
+                <MenubarSeparator />
+                <MenubarItem>Print<MenubarShortcut>⌘P</MenubarShortcut></MenubarItem>
+              </MenubarContent>
+            </MenubarMenu>
+            <MenubarMenu>
+              <MenubarTrigger>Edit</MenubarTrigger>
+              <MenubarContent>
+                <MenubarItem>Undo</MenubarItem>
+                <MenubarItem>Redo</MenubarItem>
+              </MenubarContent>
+            </MenubarMenu>
+            <MenubarMenu>
+              <MenubarTrigger>View</MenubarTrigger>
+              <MenubarContent>
+                <MenubarItem>Zoom in</MenubarItem>
+                <MenubarItem>Zoom out</MenubarItem>
+              </MenubarContent>
+            </MenubarMenu>
+          </Menubar>
+        </Group>
+
+        <Group label="Navigation menu">
+          <NavigationMenu>
+            <NavigationMenuList>
+              <NavigationMenuItem>
+                <NavigationMenuTrigger>Products</NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid w-64 gap-1 p-2">
+                    <li><NavigationMenuLink href="#">Analytics</NavigationMenuLink></li>
+                    <li><NavigationMenuLink href="#">Automation</NavigationMenuLink></li>
+                    <li><NavigationMenuLink href="#">Reports</NavigationMenuLink></li>
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuLink href="#" className={navigationMenuTriggerStyle()}>Docs</NavigationMenuLink>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
+        </Group>
+
+        <Group label="Command palette (⌘K)">
+          <Button variant="outline" onClick={() => setCmdOpen(true)}>
+            <SearchMd />Open command palette
+          </Button>
+          <CommandDialog open={cmdOpen} onOpenChange={setCmdOpen}>
+            <CommandInput placeholder="Type a command or search…" />
+            <CommandList>
+              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandGroup heading="Actions">
+                <CommandItem onSelect={() => setCmdOpen(false)}>New issue</CommandItem>
+                <CommandItem onSelect={() => setCmdOpen(false)}>Search docs</CommandItem>
+                <CommandItem onSelect={() => setCmdOpen(false)}>Open settings</CommandItem>
+              </CommandGroup>
+            </CommandList>
+          </CommandDialog>
+          <div className="text-sm text-muted-foreground">Inline variant:</div>
+          <Command className="w-64 rounded-md border border-border">
+            <CommandInput placeholder="Search…" />
+            <CommandList>
+              <CommandEmpty>No results.</CommandEmpty>
+              <CommandGroup heading="Suggestions">
+                <CommandItem>Profile</CommandItem>
+                <CommandItem>Billing</CommandItem>
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </Group>
+
+        <Group label="Context menu">
+          <ContextMenu>
+            <ContextMenuTrigger className="flex h-24 w-full max-w-md items-center justify-center rounded-md border border-dashed border-border text-sm text-muted-foreground">
+              Right-click here
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem>Back</ContextMenuItem>
+              <ContextMenuItem>Reload</ContextMenuItem>
+              <ContextMenuSeparator />
+              <ContextMenuItem>Save as…</ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
+        </Group>
+
+        <Group label="Carousel">
+          <Carousel className="w-full max-w-xs">
+            <CarouselContent>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <CarouselItem key={n} className="basis-1/3">
+                  <div className="flex aspect-square items-center justify-center rounded-md border border-border bg-muted text-lg font-semibold text-muted-foreground">
+                    {n}
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
+        </Group>
+
+        <Group label="Sidebar (contained, collapsible=none)">
+          <div className="w-full max-w-2xl overflow-hidden rounded-md border border-border">
+            <SidebarProvider className="h-64! min-h-0!">
+              <Sidebar collapsible="none" className="border-r border-sidebar-border">
+                <SidebarHeader className="px-2 py-1.5 text-sm font-semibold">Vector</SidebarHeader>
+                <SidebarContent>
+                  <SidebarGroup>
+                    <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+                    <SidebarMenu>
+                      <SidebarMenuItem><SidebarMenuButton isActive><Inbox01 />Inbox</SidebarMenuButton></SidebarMenuItem>
+                      <SidebarMenuItem><SidebarMenuButton><LayersThree01 />Issues</SidebarMenuButton></SidebarMenuItem>
+                      <SidebarMenuItem><SidebarMenuButton><Settings01 />Settings</SidebarMenuButton></SidebarMenuItem>
+                    </SidebarMenu>
+                  </SidebarGroup>
+                </SidebarContent>
+              </Sidebar>
+              <main className="flex-1 p-4 text-sm text-muted-foreground">Main content area.</main>
+            </SidebarProvider>
+          </div>
+        </Group>
+
+        <Separator />
 
         <Group label="Card">
           <Card className="w-full max-w-sm">
