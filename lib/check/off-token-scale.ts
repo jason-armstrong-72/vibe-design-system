@@ -13,7 +13,7 @@ const lineOf = (content: string, idx: number) => content.slice(0, idx).split("\n
 const VOCAB: Record<keyof ThemeSteps, Set<string>> = {
   radius: new Set(["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl"]),
   shadow: new Set(["2xs", "xs", "sm", "md", "lg", "xl", "2xl"]),
-  text: new Set(["xs", "sm", "base", "lg", "xl", "2xl", "3xl", "4xl", "5xl", "6xl", "7xl", "8xl", "9xl"]),
+  text: new Set(["2xs", "xs", "sm", "base", "lg", "xl", "2xl", "3xl", "4xl", "5xl", "6xl", "7xl", "8xl", "9xl"]),
   fontWeight: new Set(["thin", "extralight", "light", "normal", "medium", "semibold", "bold", "extrabold", "black"]),
 };
 const RADIUS_SIDE = "t|r|b|l|tl|tr|bl|br|s|e|ss|se|ee|es";

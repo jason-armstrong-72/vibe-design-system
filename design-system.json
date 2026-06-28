@@ -5,8 +5,8 @@
       "name": "--accent",
       "group": "color",
       "values": {
-        "light": "oklch(0.97 0 0)",
-        "dark": "oklch(0.269 0 0)"
+        "light": "oklch(0.94 0 0)",
+        "dark": "oklch(0.32 0 0)"
       },
       "utilities": [
         "bg-accent",
@@ -475,6 +475,30 @@
       ]
     },
     {
+      "name": "--surface",
+      "group": "color",
+      "values": {
+        "light": "oklch(0.985 0 0)",
+        "dark": "oklch(0.19 0 0)"
+      },
+      "utilities": [
+        "bg-surface",
+        "text-surface",
+        "border-surface"
+      ]
+    },
+    {
+      "name": "--surface-foreground",
+      "group": "color",
+      "values": {
+        "light": "oklch(0.145 0 0)",
+        "dark": "oklch(0.985 0 0)"
+      },
+      "utilities": [
+        "text-surface-foreground"
+      ]
+    },
+    {
       "name": "--warning",
       "group": "color",
       "values": {
@@ -566,6 +590,16 @@
       },
       "utilities": [
         "text-2xl"
+      ]
+    },
+    {
+      "name": "--fs-2xs",
+      "group": "fontSize",
+      "values": {
+        "light": "0.6875rem"
+      },
+      "utilities": [
+        "text-2xs"
       ]
     },
     {
@@ -676,6 +710,15 @@
       },
       "utilities": [],
       "usage": "applied with text-2xl"
+    },
+    {
+      "name": "--lh-2xs",
+      "group": "lineHeight",
+      "values": {
+        "light": "0.875rem"
+      },
+      "utilities": [],
+      "usage": "applied with text-2xs"
     },
     {
       "name": "--lh-3xl",

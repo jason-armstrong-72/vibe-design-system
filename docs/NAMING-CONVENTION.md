@@ -12,14 +12,22 @@ name is a breaking change to the design system's API. Pin once; change deliberat
 ## Rules
 1. **Colors** use shadcn semantic names, kebab-case: `--<role>` and its paired
    `--<role>-foreground`. Roles: background, foreground, card, popover, primary,
-   secondary, muted, accent, destructive, success, warning, info, border, input, ring.
-   Color VALUES are always `oklch(...)`.
+   secondary, muted, accent, destructive, success, warning, info, border, input, ring,
+   surface. Color VALUES are always `oklch(...)`.
+   - **`surface`/`surface-foreground`** — a subtle panel surface a step off `--background`
+     (sidebars, wells, zebra rows): the depth lever for dense UIs. Contrast-gated like any pair.
+   - **`accent`/`accent-foreground`** is the **hover/active surface** (the canonical shadcn hover
+     token, consumed by Button's `hover:bg-accent`). It MUST differ from `--muted` in every theme,
+     or hover is invisible — keep them distinct when adding/editing themes.
 2. **Ramps** (open-ended scales) use numeric steps: `--<name>-<step>`,
    steps 50,100,200,…,900,950. Ramps in v1: `--brand-*`.
 3. **Charts**: `--chart-1 … --chart-5`.
-4. **Type size**: base name `--fs-<step>` (xs,sm,base,lg,xl,2xl,3xl,4xl,5xl,6xl,7xl), mapped to
+4. **Type size**: base name `--fs-<step>` (2xs,xs,sm,base,lg,xl,2xl,3xl,4xl,5xl,6xl,7xl), mapped to
    `--text-<step>`. Each size has a paired line-height `--lh-<step>` mapped to
-   `--text-<step>--line-height`.
+   `--text-<step>--line-height`. `2xs` (~11px) extends the bottom of the scale for non-essential,
+   non-prose glyphs (avatar initials, kbd caps) at full `--foreground` contrast — never for body
+   text and never combined with a faint color (a doc-enforced a11y guardrail; the gate has no size
+   awareness).
 5. **Font family**: `--font-sans`, `--font-mono` (mapped 1:1 to the `--font-*` namespace).
    `--font-heading` is a shadcn-required alias of `--font-sans`, declared only in `@theme inline`
    (not a runtime token) so the generated card's `font-heading` class resolves; M1/M2 never see it.

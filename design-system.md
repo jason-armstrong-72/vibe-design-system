@@ -39,7 +39,7 @@ then `npm run tokens` → use `shadow-xl`.
 
 | Token | Group | Value (light / dark) | Utilities |
 |---|---|---|---|
-| `--accent` | color | `oklch(0.97 0 0)` / `oklch(0.269 0 0)` | bg-accent text-accent border-accent |
+| `--accent` | color | `oklch(0.94 0 0)` / `oklch(0.32 0 0)` | bg-accent text-accent border-accent |
 | `--accent-foreground` | color | `oklch(0.205 0 0)` / `oklch(0.985 0 0)` | text-accent-foreground |
 | `--background` | color | `oklch(1 0 0)` / `oklch(0.145 0 0)` | bg-background text-background border-background |
 | `--border` | color | `oklch(0.922 0 0)` / `oklch(1 0 0 / 0.1)` | border-border |
@@ -78,6 +78,8 @@ then `npm run tokens` → use `shadow-xl`.
 | `--secondary-foreground` | color | `oklch(0.205 0 0)` / `oklch(0.985 0 0)` | text-secondary-foreground |
 | `--success` | color | `oklch(0.535 0.17 145)` / `oklch(0.7 0.16 145)` | bg-success text-success border-success |
 | `--success-foreground` | color | `oklch(0.985 0 0)` / `oklch(0.205 0 0)` | text-success-foreground |
+| `--surface` | color | `oklch(0.985 0 0)` / `oklch(0.19 0 0)` | bg-surface text-surface border-surface |
+| `--surface-foreground` | color | `oklch(0.145 0 0)` / `oklch(0.985 0 0)` | text-surface-foreground |
 | `--warning` | color | `oklch(0.79 0.16 80)` / `oklch(0.83 0.15 80)` | bg-warning text-warning border-warning |
 | `--warning-foreground` | color | `oklch(0.205 0 0)` / `oklch(0.205 0 0)` | text-warning-foreground |
 | `--gradient-brand` | gradient | `linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%)` | bg-gradient-brand |
@@ -87,6 +89,7 @@ then `npm run tokens` → use `shadow-xl`.
 | `--font-mono` | fontFamily | `var(--font-bundled-mono), ui-monospace, SFMono-Regular, monospace` | font-mono |
 | `--font-sans` | fontFamily | `var(--font-bundled-sans), ui-sans-serif, system-ui, sans-serif` | font-sans |
 | `--fs-2xl` | fontSize | `1.5rem` | text-2xl |
+| `--fs-2xs` | fontSize | `0.6875rem` | text-2xs |
 | `--fs-3xl` | fontSize | `1.875rem` | text-3xl |
 | `--fs-4xl` | fontSize | `2.25rem` | text-4xl |
 | `--fs-5xl` | fontSize | `3rem` | text-5xl |
@@ -98,6 +101,7 @@ then `npm run tokens` → use `shadow-xl`.
 | `--fs-xl` | fontSize | `1.25rem` | text-xl |
 | `--fs-xs` | fontSize | `0.75rem` | text-xs |
 | `--lh-2xl` | lineHeight | `2rem` | applied with text-2xl |
+| `--lh-2xs` | lineHeight | `0.875rem` | applied with text-2xs |
 | `--lh-3xl` | lineHeight | `2.25rem` | applied with text-3xl |
 | `--lh-4xl` | lineHeight | `2.5rem` | applied with text-4xl |
 | `--lh-5xl` | lineHeight | `3.25rem` | applied with text-5xl |
