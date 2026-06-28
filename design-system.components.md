@@ -231,3 +231,15 @@ import { Textarea } from "@/components/ui/textarea"
 
 <Textarea placeholder="Add a note…" />
 ```
+
+## Tabs
+
+- **Purpose:** Switch between panels of content within the same view.
+- **When to use:** Segment related content under one heading. For navigation between pages use links, not Tabs.
+- **Exports:** Tabs, TabsList, TabsTrigger, TabsContent
+
+```tsx
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+
+<Tabs defaultValue="a"><TabsList><TabsTrigger value="a">A</TabsTrigger><TabsTrigger value="b">B</TabsTrigger></TabsList><TabsContent value="a">…</TabsContent><TabsContent value="b">…</TabsContent></Tabs>
+```

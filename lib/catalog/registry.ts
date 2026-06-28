@@ -113,4 +113,10 @@ export const CATALOG: CatalogEntry[] = [
     whenToUse: "Longer free-form text (comments, descriptions). For single-line use Input. Pair with a Label.",
     import: `import { Textarea } from "@/components/ui/textarea"`,
     snippet: `<Textarea placeholder="Add a note…" />` },
+  { name: "Tabs", file: "components/ui/tabs.tsx",
+    exports: ["Tabs", "TabsList", "TabsTrigger", "TabsContent"],
+    purpose: "Switch between panels of content within the same view.",
+    whenToUse: "Segment related content under one heading. For navigation between pages use links, not Tabs.",
+    import: `import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"`,
+    snippet: `<Tabs defaultValue="a"><TabsList><TabsTrigger value="a">A</TabsTrigger><TabsTrigger value="b">B</TabsTrigger></TabsList><TabsContent value="a">…</TabsContent><TabsContent value="b">…</TabsContent></Tabs>` },
 ];
