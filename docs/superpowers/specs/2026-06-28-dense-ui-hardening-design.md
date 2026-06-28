@@ -49,17 +49,17 @@ A subtle surface a step off `--background`, for panels/sidebars/wells/zebra rows
 For non-essential glyphs (avatar initials, kbd caps) — scale floors at `--fs-xs` (12px).
 
 - Add `--fs-2xs` (~0.6875rem) + `--lh-2xs` to `:root` of all themes. Auto-wires `--text-2xs` (+ line-height) via the F2 scale sync.
-- **BLOCKING gate fix:** add `"2xs"` to `VOCAB.text` in `lib/check/off-token-scale.ts:16` (it's in `VOCAB.shadow` but **not** `VOCAB.text`). Without it, `text-2xs` is an **unguarded silent no-op** — the exact bug that check exists to catch.
+- **BLOCKING gate fix:** add `"2xs"` to `VOCAB.text` in `lib/check/off-token-scale.ts:16` (it's in `VOCAB.shadow` but **not** `VOCAB.text`). Without it, `text-2xs` is an **unguarded silent no-op** — the exact bug that check exists to catch. **Ordering note for the TDD test:** `off-token-scale` reads `defined.text` from the `@theme inline` `--text-{step}:` mappings, so `text-2xs` only passes the gate *after* `--fs-2xs` is in `:root` **and** `npm run tokens` has run (auto-wiring `--text-2xs`); the "flags when undefined" test must assert against the pre-`tokens` state, the "passes when defined" test against the post-`tokens` state.
 - **Guardrail (a11y):** primitives default to `text-xs` (12px); `2xs` is **opt-in for non-essential, non-prose glyphs at full `--foreground` contrast** — never for body text, never combined with a faint color. Document `2xs` + low-contrast as an anti-pattern.
 
 ### 4.3 Activate `--accent` as the hover surface (D4)
 
-- `--accent` is currently `== --muted` (both L 0.97 in neutral) and unused. **Tune `--accent` slightly off `--muted`** (a hair darker/lighter) so hover is visible, in all themes (both blocks).
-- **Rewire components** (`components/ui/button.tsx`, and any other `hover:bg-muted`) → `hover:bg-accent hover:text-accent-foreground`. This un-overloads `--muted` (the real goal) with no new token.
+- `--accent` is currently `== --muted` (both L 0.97) **only in neutral** (swiss `--accent` 0.93 and brutalist's saturated yellow already differ). **Tune neutral's `--accent` slightly off `--muted`** (a hair darker/lighter, both blocks) so hover is visible; leave swiss/brutalist as-is (already distinct). The 5 future themes must keep `--accent` ≠ `--muted`.
+- **Rewire only `components/ui/button.tsx`** (`outline` + `ghost` variants, lines 14/18) `hover:bg-muted` → `hover:bg-accent hover:text-accent-foreground`. This un-overloads `--muted` (the real goal) with no new token. **Leave `components/design-system/` showcase chrome** (e.g. `token-item.tsx:84` `hover:bg-muted/40`) as-is — it's editor/showcase chrome, not the primitive hover surface.
 
 ## 5. Architecture — primitives
 
-All in `components/ui/*` (next to Button/Input/Card; that dir is gate-**excluded** as vendored). **House conventions (match `button.tsx`):** module-scope `cva` export, `data-slot`/`data-variant`/`data-size` attrs, `cn(...)`, `React.ComponentProps<...>`, `Slot` for `asChild` — **no `forwardRef`** (the repo uses function components + `ComponentProps`). Token-only. A **dedicated test** asserts each new primitive carries **no hardcoded color literals** (hex/rgb/hsl/oklch/named) — restoring the dogfood coverage the dir-exclusion drops.
+All in `components/ui/*` (next to Button/Input/Card; that dir is gate-**excluded** as vendored). **House conventions (match `button.tsx`):** module-scope `cva` export, `data-slot`/`data-variant`/`data-size` attrs, `cn(...)`, `React.ComponentProps<...>`, `Slot` for `asChild` — **no `forwardRef`** (the repo uses function components + `ComponentProps`). **Radix import style = the unified package, matching `button.tsx`'s `import { Slot } from "radix-ui"`:** use `import { Avatar } from "radix-ui"` / `import { Separator } from "radix-ui"` (NOT the individual `@radix-ui/react-*` packages). Token-only. A **dedicated test** asserts each new primitive carries **no hardcoded color literals** (hex/rgb/hsl/oklch/named) — **reuse `checkHardcodedColor` from `lib/check/hardcoded-color.ts`** (a pure `(path, content)` fn), called directly on each `components/ui/*` new file (the dir is excluded only at the `run.ts` walk level, so a test can scan it) — restoring the dogfood coverage the dir-exclusion drops.
 
 | Primitive | Spec | a11y (required, not optional) |
 |---|---|---|
