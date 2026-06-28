@@ -39,7 +39,7 @@ then `npm run tokens` → use `shadow-xl`.
 
 | Token | Group | Value (light / dark) | Utilities |
 |---|---|---|---|
-| `--accent` | color | `oklch(0.97 0 0)` / `oklch(0.269 0 0)` | bg-accent text-accent border-accent |
+| `--accent` | color | `oklch(0.94 0 0)` / `oklch(0.32 0 0)` | bg-accent text-accent border-accent |
 | `--accent-foreground` | color | `oklch(0.205 0 0)` / `oklch(0.985 0 0)` | text-accent-foreground |
 | `--background` | color | `oklch(1 0 0)` / `oklch(0.145 0 0)` | bg-background text-background border-background |
 | `--border` | color | `oklch(0.922 0 0)` / `oklch(1 0 0 / 0.1)` | border-border |

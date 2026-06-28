@@ -5,8 +5,8 @@
       "name": "--accent",
       "group": "color",
       "values": {
-        "light": "oklch(0.97 0 0)",
-        "dark": "oklch(0.269 0 0)"
+        "light": "oklch(0.94 0 0)",
+        "dark": "oklch(0.32 0 0)"
       },
       "utilities": [
         "bg-accent",
