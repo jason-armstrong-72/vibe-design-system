@@ -159,3 +159,15 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 
 <DropdownMenu><DropdownMenuTrigger>Open</DropdownMenuTrigger><DropdownMenuContent><DropdownMenuItem>Profile</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
 ```
+
+## Label
+
+- **Purpose:** Accessible caption for a form control.
+- **When to use:** Always label inputs. Set htmlFor to the control id (or wrap the control). Pairs with Input/Textarea/Select/Checkbox.
+- **Exports:** Label
+
+```tsx
+import { Label } from "@/components/ui/label"
+
+<Label htmlFor="email">Email</Label>
+```

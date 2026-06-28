@@ -82,4 +82,9 @@ export const CATALOG: CatalogEntry[] = [
     whenToUse: "Action menus (row actions, account menu, overflow). For form selection use Select; for rich panels use Popover.",
     import: `import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"`,
     snippet: `<DropdownMenu><DropdownMenuTrigger>Open</DropdownMenuTrigger><DropdownMenuContent><DropdownMenuItem>Profile</DropdownMenuItem></DropdownMenuContent></DropdownMenu>` },
+  { name: "Label", file: "components/ui/label.tsx", exports: ["Label"],
+    purpose: "Accessible caption for a form control.",
+    whenToUse: "Always label inputs. Set htmlFor to the control id (or wrap the control). Pairs with Input/Textarea/Select/Checkbox.",
+    import: `import { Label } from "@/components/ui/label"`,
+    snippet: `<Label htmlFor="email">Email</Label>` },
 ];
