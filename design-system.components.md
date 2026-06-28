@@ -207,3 +207,15 @@ import { Switch } from "@/components/ui/switch"
 
 <Switch id="notify" defaultChecked />
 ```
+
+## Select
+
+- **Purpose:** Choose one option from a dropdown list (token-styled native-feel select).
+- **When to use:** One choice from many (6+). For 2–5 visible options use RadioGroup; for actions use DropdownMenu. Give the SelectValue a placeholder.
+- **Exports:** Select, SelectGroup, SelectValue, SelectTrigger, SelectContent, SelectLabel, SelectItem, SelectSeparator
+
+```tsx
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+
+<Select><SelectTrigger><SelectValue placeholder="Pick" /></SelectTrigger><SelectContent><SelectItem value="a">A</SelectItem></SelectContent></Select>
+```

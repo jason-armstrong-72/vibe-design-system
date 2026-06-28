@@ -102,4 +102,10 @@ export const CATALOG: CatalogEntry[] = [
     whenToUse: "Settings that take effect at once (notifications, dark mode). For form submit-time selection use Checkbox. Pair with a Label.",
     import: `import { Switch } from "@/components/ui/switch"`,
     snippet: `<Switch id="notify" defaultChecked />` },
+  { name: "Select", file: "components/ui/select.tsx",
+    exports: ["Select","SelectGroup","SelectValue","SelectTrigger","SelectContent","SelectLabel","SelectItem","SelectSeparator"],
+    purpose: "Choose one option from a dropdown list (token-styled native-feel select).",
+    whenToUse: "One choice from many (6+). For 2–5 visible options use RadioGroup; for actions use DropdownMenu. Give the SelectValue a placeholder.",
+    import: `import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"`,
+    snippet: `<Select><SelectTrigger><SelectValue placeholder="Pick" /></SelectTrigger><SelectContent><SelectItem value="a">A</SelectItem></SelectContent></Select>` },
 ];
