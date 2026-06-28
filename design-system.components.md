@@ -195,3 +195,15 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 <RadioGroup defaultValue="a"><RadioGroupItem value="a" id="a" /><RadioGroupItem value="b" id="b" /></RadioGroup>
 ```
+
+## Switch
+
+- **Purpose:** Instant on/off toggle for a setting (applies immediately).
+- **When to use:** Settings that take effect at once (notifications, dark mode). For form submit-time selection use Checkbox. Pair with a Label.
+- **Exports:** Switch
+
+```tsx
+import { Switch } from "@/components/ui/switch"
+
+<Switch id="notify" defaultChecked />
+```

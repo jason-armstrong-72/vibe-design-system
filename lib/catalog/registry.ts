@@ -97,4 +97,9 @@ export const CATALOG: CatalogEntry[] = [
     whenToUse: "2–5 mutually-exclusive choices, all visible. Pair each item with a Label. For many options use Select; for multi-select use Checkbox.",
     import: `import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"`,
     snippet: `<RadioGroup defaultValue="a"><RadioGroupItem value="a" id="a" /><RadioGroupItem value="b" id="b" /></RadioGroup>` },
+  { name: "Switch", file: "components/ui/switch.tsx", exports: ["Switch"],
+    purpose: "Instant on/off toggle for a setting (applies immediately).",
+    whenToUse: "Settings that take effect at once (notifications, dark mode). For form submit-time selection use Checkbox. Pair with a Label.",
+    import: `import { Switch } from "@/components/ui/switch"`,
+    snippet: `<Switch id="notify" defaultChecked />` },
 ];
