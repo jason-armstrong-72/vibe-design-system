@@ -351,3 +351,111 @@ import { Toaster, toast } from "@/components/ui/sonner"
 
 <Toaster /> // at root; then: toast("Saved")
 ```
+
+## HoverCard
+
+- **Purpose:** Floating card that reveals contextual content when the user hovers a trigger element.
+- **When to use:** Use to preview rich details (user profile, link metadata, definition) on hover without a click.
+- **Exports:** HoverCard, HoverCardTrigger, HoverCardContent
+
+```tsx
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card"
+
+<HoverCard><HoverCardTrigger>@user</HoverCardTrigger><HoverCardContent>Profile preview</HoverCardContent></HoverCard>
+```
+
+## ContextMenu
+
+- **Purpose:** Right-click / long-press contextual menu with items, checkboxes, radios, labels, separators, and submenus.
+- **When to use:** When an element needs a right-click context menu of actions or toggles tied to that element.
+- **Exports:** ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem, ContextMenuCheckboxItem, ContextMenuRadioItem, ContextMenuLabel, ContextMenuSeparator, ContextMenuShortcut, ContextMenuGroup, ContextMenuPortal, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuRadioGroup
+
+```tsx
+import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem } from "@/components/ui/context-menu"
+
+<ContextMenu><ContextMenuTrigger>Right click</ContextMenuTrigger><ContextMenuContent><ContextMenuItem>Edit</ContextMenuItem></ContextMenuContent></ContextMenu>
+```
+
+## Menubar
+
+- **Purpose:** A horizontal application menu bar with dropdown menus, submenus, checkbox/radio items, labels, and shortcuts.
+- **When to use:** For desktop-style app top menus (File, Edit, View) where multiple persistent dropdown menus sit in a single bar.
+- **Exports:** Menubar, MenubarMenu, MenubarTrigger, MenubarContent, MenubarItem, MenubarSeparator, MenubarLabel, MenubarCheckboxItem, MenubarRadioGroup, MenubarRadioItem, MenubarPortal, MenubarSubContent, MenubarSubTrigger, MenubarGroup, MenubarSub, MenubarShortcut
+
+```tsx
+import { Menubar, MenubarMenu, MenubarTrigger, MenubarContent, MenubarItem } from "@/components/ui/menubar"
+
+<Menubar><MenubarMenu><MenubarTrigger>File</MenubarTrigger><MenubarContent><MenubarItem>New</MenubarItem></MenubarContent></MenubarMenu></Menubar>
+```
+
+## NavigationMenu
+
+- **Purpose:** Accessible horizontal navigation menu with hover/focus dropdown panels and animated viewport.
+- **When to use:** Use for primary site/app navigation bars that need rich dropdown content panels, not simple link lists.
+- **Exports:** NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuContent, NavigationMenuTrigger, NavigationMenuLink, NavigationMenuIndicator, NavigationMenuViewport
+
+```tsx
+import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuTrigger, NavigationMenuContent, NavigationMenuLink } from "@/components/ui/navigation-menu"
+
+<NavigationMenu><NavigationMenuList><NavigationMenuItem><NavigationMenuTrigger>Products</NavigationMenuTrigger><NavigationMenuContent><NavigationMenuLink href="/a">Link A</NavigationMenuLink></NavigationMenuContent></NavigationMenuItem></NavigationMenuList></NavigationMenu>
+```
+
+## Collapsible
+
+- **Purpose:** Radix-backed expand/collapse container that toggles visibility of a single content region.
+- **When to use:** Use to show/hide a chunk of content behind a trigger (e.g. 'show more', expandable rows, optional sections).
+- **Exports:** Collapsible, CollapsibleTrigger, CollapsibleContent
+
+```tsx
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
+
+<Collapsible><CollapsibleTrigger>Toggle</CollapsibleTrigger><CollapsibleContent>Content</CollapsibleContent></Collapsible>
+```
+
+## AspectRatio
+
+- **Purpose:** Constrains its content to a fixed width/height ratio.
+- **When to use:** Wrap images, video, or embeds that must hold a specific aspect ratio (e.g. 16:9 thumbnails, square avatars).
+- **Exports:** AspectRatio
+
+```tsx
+import { AspectRatio } from "@/components/ui/aspect-ratio"
+
+<AspectRatio ratio={16 / 9}><img src="..." alt="" className="size-full object-cover" /></AspectRatio>
+```
+
+## Breadcrumb
+
+- **Purpose:** Hierarchical navigation trail showing the user's location within a site or app.
+- **When to use:** Use on pages nested below the top level to show and link the path back to ancestors.
+- **Exports:** Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator, BreadcrumbEllipsis
+
+```tsx
+import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
+
+<Breadcrumb><BreadcrumbList><BreadcrumbItem><BreadcrumbLink href="/">Home</BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator /><BreadcrumbItem><BreadcrumbPage>Details</BreadcrumbPage></BreadcrumbItem></BreadcrumbList></Breadcrumb>
+```
+
+## Pagination
+
+- **Purpose:** Navigation control for moving through paged content via numbered page links with previous/next and overflow ellipsis.
+- **When to use:** When splitting long lists, tables, or search results across multiple pages and users need to jump between them.
+- **Exports:** Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationPrevious, PaginationNext, PaginationEllipsis
+
+```tsx
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationPrevious, PaginationNext } from "@/components/ui/pagination"
+
+<Pagination><PaginationContent><PaginationItem><PaginationPrevious href="#" /></PaginationItem><PaginationItem><PaginationLink href="#" isActive>1</PaginationLink></PaginationItem><PaginationItem><PaginationNext href="#" /></PaginationItem></PaginationContent></Pagination>
+```
+
+## Alert
+
+- **Purpose:** Inline callout banner (role="alert") for surfacing status/messages in the page flow — not a modal.
+- **When to use:** Use for non-blocking inline notices; use AlertDialog when you need a blocking modal confirmation.
+- **Exports:** Alert, AlertTitle, AlertDescription
+
+```tsx
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
+
+<Alert variant="info"><InfoCircle /><AlertTitle>Heads up</AlertTitle><AlertDescription>Saved.</AlertDescription></Alert>
+```
