@@ -78,6 +78,14 @@ then `npm run tokens` → use `shadow-xl`.
 | `--ring` | color | `oklch(0.708 0 0)` / `oklch(0.556 0 0)` | ring-ring outline-ring |
 | `--secondary` | color | `oklch(0.97 0 0)` / `oklch(0.269 0 0)` | bg-secondary text-secondary border-secondary |
 | `--secondary-foreground` | color | `oklch(0.205 0 0)` / `oklch(0.985 0 0)` | text-secondary-foreground |
+| `--sidebar` | color | `oklch(0.985 0 0)` / `oklch(0.205 0 0)` | bg-sidebar text-sidebar border-sidebar |
+| `--sidebar-accent` | color | `oklch(0.94 0 0)` / `oklch(0.32 0 0)` | bg-sidebar-accent text-sidebar-accent border-sidebar-accent |
+| `--sidebar-accent-foreground` | color | `oklch(0.205 0 0)` / `oklch(0.985 0 0)` | text-sidebar-accent-foreground |
+| `--sidebar-border` | color | `oklch(0.922 0 0)` / `oklch(1 0 0 / 0.1)` | bg-sidebar-border text-sidebar-border border-sidebar-border |
+| `--sidebar-foreground` | color | `oklch(0.145 0 0)` / `oklch(0.985 0 0)` | text-sidebar-foreground |
+| `--sidebar-primary` | color | `oklch(0.205 0 0)` / `oklch(0.922 0 0)` | bg-sidebar-primary text-sidebar-primary border-sidebar-primary |
+| `--sidebar-primary-foreground` | color | `oklch(0.985 0 0)` / `oklch(0.205 0 0)` | text-sidebar-primary-foreground |
+| `--sidebar-ring` | color | `oklch(0.708 0 0)` / `oklch(0.556 0 0)` | bg-sidebar-ring text-sidebar-ring border-sidebar-ring |
 | `--success` | color | `oklch(0.535 0.17 145)` / `oklch(0.7 0.16 145)` | bg-success text-success border-success |
 | `--success-foreground` | color | `oklch(0.985 0 0)` / `oklch(0.205 0 0)` | text-success-foreground |
 | `--surface` | color | `oklch(0.985 0 0)` / `oklch(0.19 0 0)` | bg-surface text-surface border-surface |

@@ -495,3 +495,87 @@ import { DatePicker } from "@/components/ui/date-picker"
 
 <DatePicker value={date} onChange={setDate} />
 ```
+
+## Combobox
+
+- **Purpose:** Autocomplete select: an outline trigger opens a type-filterable Popover command list, selecting an option sets the value with a check indicator.
+- **When to use:** When users pick one option from a longer list and need to search/filter rather than scroll a plain Select.
+- **Exports:** Combobox
+
+```tsx
+import { Combobox } from "@/components/ui/combobox"
+
+<Combobox options={[{ value: "next", label: "Next.js" }, { value: "remix", label: "Remix" }]} onChange={(v) => console.log(v)} />
+```
+
+## Form
+
+- **Purpose:** Accessible form-field primitives that bind react-hook-form state to label, control, description, and error markup.
+- **When to use:** Use with react-hook-form (and zod resolver for validation) to build validated forms; pairs FormControl with Input/Select/Textarea/Checkbox etc. and auto-wires labels, aria, and error messages.
+- **Exports:** Form, FormItem, FormLabel, FormControl, FormDescription, FormMessage, FormField
+
+```tsx
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
+
+<Form {...form}><FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} /></Form>
+```
+
+## InputOTP
+
+- **Purpose:** Accessible one-time-password / verification-code input with individually styled character slots.
+- **When to use:** Entering short fixed-length codes such as 2FA, SMS, or email verification codes.
+- **Exports:** InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator
+
+```tsx
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
+
+<InputOTP maxLength={6}><InputOTPGroup>{[0,1,2,3,4,5].map((i) => <InputOTPSlot key={i} index={i} />)}</InputOTPGroup></InputOTP>
+```
+
+## Drawer
+
+- **Purpose:** Drag-to-dismiss bottom/side sheet (vaul) for mobile-friendly overlays with native swipe feel.
+- **When to use:** Use when you want a swipeable, drag-to-dismiss panel (vaul) — esp. bottom sheets on touch/mobile; use Sheet for a plain side panel and Dialog for a centered modal.
+- **Exports:** Drawer, DrawerPortal, DrawerOverlay, DrawerTrigger, DrawerClose, DrawerContent, DrawerHeader, DrawerFooter, DrawerTitle, DrawerDescription
+
+```tsx
+import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
+
+<Drawer><DrawerTrigger>Open</DrawerTrigger><DrawerContent><DrawerHeader><DrawerTitle>Title</DrawerTitle></DrawerHeader></DrawerContent></Drawer>
+```
+
+## Carousel
+
+- **Purpose:** Embla-powered slideshow that scrolls a row/column of items with prev/next controls and keyboard support.
+- **When to use:** Use to present a swipeable/scrollable set of cards, images, or panels in a constrained space.
+- **Exports:** Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
+
+```tsx
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel"
+
+<Carousel><CarouselContent><CarouselItem>Slide 1</CarouselItem></CarouselContent><CarouselPrevious /><CarouselNext /></Carousel>
+```
+
+## Resizable
+
+- **Purpose:** Draggable, resizable panel layouts (split views) built on react-resizable-panels.
+- **When to use:** When users need to resize adjacent regions, e.g. sidebar/content split panes or code/preview editors.
+- **Exports:** ResizablePanelGroup, ResizablePanel, ResizableHandle
+
+```tsx
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable"
+
+<ResizablePanelGroup orientation="horizontal"><ResizablePanel defaultSize={50}>A</ResizablePanel><ResizableHandle withHandle /><ResizablePanel defaultSize={50}>B</ResizablePanel></ResizablePanelGroup>
+```
+
+## Sidebar
+
+- **Purpose:** Composable, collapsible application sidebar with desktop rail/icon modes and a mobile sheet, driven by a shared context provider.
+- **When to use:** Building app shells/dashboards that need a persistent, collapsible left/right navigation panel with grouped menus, sub-menus, and a content inset.
+- **Exports:** Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInput, SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider, SidebarRail, SidebarSeparator, SidebarTrigger
+
+```tsx
+import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar"
+
+<SidebarProvider><Sidebar><SidebarContent><SidebarMenu><SidebarMenuItem><SidebarMenuButton>Home</SidebarMenuButton></SidebarMenuItem></SidebarMenu></SidebarContent></Sidebar><SidebarTrigger /></SidebarProvider>
+```
