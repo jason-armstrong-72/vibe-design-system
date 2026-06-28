@@ -219,3 +219,15 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 
 <Select><SelectTrigger><SelectValue placeholder="Pick" /></SelectTrigger><SelectContent><SelectItem value="a">A</SelectItem></SelectContent></Select>
 ```
+
+## Textarea
+
+- **Purpose:** Multi-line text field.
+- **When to use:** Longer free-form text (comments, descriptions). For single-line use Input. Pair with a Label.
+- **Exports:** Textarea
+
+```tsx
+import { Textarea } from "@/components/ui/textarea"
+
+<Textarea placeholder="Add a note…" />
+```

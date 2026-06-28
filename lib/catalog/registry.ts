@@ -108,4 +108,9 @@ export const CATALOG: CatalogEntry[] = [
     whenToUse: "One choice from many (6+). For 2–5 visible options use RadioGroup; for actions use DropdownMenu. Give the SelectValue a placeholder.",
     import: `import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"`,
     snippet: `<Select><SelectTrigger><SelectValue placeholder="Pick" /></SelectTrigger><SelectContent><SelectItem value="a">A</SelectItem></SelectContent></Select>` },
+  { name: "Textarea", file: "components/ui/textarea.tsx", exports: ["Textarea"],
+    purpose: "Multi-line text field.",
+    whenToUse: "Longer free-form text (comments, descriptions). For single-line use Input. Pair with a Label.",
+    import: `import { Textarea } from "@/components/ui/textarea"`,
+    snippet: `<Textarea placeholder="Add a note…" />` },
 ];
