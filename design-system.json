@@ -569,6 +569,16 @@
       ]
     },
     {
+      "name": "--fs-2xs",
+      "group": "fontSize",
+      "values": {
+        "light": "0.6875rem"
+      },
+      "utilities": [
+        "text-2xs"
+      ]
+    },
+    {
       "name": "--fs-3xl",
       "group": "fontSize",
       "values": {
@@ -676,6 +686,15 @@
       },
       "utilities": [],
       "usage": "applied with text-2xl"
+    },
+    {
+      "name": "--lh-2xs",
+      "group": "lineHeight",
+      "values": {
+        "light": "0.875rem"
+      },
+      "utilities": [],
+      "usage": "applied with text-2xs"
     },
     {
       "name": "--lh-3xl",

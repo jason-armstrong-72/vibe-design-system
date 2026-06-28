@@ -87,6 +87,7 @@ then `npm run tokens` → use `shadow-xl`.
 | `--font-mono` | fontFamily | `var(--font-bundled-mono), ui-monospace, SFMono-Regular, monospace` | font-mono |
 | `--font-sans` | fontFamily | `var(--font-bundled-sans), ui-sans-serif, system-ui, sans-serif` | font-sans |
 | `--fs-2xl` | fontSize | `1.5rem` | text-2xl |
+| `--fs-2xs` | fontSize | `0.6875rem` | text-2xs |
 | `--fs-3xl` | fontSize | `1.875rem` | text-3xl |
 | `--fs-4xl` | fontSize | `2.25rem` | text-4xl |
 | `--fs-5xl` | fontSize | `3rem` | text-5xl |
@@ -98,6 +99,7 @@ then `npm run tokens` → use `shadow-xl`.
 | `--fs-xl` | fontSize | `1.25rem` | text-xl |
 | `--fs-xs` | fontSize | `0.75rem` | text-xs |
 | `--lh-2xl` | lineHeight | `2rem` | applied with text-2xl |
+| `--lh-2xs` | lineHeight | `0.875rem` | applied with text-2xs |
 | `--lh-3xl` | lineHeight | `2.25rem` | applied with text-3xl |
 | `--lh-4xl` | lineHeight | `2.5rem` | applied with text-4xl |
 | `--lh-5xl` | lineHeight | `3.25rem` | applied with text-5xl |
