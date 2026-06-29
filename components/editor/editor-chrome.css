@@ -377,19 +377,39 @@
   font-size: 12px;
 }
 
+/* Token field group: label above + control below (Figma panel style) */
+.ed-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.ed-field-title {
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--ed-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Field row (figma A3) */
 .ed-row {
   display: flex;
   align-items: center;
   gap: 6px;
   background: var(--ed-field);
-  border: 1px solid transparent;
+  border: 1px solid var(--ed-border);
   border-radius: 6px;
   padding: 4px 8px;
   font-size: 12px;
+  transition: border-color 0.15s;
 }
 .ed-row:hover {
-  border-color: var(--ed-border);
+  border-color: color-mix(in srgb, var(--ed-border) 40%, var(--ed-accent));
+}
+.ed-row:focus-within {
+  border-color: var(--ed-accent);
+  outline: none;
 }
 .ed-row .ed-label {
   color: var(--ed-muted);
@@ -404,10 +424,42 @@
 }
 .ed-row select {
   all: unset;
+  appearance: none;
   flex: 1;
   min-width: 0;
   color: var(--ed-text);
   cursor: pointer;
+}
+
+/* Stepper ▲▼ buttons replacing native number spinners */
+.ed-stepper {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  margin: -4px -8px -4px 0;
+  border-left: 1px solid var(--ed-border);
+}
+.ed-stepper button {
+  all: unset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  flex: 1;
+  color: var(--ed-muted);
+  cursor: pointer;
+  transition: color 0.1s, background 0.1s;
+}
+.ed-stepper button:hover {
+  color: var(--ed-text);
+  background: var(--ed-hover);
+}
+.ed-stepper button:first-child {
+  border-bottom: 1px solid var(--ed-border);
+  border-top-right-radius: 5px;
+}
+.ed-stepper button:last-child {
+  border-bottom-right-radius: 5px;
 }
 
 /* Length / opacity / duration: slider stacked over a numeric+unit row */
@@ -421,10 +473,20 @@
 }
 .ed-unit {
   all: unset;
+  appearance: none;
   flex: 0 0 auto;
   color: var(--ed-muted);
   font-size: 10px;
+  font-family: ui-monospace, monospace;
   cursor: pointer;
+  padding: 0 2px;
+  border-left: 1px solid var(--ed-border);
+  margin-left: 2px;
+  padding-left: 6px;
+  transition: color 0.1s;
+}
+.ed-unit:hover {
+  color: var(--ed-text);
 }
 
 /* Color (OKLCH) control */

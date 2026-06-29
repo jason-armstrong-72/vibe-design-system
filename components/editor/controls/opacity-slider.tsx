@@ -1,6 +1,7 @@
 "use client";
 
 import { useDraftField } from "@/lib/editor/use-draft-field";
+import { StepperInput } from "./stepper-input";
 
 interface OpacitySliderProps {
   token: string;
@@ -32,34 +33,29 @@ export function OpacitySlider({ token, value, onChange }: OpacitySliderProps) {
   );
 
   return (
-    <div className="ed-length">
-      <div className="ed-slider">
-        <span className="ed-label" aria-hidden="true">
-          {token}
-        </span>
-        <input
-          type="range"
-          aria-label={`${token} slider`}
-          min={0}
-          max={1}
-          step={0.01}
-          value={current}
-          onChange={(e) => onChange(emitValue(Number(e.target.value)))}
-        />
-        <span className="ed-slider-val">{current.toFixed(2)}</span>
-      </div>
-      <div className="ed-row">
-        <input
-          type="number"
-          aria-label={`${token} value`}
-          min={0}
-          max={1}
-          step={0.01}
-          value={numField.draft}
-          onChange={numField.onChange}
-          onBlur={numField.onBlur}
-          onKeyDown={numField.onKeyDown}
-        />
+    <div className="ed-field-group">
+      <span className="ed-field-title">{token}</span>
+      <div className="ed-length">
+        <div className="ed-slider">
+          <input
+            type="range"
+            aria-label={`${token} slider`}
+            min={0}
+            max={1}
+            step={0.01}
+            value={current}
+            onChange={(e) => onChange(emitValue(Number(e.target.value)))}
+          />
+          <span className="ed-slider-val">{current.toFixed(2)}</span>
+        </div>
+        <div className="ed-row">
+          <StepperInput
+            {...numField}
+            ariaLabel={`${token} value`}
+            step={0.01}
+            onStep={(delta) => onChange(emitValue(current + delta))}
+          />
+        </div>
       </div>
     </div>
   );

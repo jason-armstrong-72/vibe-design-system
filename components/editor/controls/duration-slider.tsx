@@ -1,6 +1,7 @@
 "use client";
 
 import { useDraftField } from "@/lib/editor/use-draft-field";
+import { StepperButtons } from "./stepper-input";
 
 interface DurationSliderProps {
   token: string;
@@ -50,44 +51,48 @@ export function DurationSlider({ token, value, onChange }: DurationSliderProps) 
   );
 
   return (
-    <div className="ed-length">
-      <div className="ed-slider">
-        <span className="ed-label" aria-hidden="true">
-          {token}
-        </span>
-        <input
-          type="range"
-          aria-label={`${token} slider`}
-          min={0}
-          max={range.max}
-          step={range.step}
-          value={Math.min(Math.max(n, 0), range.max)}
-          onChange={(e) => emit(Number(e.target.value), unit)}
-        />
-      </div>
-      <div className="ed-row">
-        <input
-          type="number"
-          aria-label={`${token} value`}
-          min={0}
-          step={range.step}
-          value={numField.draft}
-          onChange={numField.onChange}
-          onBlur={numField.onBlur}
-          onKeyDown={numField.onKeyDown}
-        />
-        <select
-          className="ed-unit"
-          aria-label={`${token} unit`}
-          value={unit}
-          onChange={(e) => emit(n, e.target.value as DurationUnit)}
-        >
-          {UNITS.map((u) => (
-            <option key={u} value={u}>
-              {u}
-            </option>
-          ))}
-        </select>
+    <div className="ed-field-group">
+      <span className="ed-field-title">{token}</span>
+      <div className="ed-length">
+        <div className="ed-slider">
+          <input
+            type="range"
+            aria-label={`${token} slider`}
+            min={0}
+            max={range.max}
+            step={range.step}
+            value={Math.min(Math.max(n, 0), range.max)}
+            onChange={(e) => emit(Number(e.target.value), unit)}
+          />
+        </div>
+        <div className="ed-row">
+          <input
+            type="text"
+            inputMode="numeric"
+            aria-label={`${token} value`}
+            value={numField.draft}
+            onChange={numField.onChange}
+            onBlur={numField.onBlur}
+            onKeyDown={numField.onKeyDown}
+          />
+          <select
+            className="ed-unit"
+            aria-label={`${token} unit`}
+            value={unit}
+            onChange={(e) => emit(n, e.target.value as DurationUnit)}
+          >
+            {UNITS.map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
+          <StepperButtons
+            ariaLabel={`${token} value`}
+            step={range.step}
+            onStep={(delta: number) => emit(n + delta, unit)}
+          />
+        </div>
       </div>
     </div>
   );
