@@ -140,6 +140,7 @@
   --container-sm: 40rem;
   --container-md: 48rem;
   --container-lg: 64rem;
+  --container-xl: 72rem;
 }
 
 .dark {
@@ -298,6 +299,7 @@
   --container-sm: var(--container-sm);
   --container-md: var(--container-md);
   --container-lg: var(--container-lg);
+  --container-xl: var(--container-xl);
 
   /* breakpoints: documented reference, not runtime-editable */
   --breakpoint-sm: 40rem;

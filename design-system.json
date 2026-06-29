@@ -1210,6 +1210,16 @@
       "utilities": [
         "max-w-sm"
       ]
+    },
+    {
+      "name": "--container-xl",
+      "group": "container",
+      "values": {
+        "light": "72rem"
+      },
+      "utilities": [
+        "max-w-xl"
+      ]
     }
   ]
 }

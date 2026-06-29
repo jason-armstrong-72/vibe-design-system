@@ -25,7 +25,7 @@ function ContextMenuSubTrigger({ className, inset, children, ...props }: React.C
   return (
     <ContextMenuPrimitive.SubTrigger data-slot="context-menu-sub-trigger" data-inset={inset} className={cn("relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground data-[inset=true]:pl-8 [&_svg]:size-4", className)} {...props}>
       {children}
-      <ChevronRight className="ml-auto size-4" />
+      <ChevronRight aria-hidden className="ml-auto size-4" />
     </ContextMenuPrimitive.SubTrigger>
   )
 }
@@ -45,7 +45,7 @@ function ContextMenuItem({ className, inset, ...props }: React.ComponentProps<ty
 function ContextMenuCheckboxItem({ className, children, checked, ...props }: React.ComponentProps<typeof ContextMenuPrimitive.CheckboxItem>) {
   return (
     <ContextMenuPrimitive.CheckboxItem data-slot="context-menu-checkbox-item" checked={checked} className={cn("relative flex cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground", className)} {...props}>
-      <span className="absolute left-2 flex size-3.5 items-center justify-center"><ContextMenuPrimitive.ItemIndicator><Check className="size-4" /></ContextMenuPrimitive.ItemIndicator></span>
+      <span className="absolute left-2 flex size-3.5 items-center justify-center"><ContextMenuPrimitive.ItemIndicator><Check aria-hidden className="size-4" /></ContextMenuPrimitive.ItemIndicator></span>
       {children}
     </ContextMenuPrimitive.CheckboxItem>
   )
@@ -53,7 +53,7 @@ function ContextMenuCheckboxItem({ className, children, checked, ...props }: Rea
 function ContextMenuRadioItem({ className, children, ...props }: React.ComponentProps<typeof ContextMenuPrimitive.RadioItem>) {
   return (
     <ContextMenuPrimitive.RadioItem data-slot="context-menu-radio-item" className={cn("relative flex cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground", className)} {...props}>
-      <span className="absolute left-2 flex size-3.5 items-center justify-center"><ContextMenuPrimitive.ItemIndicator><Circle className="size-2 fill-current" /></ContextMenuPrimitive.ItemIndicator></span>
+      <span className="absolute left-2 flex size-3.5 items-center justify-center"><ContextMenuPrimitive.ItemIndicator><Circle aria-hidden className="size-2 fill-current" /></ContextMenuPrimitive.ItemIndicator></span>
       {children}
     </ContextMenuPrimitive.RadioItem>
   )

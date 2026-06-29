@@ -13,7 +13,7 @@ export default function DesignSystemPage() {
     <EditorMount>
     <main className="bg-muted/40 text-foreground min-h-screen">
       <header className="border-border bg-background/80 sticky top-0 z-10 border-b backdrop-blur">
-        <div className="mx-auto flex max-w-6xl flex-col gap-1 px-6 py-5">
+        <div className="mx-auto flex max-w-xl flex-col gap-1 px-6 py-5">
           <div className="flex items-baseline gap-3">
             <h1 className="text-2xl font-semibold tracking-tight">Design System</h1>
             <span className="text-muted-foreground font-mono text-xs">
@@ -27,7 +27,7 @@ export default function DesignSystemPage() {
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-10">
+      <div className="mx-auto flex max-w-xl flex-col gap-8 px-6 py-10">
         {sections.map((s) => (
           <TokenSection key={s.group} section={s} />
         ))}

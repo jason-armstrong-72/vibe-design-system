@@ -151,3 +151,4 @@ then `npm run tokens` → use `shadow-xl`.
 | `--container-lg` | container | `64rem` | max-w-lg |
 | `--container-md` | container | `48rem` | max-w-md |
 | `--container-sm` | container | `40rem` | max-w-sm |
+| `--container-xl` | container | `72rem` | max-w-xl |

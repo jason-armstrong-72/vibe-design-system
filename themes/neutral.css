@@ -126,6 +126,7 @@
   --container-sm: 40rem;
   --container-md: 48rem;
   --container-lg: 64rem;
+  --container-xl: 72rem;
 }
 
 .dark {

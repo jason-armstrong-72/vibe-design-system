@@ -25,7 +25,7 @@ function DropdownMenuItem({ className, inset, ...props }: React.ComponentProps<t
 function DropdownMenuCheckboxItem({ className, children, checked, ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.CheckboxItem>) {
   return (
     <DropdownMenuPrimitive.CheckboxItem data-slot="dropdown-menu-checkbox-item" checked={checked} className={cn("relative flex cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground", className)} {...props}>
-      <span className="absolute left-2 flex size-3.5 items-center justify-center"><DropdownMenuPrimitive.ItemIndicator><Check className="size-4" /></DropdownMenuPrimitive.ItemIndicator></span>
+      <span className="absolute left-2 flex size-3.5 items-center justify-center"><DropdownMenuPrimitive.ItemIndicator><Check aria-hidden className="size-4" /></DropdownMenuPrimitive.ItemIndicator></span>
       {children}
     </DropdownMenuPrimitive.CheckboxItem>
   )
@@ -36,7 +36,7 @@ function DropdownMenuRadioGroup(props: React.ComponentProps<typeof DropdownMenuP
 function DropdownMenuRadioItem({ className, children, ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.RadioItem>) {
   return (
     <DropdownMenuPrimitive.RadioItem data-slot="dropdown-menu-radio-item" className={cn("relative flex cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground", className)} {...props}>
-      <span className="absolute left-2 flex size-3.5 items-center justify-center"><DropdownMenuPrimitive.ItemIndicator><Circle className="size-2 fill-current" /></DropdownMenuPrimitive.ItemIndicator></span>
+      <span className="absolute left-2 flex size-3.5 items-center justify-center"><DropdownMenuPrimitive.ItemIndicator><Circle aria-hidden className="size-2 fill-current" /></DropdownMenuPrimitive.ItemIndicator></span>
       {children}
     </DropdownMenuPrimitive.RadioItem>
   )

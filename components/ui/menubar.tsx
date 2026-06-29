@@ -37,7 +37,7 @@ function MenubarItem({ className, inset, ...props }: React.ComponentProps<typeof
 function MenubarCheckboxItem({ className, children, checked, ...props }: React.ComponentProps<typeof MenubarPrimitive.CheckboxItem>) {
   return (
     <MenubarPrimitive.CheckboxItem data-slot="menubar-checkbox-item" checked={checked} className={cn("relative flex cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground", className)} {...props}>
-      <span className="absolute left-2 flex size-3.5 items-center justify-center"><MenubarPrimitive.ItemIndicator><Check className="size-4" /></MenubarPrimitive.ItemIndicator></span>
+      <span className="absolute left-2 flex size-3.5 items-center justify-center"><MenubarPrimitive.ItemIndicator><Check aria-hidden className="size-4" /></MenubarPrimitive.ItemIndicator></span>
       {children}
     </MenubarPrimitive.CheckboxItem>
   )
@@ -45,7 +45,7 @@ function MenubarCheckboxItem({ className, children, checked, ...props }: React.C
 function MenubarRadioItem({ className, children, ...props }: React.ComponentProps<typeof MenubarPrimitive.RadioItem>) {
   return (
     <MenubarPrimitive.RadioItem data-slot="menubar-radio-item" className={cn("relative flex cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground", className)} {...props}>
-      <span className="absolute left-2 flex size-3.5 items-center justify-center"><MenubarPrimitive.ItemIndicator><Circle className="size-2 fill-current" /></MenubarPrimitive.ItemIndicator></span>
+      <span className="absolute left-2 flex size-3.5 items-center justify-center"><MenubarPrimitive.ItemIndicator><Circle aria-hidden className="size-2 fill-current" /></MenubarPrimitive.ItemIndicator></span>
       {children}
     </MenubarPrimitive.RadioItem>
   )
@@ -63,7 +63,7 @@ function MenubarSubTrigger({ className, inset, children, ...props }: React.Compo
   return (
     <MenubarPrimitive.SubTrigger data-slot="menubar-sub-trigger" data-inset={inset} className={cn("flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground data-[inset=true]:pl-8", className)} {...props}>
       {children}
-      <ChevronRight className="ml-auto size-4" />
+      <ChevronRight aria-hidden className="ml-auto size-4" />
     </MenubarPrimitive.SubTrigger>
   )
 }
