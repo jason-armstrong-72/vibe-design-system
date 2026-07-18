@@ -56,7 +56,7 @@ this one.
 CSS custom properties in `app/globals.css` are the **single source of truth**. Everything reads or writes
 them. The LLM-facing manifest is **generated** from them (one-directional, never the reverse).
 
-```
+```text
                   globals.css  (CSS vars = SOURCE OF TRUTH)
                    ▲      ▲                 │
         edit (write)│      │read         render│
@@ -127,7 +127,8 @@ One format end-to-end (picker → write → var → utility) — no per-edit for
 ambiguity. Aliases (`var()`), `color-mix()`, and numeric/string non-color tokens are still handled by the
 write module; only the *color channel* format is fixed to OKLCH.
 
-**Color**
+### Color
+
 - shadcn semantic set: `--background`, `--foreground`, `--primary`, `--secondary`, `--muted`, `--accent`,
   `--destructive`, `--border`, `--input`, `--ring`, plus their `*-foreground` pairs.
 - **Status (fills shadcn's biggest gap):** `--success`, `--warning`, `--info` + foregrounds. Prevents the
@@ -135,7 +136,8 @@ write module; only the *color channel* format is fixed to OKLCH.
 - **Brand ramp:** a small extensible scale for brand color.
 - **Chart palette:** `--chart-1 … --chart-5` (shadcn-standard; SaaS dashboards need it).
 
-**Typography**
+### Typography
+
 - Families: `--font-sans`, `--font-mono` (+ `--font-serif` if the template uses one).
 - Type scale: `--text-xs … --text-7xl` (incl. a 5xl/6xl/7xl display tier for hero/website headings). Weights. Line-heights.
 
@@ -397,7 +399,7 @@ the md guide + lint stand alone for non-Claude agents.
 **Stack (versions pinned at M0, 2026-06-16):**
 
 | Dependency | Version | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Next.js | 16.x (App Router) | 16.2.9 LTS at pin time |
 | React | 19.x | shadcn-v4 / Next 16 baseline |
 | TypeScript | 5.x | latest stable |
@@ -413,7 +415,7 @@ Exact versions are locked in the committed lockfile at M0; the table is the inte
 project's team already knows.) **Tailwind v4 is load-bearing on the architecture** — config-in-CSS is what
 keeps `globals.css` the single source of truth (§3), not a happenstance version bump.
 
-```
+```text
 app/
   globals.css            # SOURCE OF TRUTH: :root + .dark token vars, @theme inline mapping, tw-animate-css import
   design-system/page.tsx # living style guide (token sections auto-iterate; components hand-authored; data-token tagged)
@@ -597,7 +599,7 @@ the other 5 are a fast-follow built on the identical machinery. This keeps M3a s
 LLM contract (M5), and dogfood (M6) aren't delayed behind 8 visual loops.
 
 | # | Theme | v1? | Signature |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 | **Neutral** (default) | **v1** | greys + one accent; restrained; the easiest to re-brand; M0's canonical preset |
 | 2 | **Swiss / Minimal** | **v1** | near-monochrome, radius 0, hairline borders, generous whitespace, type does the work |
 | 5 | **Brutalist** | **v1** | thick borders, hard offset shadows, mono type, high contrast |

@@ -1,0 +1,11 @@
+{
+  // Jason's standard markdown lint rules — project file wins over editor-level
+  // config, so VSCode squiggles and CI (`npm run lint:md`) always agree.
+  // Source of truth: ~/.claude/templates/markdownlint/ — keep in sync with the
+  // `markdownlint.config` block in VSCode user settings.json.
+  "default": true,
+  "MD013": false, // line length — too noisy for prose
+  "MD024": { "siblings_only": true }, // repeated headings OK across sections (changelogs)
+  "MD033": false, // inline HTML allowed (<details>, <br>)
+  "MD060": { "style": "compact" } // tables use single-space pipe padding
+}

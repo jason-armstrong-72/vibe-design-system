@@ -36,10 +36,10 @@ Token **names** are the fixed contract; only values change — so every consumer
 manifest) works unchanged. Each theme passes WCAG-AA contrast (light + dark) and renders without overflow.
 
 | Neutral | Swiss | Brutalist |
-|---|---|---|
+| --- | --- | --- |
 | ![Neutral](themes/screenshots/neutral.png) | ![Swiss](themes/screenshots/swiss.png) | ![Brutalist](themes/screenshots/brutalist.png) |
 
-_(Five more — Editorial, Warm, Pastel, Technical, Corporate — are a fast-follow on the same machinery.)_
+(Five more — Editorial, Warm, Pastel, Technical, Corporate — are a fast-follow on the same machinery.)
 
 ## Visual editor (dev-only)
 

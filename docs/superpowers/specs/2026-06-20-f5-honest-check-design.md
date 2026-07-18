@@ -43,6 +43,7 @@ consumed by both `check` and the theme tests):
    one-theme-only invented color is flagged even when it has no `-foreground` sibling to contrast-check.
 
 **Explicitly OUT of scope (recorded, not forgotten):**
+
 - **Parity + neutral-identity stay test-only.** They guard **multi-theme authoring** (`themes/*.css` against
   the Neutral reference set) — meaningless to a consumer who only edits `globals.css`. Porting them into
   `check` would couple the lint to the theme files and the gallery concern. Reviewers (scope lens) confirmed
@@ -72,11 +73,13 @@ contrast-checked) at zero cost on current data.
 (culori ignores the alpha channel). Pointed at `globals.css`, the new check meets exactly the values the
 extension procedure *encourages* (e.g. `--promo-foreground: var(--foreground)`, or a `color-mix()` tint) →
 **gate crash**; and an alpha foreground → **false green**. Empirically verified in review:
-```
+
+```text
 wcagContrast("color-mix(in oklab, var(--primary) 50%, white)", "#000") → THROWS
 wcagContrast("var(--primary)", "#000")                                 → THROWS
 wcagContrast("oklch(1 0 0 / 0.1)", "#000")                             → 21  (bogus; alpha ignored)
 ```
+
 **Rule:** before computing a ratio, **skip** any pair where either side is not a **resolvable, opaque, literal
 color** — i.e. fails `isColorValue` (catches `var()`/`color-mix()`) **or** carries alpha (the test's
 `/\/\s*[\d.]/` translucency check; note it is OKLCH/RGB-slash specific, which matches this system's
@@ -193,6 +196,7 @@ The reframe: `check` is **honest for the consumer's edit-globals loop**, not "fu
 New fixture-driven unit tests (mirror `tests/check/*` + `tests/themes/contrast.test.ts`):
 
 **`lib/check/contrast.ts`:**
+
 - **Flagged:** globals fixture with `--promo`/`--promo-foreground` at a **below-AA** ratio in `:root` (and one
   in `.dark` only) → `contrast` finding(s) naming the right token/block/ratio.
 - **Not flagged:** a passing `--promo` pair; the real `globals.css` (baseline guard) → `[]`.
@@ -202,11 +206,13 @@ New fixture-driven unit tests (mirror `tests/check/*` + `tests/themes/contrast.t
 - **Message:** assert it contains the token names, the block (`:root`/`.dark`), and the target ratio.
 
 **`lib/tokens/contrast.ts` (structural-pairing regression):**
+
 - A token set with `--promo`/`--promo-foreground` (names outside `COLOR_ROLES`) now yields a pair result
   (proves structural, not role-gated).
 - Themes still yield 22 pairs all-pass (no regression); alpha/`var()` tokens never produce a pair.
 
 **`lib/check/both-theme.ts`:**
+
 - **Flagged:** invented `--promo` in `:root` only (no `-foreground`) → `both-theme` finding.
 - **Not flagged:** a `--brand-600` ramp in `:root` only (ramp exempt); a non-color token in one block.
 - Real `globals.css` → `[]`.

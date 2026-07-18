@@ -26,6 +26,7 @@
 ## Task 1: Defined-step parser (`parseThemeSteps`)
 
 **Files:**
+
 - Create: `lib/check/off-token-scale.ts` (parser half only this task)
 - Test: `tests/check/off-token-scale.test.ts`
 
@@ -120,6 +121,7 @@ git commit -m "feat(f3): parseThemeSteps — read defined scale steps from @them
 ## Task 2: The check core (`checkOffTokenScale`)
 
 **Files:**
+
 - Modify: `lib/check/off-token-scale.ts`
 - Modify: `lib/check/messages.ts`
 - Test: `tests/check/off-token-scale.test.ts`
@@ -264,11 +266,13 @@ git commit -m "feat(f3): checkOffTokenScale — flag undefined scale steps (voca
 ## Task 3: Wire into the check runner
 
 **Files:**
+
 - Modify: `lib/check/run.ts`
 
 - [ ] **Step 1: Add the import + compute defined steps + call the check in the file loop**
 
 In `lib/check/run.ts`:
+
 - add `import { checkOffTokenScale, parseThemeSteps } from "./off-token-scale";`
 - read globals **before** the file loop (move the existing `const globals = readFileSync(...)` up, or add an earlier read) and `const definedSteps = parseThemeSteps(globals);`
 - in the per-file `raw` array, add the new check:
@@ -305,6 +309,7 @@ git commit -m "feat(f3): wire off-token-scale into the check runner (defined ste
 ## Task 4: Fix the 2 pre-existing offenders + restore self-pass (+ visual checkpoint)
 
 **Files:**
+
 - Modify: `app/design-system/page.tsx:34`, `components/design-system/token-section.tsx:60`
 
 These two cards use `rounded-2xl`, a silent no-op (flat corners) since M3. Fix to the defined max `rounded-xl`. (Per spec §4: `rounded-xl` is recommended — no scale change, no new token. The alternative — adding `--radius-2xl` to `@theme` — is a visual call; default to `rounded-xl` unless the visual checkpoint says the cards want to be rounder.)
@@ -344,13 +349,14 @@ git commit -m "fix(f3): rounded-2xl -> rounded-xl on DS cards (were silently fla
 ## Task 5: Docs — recovery table + ledgers
 
 **Files:**
+
 - Modify: `AGENTS.md`, `docs/M6-DOGFOOD.md`, `docs/HANDOFF.md`
 
 - [ ] **Step 1: Add the `off-token-scale` row to the AGENTS.md failure→fix table**
 
 In `AGENTS.md`'s design-system gate table, add a row:
 
-```
+```text
 | off-token scale step (`rounded-2xl`, `text-8xl`, …) | use a defined step, or extend that scale in `@theme` (`app/globals.css`) then `npm run tokens` |
 ```
 

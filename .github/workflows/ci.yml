@@ -17,6 +17,7 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run lint
+      - run: npm run lint:md
       - run: npm test
       - run: npm run build
       - name: manifest is committed fresh

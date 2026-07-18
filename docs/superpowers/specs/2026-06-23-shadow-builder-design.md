@@ -49,12 +49,14 @@ shared by every sub-control (pad, numeric inputs, color pick, inset toggle, add/
 
 - **New `lib/editor/shadow.ts`** (pure, client-safe — no React, no DOM, no culori, no Node — the testable
   core). Model:
+
   ```ts
   // color: the literal "black" sentinel (renders oklch(0 0 0 / a)) | a color-token name "--brand-500"
   interface Layer { inset: boolean; x: number; y: number; blur: number; spread: number;
                     color: string; alpha: number }
   type Shadow = Layer[]; // ≥ 1 layer
   ```
+
   `"black"` is an **internal sentinel**, NOT the CSS keyword `black`: parse maps `oklch(0 0 0 / a)` →
   `{color:"black", alpha}`, format reverses it. So all three real seeds (literal `oklch(0 0 0 / …)`) parse and
   round-trip — the builder is **not** dead-on-arrival. **[R: DRY-agent flagged "color model wrong, dead on
@@ -110,6 +112,7 @@ tree-shaken from prod). The one DOM read (`getBoundingClientRect()` for the pad 
 ## 1. parse / format — the pure core (`lib/editor/shadow.ts`)
 
 ### parseShadow(value: string): Layer[] | null
+
 1. `splitTopLevel(value)` → one string per layer (paren-aware; `oklch(0 0 0 / .1)` inner slash/spaces and
    `color-mix(in oklch, …, transparent)` inner commas survive).
 2. Per layer, a **paren-aware space tokenizer** splits into space-separated tokens but keeps `oklch(…)`,
@@ -130,11 +133,13 @@ tree-shaken from prod). The one DOM read (`getBoundingClientRect()` for the pad 
    `null` for what they can't model. **[R: correctness P1-3 — document these as non-goals (§8), not bugs.]**
 
 ### formatShadow(layers: Layer[]): string
+
 Per layer: `${inset ? "inset " : ""}${len(x)} ${len(y)} ${len(blur)} ${len(spread)} ${color(l)}`, joined by
-`, `. Always emits all four lengths (matches the seeds, which carry an explicit `0` spread).
-- `len(n) = n === 0 ? "0" : ` `${round(n)}px` ` ` — **zero is bare `0`** (matches seed `0 1px 2px 0 …`).
-- `color(l)`: **black** → `alpha >= 100 ? "oklch(0 0 0)" : ` `oklch(0 0 0 / ${round(alpha/100)})` ` ` (percent→
-  decimal: `10`→`0.1`, `5`→`0.05`); **token** → `alpha >= 100 ? ` `var(${color})` ` : `
+`,`. Always emits all four lengths (matches the seeds, which carry an explicit `0` spread).
+
+- `len(n) = n === 0 ? "0" :` `${round(n)}px` ` ` — **zero is bare `0`** (matches seed `0 1px 2px 0 …`).
+- `color(l)`: **black** → `alpha >= 100 ? "oklch(0 0 0)" :` `oklch(0 0 0 / ${round(alpha/100)})` ` ` (percent→
+  decimal: `10`→`0.1`, `5`→`0.05`); **token** → `alpha >= 100 ?` `var(${color})` ` : `
   `color-mix(in oklch, var(${color}) ${round(alpha)}%, transparent)` ` ` (percent stays percent). Two distinct
   alpha branches. **[R: correctness P0-2 / P1-1 / P1-2 — the decimal(black, `/0.1`) vs percent(token,
   `color-mix N%`) split is the subtlest correctness point; the terse brainstorm spec glossed it.]** The token
@@ -151,6 +156,7 @@ incl. `0` zeros and `0.05`/`0.1` alpha) — pinned by a test (§7). This is what
 a token is opened and saved unchanged through the editor's value path.
 
 ### clamps + coord helper (exported for view + tests)
+
 `clampPct ∈ [0,100]` (alpha), `clampBlur = max(0, n)`; x/y/spread unclamped (signed). Pad coordinate helper
 `offsetFromPointer(clientX, clientY, rect, range) → {x, y}` maps a pointer within a square pad to ±`range` px
 with **centre = origin** and **y down-positive** (matches CSS box-shadow y). Pure (takes `rect`), unit-tested.
@@ -198,7 +204,7 @@ Unlike the gradient builder, **no new `TokenGroup`** is introduced. All three ag
 that every exhaustive site already carries `shadow`:
 
 | Site | State | Verified |
-|---|---|---|
+| --- | --- | --- |
 | `lib/tokens/types.ts` `TokenGroup` | has `"shadow"` | ✓ (`types.ts:11`) |
 | `lib/tokens/schema.ts` `groupForName` | `/^elevation-/ → "shadow"` | ✓ (`schema.ts:39`) — `parseTokens` does NOT throw (the gradient B1 crash does not apply) |
 | `lib/tokens/schema.ts` `CONTROL` | `shadow: "text"` (the strict `ControlType`) | ✓ (`schema.ts:69`) — **stays `"text"`**; only the editor `ControlKind` changes |
@@ -211,8 +217,9 @@ that every exhaustive site already carries `shadow`:
 | `lib/editor/resolve-token.ts` / `use-probe-index.ts` | `box-shadow → "shadow"` | ✓ (already maps; pick-anywhere already reverse-resolves box-shadow) |
 
 ### The ONLY plumbing edits
+
 | # | File | Change | If omitted |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 | `lib/editor/control-map.ts` | add `"shadow"` to `CONTROL_KINDS`; flip `MAP.shadow` `"text"` → `"shadow"` | the control stays the plain text field |
 | 2 | `components/editor/controls/control-host.tsx` | add `case "shadow": return <ShadowBuilder … disabled={editingBlock==="dark" && token.values.dark===undefined} />` | **compile error** — the `_never: never` guard + the `default` that throws (`control-host.tsx:121-123`); there is no silent-blank path |
 
@@ -291,12 +298,14 @@ The panel renders, top to bottom:
    written. **[R: UX P2-3 / correctness P1-3 — "permissive" as first drafted is a footgun; pin the regex.]**
 
 ### 4.1 Focus rings — not automatic [R: UX P0-2]
+
 `.ed-row input { all: unset }` (`editor-chrome.css:399-404`) strips the focus ring; the bezier control had to
 re-add it (`editor-chrome.css:614-618`). The shadow numeric inputs **are** the keyboard path (pad aria-hidden),
 so a `.ed-shadow … input:focus-visible` outline is **required** — and the new inputs must actually be covered
 (gradient's `.ed-gradient-pos` sits outside `.ed-row` and silently missed the bezier rule — do not repeat).
 
 ### 4.4 Shadow color picker — purpose-built sibling of GradientStopPicker [R: DRY/UX converge]
+
 A purpose-built `shadow-color-picker.tsx` **mirroring `GradientStopPicker`'s idiom** (a current-color chip
 opening a popover `role="menu"` with a token-swatch grid `menuitemradio` + an alpha `<input type=range
 aria-label="{label} alpha">`), with the **`black` sentinel** replacing gradient's `transparent` chip as the
@@ -310,6 +319,7 @@ everything" is the textbook wrong abstraction. Copy the lean idiom, as bezier/gr
 extraction.]**
 
 ### Reuse that IS real
+
 `splitTopLevel` (the new shared `css-list.ts`, §0), `useDraftField` (every numeric/raw input —
 commit-on-blur/Enter, Escape-revert, re-seed, `pinScroll`), `useTokenWriteback` (group-agnostic live `var()`
 preview + rollback — shadow gets optimistic preview free), the `color-mix(…, transparent)` alpha encoding (the
@@ -358,6 +368,7 @@ asserts the seeds keep `npm run check` green and `npm run tokens` idempotent (§
 ## 7. Testing
 
 **`tests/editor/shadow.test.ts`** (pure, fast — the testable core):
+
 - `parseShadow`: single-layer (`sm`), **multi-layer** (`md`/`lg`, 2 layers — depth-0 split, no shatter on
   `oklch(0 0 0 / .1)`); `inset` leading keyword; a `var(--x)` token layer; a `color-mix(in oklch, var(--x) N%,
   transparent)` token layer; 2/3/4 length forms (blur/spread default 0); negative x/y/spread; negative blur
@@ -373,6 +384,7 @@ asserts the seeds keep `npm run check` green and `npm run tokens` idempotent (§
   regression — §1).
 
 **`tests/editor/shadow-builder.test.tsx`** (`// @vitest-environment jsdom`):
+
 - renders the sticky preview, the layer accordion (≥ 1 card), an expanded card's pad + x/y/blur/spread inputs +
   color picker + inset toggle + remove, the add-layer button, the raw row.
 - pad drag (mock `getBoundingClientRect` + pointer capture): emits **one** `onChange` with a normalised,

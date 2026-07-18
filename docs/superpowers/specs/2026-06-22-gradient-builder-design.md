@@ -46,6 +46,7 @@ shared by every sub-control (type tabs, angle, pad, stop edits, presets-none), m
 
 - **New `lib/editor/gradient.ts`** (pure, client-safe, no React, no `culori`, no Node — the testable core):
   - Model:
+
     ```ts
     type GradientType = "linear" | "radial";
     type Stop = { color: string; alpha: number; position: number };
@@ -54,6 +55,7 @@ shared by every sub-control (type tabs, angle, pad, stop edits, presets-none), m
       | { type: "linear"; angle: number; stops: Stop[] }
       | { type: "radial"; shape: "circle" | "ellipse"; cx: number; cy: number; stops: Stop[] };
     ```
+
   - `parseGradient(value: string): Gradient | null` — parses `linear-gradient(<angle>deg, <stops>)` and
     `radial-gradient(<shape> at <cx>% <cy>%, <stops>)` back into the model so the builder hydrates from the
     token's current value. **Splits the stop list at depth-0 commas only** (paren-depth tracked) so a
@@ -101,7 +103,7 @@ the bezier `toSvg`/`fromSvg` pattern.
 The control is **stateless about the gradient except during an active drag.** Every render derives from `value`:
 `const parsed = parseGradient(value)`. The **one** transient local state is a gesture buffer:
 
-```
+```ts
 const [drag, setDrag] = useState<Gradient | null>(null); // non-null only mid-gesture
 const display: Gradient = drag ?? parsed ?? FALLBACK;     // what the UI renders
 ```
@@ -139,7 +141,7 @@ Adding a `gradient` group is a **bounded but larger** edit than the first draft 
 draft** and are functional breakages, not placement nits.
 
 | # | File | Change | If omitted |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 | `lib/tokens/types.ts` | add `"gradient"` to `TokenGroup` | every map below = TS error |
 | 2 | `lib/tokens/schema.ts` `groupForName` | add `if (/^gradient-/.test(bare)) return "gradient";` in the **prefix block** (before the value fallback) | **`parseTokens` THROWS** on the first seed → `npm run tokens`, `npm run check`, AND the editor write route all crash. **[R: B1 — the value fallback only accepts color/`var()`; a `linear-gradient(...)` value is neither → `throw "unknown token"`. The rule is mandatory, not a follow-up.]** Ordering vs other prefixes is safe (no rule is a prefix of `gradient-`). |
 | 3 | `lib/tokens/schema.ts` `CONTROL` | `gradient: "text"`-class entry (the strict `ControlType`) | `Record<TokenGroup,ControlType>` TS error |
@@ -300,6 +302,7 @@ per the standing pre-merge rule.
 ## 7. Testing
 
 **`tests/editor/gradient.test.ts`** (pure, fast — the testable core):
+
 - `parseGradient`: linear (`angle`, multi-stop), radial (`circle`/`ellipse` + `at x% y%`); a stop with
   `color-mix(in oklch, var(--x) 45%, transparent)` is parsed without comma-shatter (depth-0 split); bare
   `transparent` stop; `conic-gradient(...)`/raw-color stop/garbage → **`null`**.
@@ -310,6 +313,7 @@ per the standing pre-merge rule.
   cx/cy/position (the validator won't catch an out-of-range regression — §0).
 
 **`tests/editor/gradient-builder.test.tsx`** (`// @vitest-environment jsdom`):
+
 - renders preview, the two type radios, geometry (angle input for linear; shape select + pad + x/y inputs for
   radial), the ramp, ≥2 stop rows, the add/remove buttons, the raw row.
 - pointer drag (ramp handle / angle dial / pad, mocking `getBoundingClientRect` + pointer capture): emits **one**

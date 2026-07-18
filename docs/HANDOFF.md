@@ -3,7 +3,9 @@
 **You are picking up an in-progress build. Read this first, then the spec.** This file is the fastest path to context.
 
 ## What this project is
+
 A **design-system starter template** (a GitHub template repo) for people building a website or SaaS app **with an LLM** ("vibe coders," technical-enough builders working alongside an AI — not fully non-technical). It ships:
+
 1. An opinionated **OKLCH token set** as the single source of truth (`app/globals.css`).
 2. A **living design-system page** (`/design-system`) that renders every token + a component showcase.
 3. A **visual token editor** (dev-only, point-and-click) — **not built yet (M4)**.
@@ -13,6 +15,7 @@ A **design-system starter template** (a GitHub template repo) for people buildin
 The full design is the spec: **[docs/specs/2026-06-16-design-system-starter-design.md](specs/2026-06-16-design-system-starter-design.md)** — authoritative, read it.
 
 ## Where we are (all merged to `main`)
+
 - ✅ **M0** — scaffold (Next 16.2.9 + React 19 + Tailwind v4 + shadcn), OKLCH token system, compile-gate test.
 - ✅ **M1** — token write-core: `lib/tokens/{types,schema,parse,validate,write}.ts`. PostCSS AST, atomic writes, injection rejection. Lossless round-trip.
 - ✅ **M2** — manifest generation: `lib/tokens/{utilities,generate,sync}.ts` → `design-system.{json,md}` via `npm run tokens` + dev watch.
@@ -25,7 +28,9 @@ The full design is the spec: **[docs/specs/2026-06-16-design-system-starter-desi
 - **Status: 521 vitest + 25 Playwright e2e passing (1 gallery skipped without GALLERY=1; throwaway `e2e/__shots__/*.shot.spec.ts` are gitignored, not the committed suite). 102 tokens (incl. 4 gradients; +`--surface`/`--surface-foreground` + `2xs` type step as of dense-UI hardening 2026-06-28). `/pricing` + `/design-system` routes.** Run **`npm run verify`** (= `check && test && lint && build`) before any merge — `next build` (type-check + Tailwind CSS compile) catches what check/test/lint miss; the fast-follow loop skipping it let two build breaks reach local main (2026-06-21). Plus `npx playwright test` for e2e. **Note: `e2e/editor.spec.ts` "edit --primary … globals.css rewritten" is flaky under full parallel load (dev-server writeback timing); passes 9/9 in isolation.**
 
 ### ✅ Dense-UI hardening — DONE 2026-06-28 (lands before the 5-theme suite)
+
 Closed the 8 dense-product-UI gaps found building a Linear clone (flat surfaces, faked avatar/code/status workarounds). Spec/plan under `docs/superpowers/{specs,plans}/2026-06-28-dense-ui-hardening*`. **12 TDD tasks, one commit each.**
+
 - **Tokens (all 4 surfaces — `globals.css` + `themes/{neutral,swiss,brutalist}.css`, both `:root`/`.dark`; regen via `npm run tokens`):**
   - **`--surface`/`--surface-foreground`** — new gated color role (in `COLOR_ROLES`), a subtle step off `--background` for panels/sidebars/wells/zebra rows (the flatness fix; D2). Contrast-gated like any pair.
   - **`--fs-2xs`/`--lh-2xs`** (~11px) — micro type step extending the bottom of the scale (avatar initials, kbd caps), `:root`-only. **Required gate fix:** added `"2xs"` to `VOCAB.text` in `lib/check/off-token-scale.ts` — `text-2xs` was a silent unguarded no-op before.
@@ -38,13 +43,16 @@ Closed the 8 dense-product-UI gaps found building a Linear clone (flat surfaces,
 **v1 is COMPLETE (M0–M6).** Plans/specs live in `docs/superpowers/`. **Fast-follows F2 + F3 + F5 DONE (2026-06-19/20)** — "silently breaks features" items closed (F3 = off-token-scale check; F2 = one-step non-color extension, also fixes F4; F5 = honest standalone `check`). Remaining fast-follows: multi-model **run** (portable rules surface SHIPPED 2026-06-21; the cross-model run is deferred — see below), ~~brownfield baseline (F6)~~ **DONE 2026-06-24**, 5 more themes, Claude skill, stylelint. **All M4 editor builders DONE** (bezier + pick-anywhere 2026-06-22, gradient 2026-06-23, **shadow 2026-06-23 — the last one**).
 
 ### M5 fast-follows (deferred)
+
 - Bundled **Claude Code skill** (§6.3 bonus — md guide + lint stand alone without it).
 - **stylelint** (the check script scans `.css` already); **promote the e2e CI job to blocking** once proven stable.
 - Off-scale checks on `w/h/size`; off-token palette detection beyond the curated family list.
 - Lint nit: arbitrary-color catches `#/rgb(a)/hsl(a)/oklch/oklab` brackets but not `bg-[red]` named colors (no named-color list yet).
 
 ### M6 fast-follows (ran 2026-06-19 — QUALIFIED PASS; findings ledger in [docs/M6-DOGFOOD.md](M6-DOGFOOD.md))
+
 M6 validated the headline loop (LLM builds with tokens + **color-extends** + **recovers from a red gate**, all unaided, zero contract hand-fixes — see the seeded run S1). It surfaced these, ordered by severity:
+
 - ✅ **F2 — non-color extension. DONE 2026-06-19.** `syncThemeMappings` (`lib/tokens/sync.ts`, was `syncThemeColorMappings`) now auto-wires scale `@theme` mappings (shadow `--elevation-X`→`--shadow-X`, text `--fs-X`→`--text-X`(+line-height), weight `--fw-X`→`--font-weight-X`) on `npm run tokens` — adding a non-color value is the **same one step as color** (proven e2e). Closed allowlist (never crashes on lineHeight/other groups); `groupForName` hardened so a misplaced `--radius-2xl` in `:root` degrades gracefully. **Radius** stays a knob: the `off-token-scale` gate **message** now nudges `--radius` (the channel that redirects LLMs). **Manifest** reports the true `@theme` radius scale (**fixes F4**). Docs (preamble + AGENTS + NAMING-CONVENTION) present one "easy-but-discouraged" procedure. Spec+plan under `docs/superpowers/`.
 - ✅ **F3 — gate blind-spot: silent no-op classes. DONE 2026-06-19.** New `off-token-scale` sub-check (`lib/check/off-token-scale.ts`) flags named scale-step utilities (`rounded-2xl`, `text-8xl`, `shadow-xl`, `font-black`) whose step isn't defined in `@theme` — across 4 families (radius/shadow/text-size/font-weight). Keyed on `@theme` (self-maintaining), vocab-gated (no false positives on `text-center`/`rounded-full`), variant-aware (`md:rounded-2xl`). Found + fixed 2 latent `rounded-2xl` no-ops in `/design-system` (silently flat since M3). Spec+plan under `docs/superpowers/`.
 - ✅ **F5 — `npm run check` is now honest standalone for the consumer edit-globals loop. DONE 2026-06-20.** New `lib/check/contrast.ts` sub-check runs WCAG-AA over `globals.css` — `contrast.ts` now pairs `--x`/`--x-foreground` structurally (the earlier "pairs ANY" claim is now TRUE) and skips `var()`/`color-mix()`/alpha. `both-theme` now covers all color tokens by value (ramps exempt). Acknowledged residuals: (1) a color token with no `-foreground` sibling is uncheckable; (2) an orphan `-foreground` whose base is absent is skipped; (3) `var()`/`color-mix()`/alpha pairs are skipped (can't statically verify); (4) theme-completeness across `themes/*.css` stays test-only (author concern).
@@ -54,6 +62,7 @@ M6 validated the headline loop (LLM builds with tokens + **color-extends** + **r
 - **Kept from M6:** `/pricing` worked-example route (token-only, no new tokens). `/settings` + a `--radius-2xl` step were built+validated but dropped (layout not reference-worthy / token only needed by the dropped page).
 
 ### M4 fast-follows (deferred, all on the same machinery)
+
 - ✅ **Layered shadow builder — DONE 2026-06-23. The LAST M4 builder → M4 editor fast-follows COMPLETE.**
   Replaced the plain-text shadow control with a layered `box-shadow` builder editing the existing `--elevation-*`
   group (no new TokenGroup — every exhaustive `Record<TokenGroup>`/switch already carried `shadow`; only
@@ -84,7 +93,7 @@ M6 validated the headline loop (LLM builds with tokens + **color-extends** + **r
   (`--gradient-*`): 4 token-ref seeds (`subtle`/`brand`/`glow`/`fade`) in `:root` + all 3 theme presets, exposed
   via hand-written `@utility bg-gradient-*` (not a Tailwind namespace; mirrors border/z/opacity — sync auto-gen
   is a deferred fast-follow), rendered as swatches on `/design-system`. **Visual builder** (`gradient-builder.tsx`
-  + pure `lib/editor/gradient.ts` parse/format/clamp core): live preview → Linear/Radial radiogroup → geometry
+  - pure `lib/editor/gradient.ts` parse/format/clamp core): live preview → Linear/Radial radiogroup → geometry
   (angle slider for linear; shape select + draggable 2D center pad with numeric x/y twins for radial) → stops
   ramp with draggable swatch-chip handles (pointer triangle, drag commits **once** on pointer-up) + compact rows
   `[color chip → token-grid+alpha popover][position %][remove]` → raw escape-hatch. **Stops are token-ref +
@@ -112,6 +121,7 @@ M6 validated the headline loop (LLM builds with tokens + **color-extends** + **r
 - ✅ **Lint debt — RESOLVED in M5.** The "158 errors" were eslint scanning nested `.claude/worktrees/*/.next/` build chunks; fixed via `globalIgnores` (`**/.next/**` + `.claude/**`) + pinning `lint` to source globs. `npm run lint` = 0.
 
 ## Load-bearing decisions & conventions (non-obvious — don't relearn the hard way)
+
 - **Tailwind v4, CSS-first.** Config lives in `app/globals.css` via `@theme`, NOT `tailwind.config.ts`. Two layers: runtime token vars in `:root`/`.dark` (the editable source of truth) + `@theme inline` that **clears default namespaces** (`--color-*: initial` …) and maps tokens through `var()` so runtime edits repaint with no rebuild.
 - **Token NAMES are the contract.** Names invariant, values themeable → that's what makes the theme gallery (M3a) nearly free. `lib/tokens/schema.ts` `groupForName` classifies by name; for an **unknown name with a color value it infers `color`** (this is what makes the extension procedure work).
 - **One-step extension (the B-fix from M2.5).** Adding a color = add it to BOTH `:root` and `.dark` → run `npm run tokens`. That command runs `syncThemeColorMappings` (`lib/tokens/sync.ts`) which **auto-wires the `@theme inline` mapping** so `bg-<name>` compiles. No hand-editing `@theme`, no allowlist. Proven end-to-end.
@@ -122,9 +132,11 @@ M6 validated the headline loop (LLM builds with tokens + **color-extends** + **r
 - **v1 themes = 3:** Neutral (shipped, the M0 default), Swiss, Brutalist. Other 5 are fast-follow. Each theme = a complete `:root`/`.dark` value-set under the fixed names.
 
 ## Token set (94 tokens, tuned with the user this session)
+
 14 groups. Notable user decisions: brand ramp kept at **11 shades** (50→950, shade-ordered on the page); line-heights kept **per-size**; type scale **extended to 7xl** (5xl/6xl/7xl display tier, top 72px) for hero/website headings; opacity **extended to 4** (disabled/muted/overlay/hover). Naming rules: **[docs/NAMING-CONVENTION.md](NAMING-CONVENTION.md)** (the contract every consumer keys on).
 
 ## Workflow conventions (follow these)
+
 - **Caveman mode is active** — terse responses (drop articles/filler/hedging; fragments OK). Code/commits/PRs written normally. A SessionStart hook enforces it.
 - **One milestone per branch.** TDD: write failing test → run → implement → run → commit per task. Full suite green before merging `--no-ff` to `main`. Delete the branch after.
 - **Plan before building.** Use the `writing-plans` skill; dispatch a `general-purpose` subagent to **review the plan against the real repo** before executing (this caught real bugs every time — Vitest config, missing token groups, etc.). Fix, then execute.
@@ -132,6 +144,7 @@ M6 validated the headline loop (LLM builds with tokens + **color-extends** + **r
 - **The user reviews token sufficiency section-by-section** and has strong design opinions — surface choices via AskUserQuestion, give a recommendation, explain plainly when asked.
 
 ## Environment gotchas (already solved — don't rediscover)
+
 - `create-next-app` aborts on existing `README.md`/`.gitignore` and exits 0 (silent) → scaffold in a temp dir, move `docs/`+`README` back.
 - shadcn CLI changed: no `--base-color`; it prompts. Use `npx shadcn@latest init -y -d -b radix`. It adds `@import "shadcn/tailwind.css"` (benign keyframes/variants — keep it) and `tw-animate-css` (NOT the deprecated `tailwindcss-animate`).
 - `@tailwindcss/node` `compile(css, { base, onDependency: () => {} })` — `onDependency` is REQUIRED or it throws; `build()` is synchronous.
@@ -140,16 +153,20 @@ M6 validated the headline loop (LLM builds with tokens + **color-extends** + **r
 - VSCode shows "Unknown at rule @theme/@utility/@apply" warnings on `globals.css` — harmless (stock CSS linter doesn't know Tailwind v4).
 
 ## Next steps (pick with the user)
+
 **v1 (M0–M6) is COMPLETE.** Remaining work is fast-follows. Recommended near-term, in priority order:
+
 1. ✅ **M6 F2 + F3 + F5 DONE.** F2: one-step non-color extension + radius-knob nudge + manifest lists derived/@theme steps. F3: `check` flags named off-token utilities outside the system's scale. F5: `check` is now honest standalone (contrast sub-check over globals; both-theme over all color tokens).
 2. **Multi-model run** (Cursor+GPT / Gemini) + portable rules surface — proves "point your LLM at it" beyond Claude.
 3. Other per-milestone fast-follows: 5 more themes, Claude skill, stylelint (~~brownfield baseline F6~~ **DONE 2026-06-24**). Plan → review → execute as always. **All M4 editor builders are DONE** (shadow builder 2026-06-23 was the last). A near-term aesthetic pass on the editor visualizations (gradient/shadow) during real use is the natural next polish — user hasn't hands-on-tested them yet.
 
 ### M3a follow-ups (fast, deferred)
+
 - **5 more themes** (Editorial, Warm, Pastel, Technical, Corporate) on the same machinery — Editorial needs a serif face added to `lib/fonts.ts` (the only non-value coupling).
 - Swiss keeps **status colors functional** (not desaturated) — a deliberate call (badges must communicate); revisit if a stricter monochrome reading is wanted.
 
 ## First moves for the next agent
+
 1. Read this file, then the spec (§ for the milestone you're doing).
 2. `git log --oneline -15` and `npm test` + `npx playwright test` to confirm a green baseline on `main`.
 3. Confirm with the user which milestone to start; write the plan; get it reviewed; execute on a branch.

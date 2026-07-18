@@ -15,7 +15,7 @@
 ## File Structure
 
 | File | Responsibility |
-|---|---|
+| --- | --- |
 | `lib/tokens/utilities.ts` | `utilitiesForToken()` — token → the Tailwind utility/utilities an LLM should use |
 | `lib/tokens/generate.ts` | `buildManifest(tokens)` → `{ json, markdown }`; pure, deterministic |
 | `scripts/generate-tokens.ts` | CLI: read `app/globals.css` → write `design-system.{md,json}` (the `npm run tokens` entry) |
@@ -50,6 +50,7 @@ Expected: `GROUP OK` and `PREFIX OK`. If a prefix differs from what `utilitiesFo
 The manifest's value to an LLM is telling it *which class to type*. This maps each token to its utility(ies), per the M0 wiring.
 
 **Files:**
+
 - Create: `lib/tokens/utilities.ts`
 - Create: `tests/tokens/utilities.test.ts`
 
@@ -188,6 +189,7 @@ git commit -m "feat(m2): token -> Tailwind utility mapping"
 Merge per-theme `Token[]` into per-name entries (light+dark values), emit JSON + Markdown. Deterministic ordering so the CI freshness-diff (M5) is stable.
 
 **Files:**
+
 - Create: `lib/tokens/generate.ts`
 - Create: `tests/tokens/generate.test.ts`
 
@@ -334,6 +336,7 @@ git commit -m "feat(m2): deterministic manifest builder (json + markdown)"
 ## Task 3: `npm run tokens` — write the real manifest
 
 **Files:**
+
 - Create: `scripts/generate-tokens.ts`
 - Modify: `package.json` (scripts + `tsx` devDep)
 
@@ -399,6 +402,7 @@ git commit -m "feat(m2): npm run tokens — generate design-system.{json,md}"
 ## Task 4: Dev watch — regenerate on save
 
 **Files:**
+
 - Create: `scripts/watch-tokens.ts`
 - Modify: `package.json` (scripts; integrate with `dev`)
 
@@ -434,6 +438,7 @@ watch(GLOBALS, { ignoreInitial: true }).on("change", regen);
 - [ ] **Step 3: Wire scripts**
 
 In `package.json` `scripts`:
+
 - `"tokens:watch": "tsx scripts/watch-tokens.ts"`
 - Change `"dev"` to run Next + the watcher together: `"dev": "concurrently -n next,tokens \"next dev\" \"npm run tokens:watch\""`
 
@@ -474,6 +479,7 @@ git commit -m "feat(m2): dev watch — regenerate manifest on globals.css change
 Prove the property: edit a token through M1's write-core, regenerate, manifest matches — the loop M5's CI gate will enforce.
 
 **Files:**
+
 - Create: `tests/tokens/freshness.test.ts`
 
 - [ ] **Step 1: Write the freshness test**

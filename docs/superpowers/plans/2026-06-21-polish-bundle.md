@@ -17,7 +17,7 @@
 ## File Structure
 
 | File | Responsibility | Action |
-|---|---|---|
+| --- | --- | --- |
 | `lib/check/contrast.ts` | suppress pure-fallback dark contrast finding | Modify |
 | `tests/check/contrast.test.ts` | `:root`-only single-finding + both-block two-finding cases | Extend |
 | `lib/tokens/generate.ts` | F1 nudge in the generated preamble | Modify |
@@ -32,9 +32,11 @@
 **Files:** Modify `lib/check/contrast.ts`; extend `tests/check/contrast.test.ts`.
 
 The existing `tests/check/contrast.test.ts` helper is:
+
 ```ts
 const wrap = (root: string, dark = "") => `@import "tailwindcss";\n:root {\n--background: oklch(1 0 0);\n--foreground: oklch(0.15 0 0);\n${root}\n}\n.dark {\n--background: oklch(0.15 0 0);\n--foreground: oklch(0.99 0 0);\n${dark}\n}\n`;
 ```
+
 **Single-arg `wrap(root)` = a `:root`-only token** (`.dark` gets only background/foreground). **Two-arg `wrap(root, dark)` = a both-block token.** Use this distinction below.
 
 - [ ] **Step 1: Add failing tests** — append inside the `describe("checkContrast", …)` in `tests/check/contrast.test.ts`

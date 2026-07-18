@@ -4,12 +4,14 @@ The lint, manifest generator, schema, and editor all key on these names. Changin
 name is a breaking change to the design system's API. Pin once; change deliberately.
 
 ## Layers
+
 - **Runtime layer** (`:root`, `.dark` in `app/globals.css`): the authored, editable
   values. Base names below. The editor and manifest read/write ONLY this layer.
 - **Utility layer** (`@theme inline` in `app/globals.css`): maps a base name into a
   Tailwind namespace, e.g. `--color-primary: var(--primary)`. Never edited at runtime.
 
 ## Rules
+
 1. **Colors** use shadcn semantic names, kebab-case: `--<role>` and its paired
    `--<role>-foreground`. Roles: background, foreground, card, popover, primary,
    secondary, muted, accent, destructive, success, warning, info, border, input, ring,
@@ -55,6 +57,7 @@ name is a breaking change to the design system's API. Pin once; change deliberat
     the editor's gradient builder (linear/radial).
 
 ## Extending a scale (one step — F2)
+
 Adding a value to a scale is the **same one step as color**: add the **value token** to `:root`
 (`--fs-<step>`+`--lh-<step>` for type, `--elevation-<step>` for shadow, `--fw-<name>` for weight), then
 `npm run tokens`. The sync pass auto-wires the `@theme` mapping (`--text-`/`--shadow-`/`--font-weight-`) and
@@ -73,5 +76,6 @@ blocks), then `npm run tokens`. Auto-generating these blocks via a separate sync
 fast-follow; until then the `@utility` line is manual (the same precedent as `border-*`/`z-*`/`opacity-*`).
 
 ## fg/bg pairing
+
 Every color with a `-foreground` counterpart is a pair. The schema (M1) models these as
 pairs so a WCAG contrast check (fast-follow) needs no re-modeling.

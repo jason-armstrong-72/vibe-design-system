@@ -53,7 +53,7 @@ itself routes the LLM to the knob.
 ## 2. The model (how a scale step works today)
 
 | Family | `:root` value token | `@theme` mapping (makes the utility compile) | Utility |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | font size | `--fs-<step>` (+ paired `--lh-<step>`) | `--text-<step>: var(--fs-<step>)` (+ `--text-<step>--line-height: var(--lh-<step>)`) | `text-<step>` |
 | font weight | `--fw-<step>` | `--font-weight-<step>: var(--fw-<step>)` | `font-<step>` |
 | shadow | `--elevation-<step>` | `--shadow-<step>: var(--elevation-<step>)` | `shadow-<step>` |
@@ -73,7 +73,7 @@ Generalise the sync pass so `npm run tokens` ensures, for each **value token** i
 mapping exists (additive + idempotent, exactly like the colour pass):
 
 | `:root` value token (group) | ensure in `@theme inline` |
-|---|---|
+| --- | --- |
 | `--fs-<x>` (fontSize) | `--text-<x>: var(--fs-<x>)` — **and** `--text-<x>--line-height: var(--lh-<x>)` *iff `--lh-<x>` exists* |
 | `--fw-<x>` (fontWeight) | `--font-weight-<x>: var(--fw-<x>)` |
 | `--elevation-<x>` (shadow) | `--shadow-<x>: var(--elevation-<x>)` |
@@ -120,16 +120,19 @@ contains the namespace-clear decls `--text-*: initial`, `--shadow-*: initial`, `
 an exact check (`existing.has("--shadow-xl")`) correctly ignores those; a prefix check would not.
 
 **`@theme` block locator:** for **writing** mappings, reuse sync's existing postcss `walkAtRules("theme")`
-+ `/(^|\s)inline(\s|$)/` params test (handles the multi-decl-per-line formatting — postcss splits each
+
+- `/(^|\s)inline(\s|$)/` params test (handles the multi-decl-per-line formatting — postcss splits each
 `--text-xs: …; --text-xs--line-height: …;` into discrete decls, verified). For the radius **read** (Part 3)
 reuse F3's string-based `parseThemeSteps`. Two locators coexist (one writes via postcss, one reads via
 string slice); the plan notes which is used where so a future edit to the `@theme` comment/preamble can't
 silently break one.
 
 **Result:** the one-step procedure for a new scale step becomes:
+
 ```css
 /* add to :root */  --elevation-xl: 0 20px 25px -5px oklch(0 0 0 / 0.1), 0 8px 10px -6px oklch(0 0 0 / 0.1);
 ```
+
 then `npm run tokens` → `--shadow-xl` auto-wired, `shadow-xl` compiles, manifest lists it, F3 sees it defined.
 Identical shape to colour.
 
@@ -140,6 +143,7 @@ Identical shape to colour.
 Radius has **no per-step value token** — it's the single `--radius` knob with `sm/md/lg/xl` derived in
 `@theme` via `calc()`. So there's nothing for sync to key on, and radius is **not** auto-wired. Two paths,
 both documented:
+
 - **Change overall roundness → edit `--radius`** (the knob; all derived steps shift). This is the common
   case and the **nudge** (M6: 0/3 LLMs found it).
 - **Genuinely need a new step (e.g. `rounded-2xl`) →** add `--radius-2xl: calc(var(--radius) + 8px)` to the
@@ -222,6 +226,7 @@ behaviours). Replace with a **single procedure** but with **"easy-but-discourage
 - Keep the colour worked example; add a scale worked example (a new shadow level).
 
 Also update:
+
 - **`AGENTS.md`** — the design-system contract block + failure→fix table (the extension procedure pointer
   now covers scales; the off-token-scale row from F3 already points here).
 - **`docs/NAMING-CONVENTION.md`** — replace "non-colour scales are fixed/rare" with the value-token naming

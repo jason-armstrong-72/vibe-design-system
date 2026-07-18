@@ -11,6 +11,7 @@
 **Spec:** [docs/superpowers/specs/2026-06-22-gradient-builder-design.md](../specs/2026-06-22-gradient-builder-design.md). Read it — this plan implements it task-by-task.
 
 **Conventions (read once):**
+
 - TDD per @superpowers:test-driven-development: failing test → run (see it fail) → minimal impl → run (pass) → commit.
 - Vitest `.tsx` needs a top-of-file `// @vitest-environment jsdom` docblock. `@` alias resolves via `vitest.config.ts`.
 - Pre-merge gate is **`npm run verify`** (= `check && test && lint && build`) — `next build` is the only thing that type-checks the app graph + compiles Tailwind CSS. Plus `npx playwright test`. Run `npm run verify` before declaring any task with a type/CSS change done; the exhaustive-`Record`/`never`-guard breakages in Task 2 are caught by `tsc` (via build), **not** by `npm run check`.
@@ -23,6 +24,7 @@
 ## File Structure
 
 **Created:**
+
 - `lib/editor/gradient.ts` — pure model + `parseGradient`/`formatGradient` + clamps + pointer-coordinate helpers.
 - `components/editor/controls/gradient-builder.tsx` — the thin control (preview, type radios, geometry, stops, raw row).
 - `components/editor/controls/gradient-stop-picker.tsx` — purpose-built stop color picker (token grid + transparent + alpha).
@@ -31,6 +33,7 @@
 - `e2e/gradient.spec.ts` — real computed `background-image` (page section + select + edit).
 
 **Modified (the 9 group touch-points + supporting):**
+
 - `lib/tokens/types.ts` — `TokenGroup` += `"gradient"`.
 - `lib/tokens/schema.ts` — `groupForName` `/^gradient-/` rule + `CONTROL.gradient`.
 - `lib/tokens/utilities.ts` — `case "gradient"`.
@@ -49,6 +52,7 @@
 ## Task 1: Pure lib `lib/editor/gradient.ts` (the testable core)
 
 **Files:**
+
 - Create: `lib/editor/gradient.ts`
 - Test: `tests/editor/gradient.test.ts`
 
@@ -250,37 +254,45 @@ Expected: FAIL (`groupForName` throws "unknown token" / `utilitiesForToken` thro
 - [ ] **Step 3: Apply the edits** (each is a one-line-ish exact change)
 
 `lib/tokens/types.ts` — add to the union:
+
 ```ts
   | "gradient"
 ```
 
 `lib/tokens/schema.ts` `groupForName`, add in the prefix block (e.g. after the `^chart-` line) **before** the value fallback:
+
 ```ts
   if (/^gradient-/.test(bare)) return "gradient";
 ```
+
 and in `CONTROL`:
+
 ```ts
   gradient: "text",
 ```
 
 `lib/tokens/utilities.ts`, add a case before `default`:
+
 ```ts
     case "gradient":
       return { utilities: [`bg-gradient-${bare.replace(/^gradient-/, "")}`] };
 ```
 
 `lib/tokens/generate.ts` `GROUP_ORDER`, insert `"gradient"` right after `"color"`:
+
 ```ts
   "color", "gradient", "fontFamily", "fontSize", "lineHeight", "fontWeight",
 ```
 
 `lib/tokens/validate.ts` `checkGroup`, add (next to `shadow`):
+
 ```ts
     case "gradient":
       return v.length > 0; // any gradient string; injection already screened
 ```
 
 `lib/editor/control-map.ts` — **temporary placeholder** so the token is editable as raw text this task (flipped to the real control in Task 4): set `MAP.gradient = "text"`. Do **NOT** add to `CONTROL_KINDS` yet.
+
 ```ts
   gradient: "text",
 ```
@@ -288,12 +300,14 @@ and in `CONTROL`:
 `lib/design-system/sections.ts` — `ORDER` insert `"gradient"` after `"color"`; `TITLES` add `gradient: "Gradient",`.
 
 `components/design-system/token-item.tsx` `preview()`, add a case (uses the existing `box` helper):
+
 ```ts
     case "gradient":
       return box({ background: v });
 ```
 
 `app/globals.css` — add the 4 seeds inside `:root` (after the shadow block, before `/* motion */`), in **canonical `formatGradient` form** (exact strings — round-trip + manifest-fresh):
+
 ```css
   /* ---- gradient (token-ref stops → theme for free; :root only) ---- */
   --gradient-subtle: linear-gradient(180deg, var(--brand-50) 0%, var(--card) 100%);
@@ -301,7 +315,9 @@ and in `CONTROL`:
   --gradient-glow: radial-gradient(circle at 50% 30%, color-mix(in oklch, var(--brand-500) 45%, transparent) 0%, transparent 70%);
   --gradient-fade: linear-gradient(180deg, var(--brand-500) 0%, transparent 100%);
 ```
+
 and the 4 utilities next to the existing `@utility opacity-*` block (NOT in `@theme inline`):
+
 ```css
 @utility bg-gradient-subtle { background-image: var(--gradient-subtle); }
 @utility bg-gradient-brand  { background-image: var(--gradient-brand); }
@@ -431,6 +447,7 @@ export function GradientBuilder({ token, value, onChange, tokens }: Props) {
 
 `control-map.ts`: add `"gradient"` to `CONTROL_KINDS`, set `MAP.gradient = "gradient"`.
 `control-host.tsx`: import `GradientBuilder`; add before `case "text"`:
+
 ```tsx
     case "gradient":
       return (
@@ -438,13 +455,16 @@ export function GradientBuilder({ token, value, onChange, tokens }: Props) {
           onChange={(v) => editValue(token.name, v)} tokens={MANIFEST.tokens} />
       );
 ```
+
 and convert the implicit end into an exhaustiveness guard — add after the last case:
+
 ```tsx
     default: {
       const _never: never = kind;
       throw new Error(`ControlHost: unhandled control kind ${_never}`);
     }
 ```
+
 Update `tests/editor/control-host.test.tsx` if it asserts the gradient token rendered a `TextField` (it now renders the radiogroup).
 
 - [ ] **Step 4: Run — pass.** `npx vitest run tests/editor/gradient-builder.test.tsx tests/editor/control-host.test.tsx`
@@ -457,6 +477,7 @@ Update `tests/editor/control-host.test.tsx` if it asserts the gradient token ren
 **Files:** Modify `gradient-builder.tsx` (+ stops block), `gradient-stop-picker.tsx` (consume), `editor-chrome.css`. Extend `tests/editor/gradient-builder.test.tsx`.
 
 Behaviour (spec §4.4):
+
 - **Ramp bar**: a `div` with `background: formatGradient(display)`, square swatch-chip handles **under** it (one per stop, `aria-hidden`, showing the stop's resolved color / checkerboard for transparent). Drag a chip → map pointer X to `position` via a pure helper in `gradient.ts` (`positionFromPointer(clientX, rect) → clampPct`), `setDrag` mid-move (**no emit**), `emit` once on pointer-up (§2 cadence). Use `setPointerCapture` (the `highlight-overlay.tsx` precedent).
 - **Per-stop rows** (the keyboard path): each row = `<GradientStopPicker>` + a position numeric input (`useDraftField`, `aria-label="{token} stop {n} position"`, 0–100) + a remove `<button aria-label="Remove stop {n}">` (disabled when `stops.length <= 2`). Editing emits once.
 - **"+ Add stop"** button: inserts a stop at the midpoint of the largest gap, emits once.
@@ -521,9 +542,9 @@ Behaviour (spec §4.4):
 ---
 
 ## Notes for the executor
+
 - **Commit cadence is load-bearing:** drags commit ONCE on pointer-up (one undo entry); discrete edits commit once each. Never `onChange` mid-`pointermove`.
 - **Never emit on mount/selection** — `parseGradient` is for display only; an unparseable value shows the dim fallback + raw row and writes nothing until an explicit gesture.
 - **Canonical seed strings** in `globals.css` must equal `formatGradient` output exactly (round-trip + manifest-fresh). If you change `formatGradient`’s spacing/rounding, re-derive the seeds and re-run `npm run tokens`.
 - **`npm run verify` (build) is the real net** for the Task 2 type-level breakages — `npm run check` won’t catch a missed `Record<TokenGroup>`/`never` site.
 - Don’t hand-edit `design-system.json`/`.md` — always `npm run tokens`.
-```

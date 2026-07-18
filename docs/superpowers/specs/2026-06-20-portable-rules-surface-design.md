@@ -28,13 +28,14 @@ Non-goal: per-tool *copies* of the contract. They would drift the moment the tok
 ## 2. Surfaces
 
 | File | Tool | Action | Form |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `GEMINI.md` | Gemini CLI | **Create** | `@AGENTS.md` (one line, mirrors `CLAUDE.md`) |
 | `.github/copilot-instructions.md` | GitHub Copilot | **Create** | short pointer to `AGENTS.md` + `design-system.md` |
 | `README.md` | humans + any other tool | **Modify** | add an "LLM" pointer line + fix the stale Status block |
 | `.cursor/rules/design-system.mdc` | Cursor | **Verify only** | already correct (`alwaysApply: true`, points to AGENTS/design-system) — no edit |
 
 ### 2.1 `GEMINI.md`
+
 One line: `@AGENTS.md`. Gemini CLI's memory file resolves `@path` imports for `.md` targets, and `AGENTS.md`
 is a `.md` file, so the import resolves to the same canonical contract Claude/Cursor see. **Caveat (documented,
 not assumed):** Gemini CLI does **not** read `AGENTS.md` by default — the file must be named exactly `GEMINI.md`
@@ -44,6 +45,7 @@ design-system contract text appears in the concatenated context. We ship the sta
 verified on the user's Gemini version (the orchestrator can't run Gemini).
 
 ### 2.2 `.github/copilot-instructions.md`
+
 Copilot's documented repository-instructions path (`.github/` already exists, holds `workflows/`). A short
 pointer, e.g.:
 > This project styles **only** with its design-system tokens. Before writing UI code, read `AGENTS.md`
@@ -55,7 +57,9 @@ duplication of *intent*, not of the *contract data*; the drift-guard test only f
 table / the `BEGIN:design-system` block.)
 
 ### 2.3 `README.md`
+
 Two edits:
+
 1. **Add an "LLM" pointer** under the intro (or near the stack line):
    > **Building with an LLM?** Point your assistant at `AGENTS.md` + `design-system.md`. Claude Code, Cursor,
    > Gemini CLI, and GitHub Copilot auto-load it (`CLAUDE.md` / `.cursor/rules` / `GEMINI.md` /
@@ -115,6 +119,7 @@ Gemini/Copilot/Cursor/Claude gets the contract auto-loaded, and on any other too
 ## 6. Deferred — the multi-model run (context for a future spec)
 
 3-agent review of the original bundled design surfaced these holes the run must fix before it's worth doing:
+
 - **Answer leakage:** `/pricing`, `/settings`, `app/promo-banner.tsx`, and `docs/M6-DOGFOOD.md` (briefs +
   gap-proofs + answers) + narrating git log all leak into any branch off `main`. Need a stripped,
   history-clean checkout (or fresh clone with those removed).

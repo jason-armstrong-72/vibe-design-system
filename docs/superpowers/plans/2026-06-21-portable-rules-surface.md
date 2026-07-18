@@ -17,7 +17,7 @@
 ## File Structure
 
 | File | Responsibility | Action |
-|---|---|---|
+| --- | --- | --- |
 | `GEMINI.md` | Gemini CLI auto-load hook | Create (`@AGENTS.md`) |
 | `.github/copilot-instructions.md` | Copilot auto-load hook (pointer) | Create |
 | `README.md` | human + any-tool discovery; honest status | Modify |
@@ -30,6 +30,7 @@
 ## Task 1: Drift-guard test + the two new pointer surfaces
 
 **Files:**
+
 - Create: `tests/surfaces.test.ts`
 - Create: `GEMINI.md`
 - Create: `.github/copilot-instructions.md`
@@ -85,7 +86,7 @@ Expected: FAIL — `GEMINI.md` and `.github/copilot-instructions.md` don't exist
 
 Exact content (one line + trailing newline), mirroring `CLAUDE.md`:
 
-```
+```text
 @AGENTS.md
 ```
 
@@ -123,6 +124,7 @@ git commit -m "feat(surface): GEMINI.md + Copilot pointer + drift-guard test"
 ## Task 2: README — any-tool pointer + fix stale Status
 
 **Files:**
+
 - Modify: `README.md`
 - Modify: `tests/surfaces.test.ts` (append the README assertion)
 

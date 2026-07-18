@@ -40,6 +40,7 @@ there would drop those pairs and could trip `tests/themes/contrast.test.ts`'s `r
 Keeping the filter in `checkContrast` leaves `contrastResults` + the theme tests untouched.
 
 **Scope guards:**
+
 - **Normal both-block tokens are unaffected** — they have own-dark declarations, so `ownDark` is true and both
   themes are still checked (a genuinely below-AA `.dark` value still flags).
 - **Only the dark, pure-fallback, *failing* finding is suppressed** — the `:root` finding for the same pair
@@ -54,6 +55,7 @@ existing token (e.g. `warning`/`success` for a celebratory promo) rather than ru
 procedure. The gate passes it (a real token used correctly), so the system is satisfied but the *meaning* is off.
 
 **Fix — one line, doc-only**, in the extension-procedure section of:
+
 1. the **generated** manifest preamble — edit `lib/tokens/generate.ts` (the preamble source), then `npm run tokens`
    to regenerate `design-system.{md,json}`;
 2. the `AGENTS.md` "Need a value the system lacks?" paragraph.
@@ -69,6 +71,7 @@ It's a nudge, not an enforceable rule (semantic fit isn't machine-checkable); th
 ## Testing
 
 **Part A** — `tests/check/contrast.test.ts` (extend):
+
 - `:root`-only below-AA `--promo`/`--promo-foreground` fixture → **exactly one** `contrast` finding, naming
   `:root` (not two; no `.dark` finding).
 - A below-AA pair present in **both** blocks → still **two** findings (`:root` + `.dark`) — proves the filter

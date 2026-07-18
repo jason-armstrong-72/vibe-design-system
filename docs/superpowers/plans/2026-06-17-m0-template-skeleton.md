@@ -17,7 +17,7 @@
 ## File Structure
 
 | File | Responsibility |
-|---|---|
+| --- | --- |
 | `package.json`, `tsconfig.json`, `next.config.ts` | scaffold config (generated) |
 | `app/globals.css` | **SOURCE OF TRUTH** — token vars (`:root`/`.dark`) + `@theme inline` (clears + mapping) + `tw-animate-css` import |
 | `app/layout.tsx`, `app/page.tsx` | minimal themed shell that proves tokens render |
@@ -36,6 +36,7 @@ Decomposition rationale: `globals.css` is the one load-bearing file; the naming 
 ## Task 1: Scaffold Next.js 16 + Tailwind v4 + shadcn
 
 **Files:**
+
 - Create: `package.json`, `tsconfig.json`, `next.config.ts`, `app/layout.tsx`, `app/page.tsx`, `app/globals.css`, `lib/utils.ts` (all via CLI)
 
 - [ ] **Step 1: Scaffold the Next app (non-interactive)**
@@ -64,7 +65,7 @@ Run:
 node -e "const p=require('./package.json');console.log(p.dependencies.next, p.dependencies.react, p.devDependencies.tailwindcss)"
 ```
 
-Expected: `next` `16.x`, `react` `19.x`, `tailwindcss` `4.x`. If Tailwind is v3, stop — the whole plan assumes v4; re-scaffold or upgrade per https://tailwindcss.com/docs/upgrade-guide before continuing.
+Expected: `next` `16.x`, `react` `19.x`, `tailwindcss` `4.x`. If Tailwind is v3, stop — the whole plan assumes v4; re-scaffold or upgrade per <https://tailwindcss.com/docs/upgrade-guide> before continuing.
 
 - [ ] **Step 3: Init shadcn (v4) + install the base components**
 
@@ -100,6 +101,7 @@ git commit -m "feat(m0): scaffold Next 16 + Tailwind v4 + shadcn base"
 This task is **documentation that locks the API** (spec §3: "token names are the contract"). No code yet — but everything downstream keys on it, so it comes before authoring tokens.
 
 **Files:**
+
 - Create: `docs/NAMING-CONVENTION.md`
 
 - [ ] **Step 1: Write the convention doc**
@@ -166,6 +168,7 @@ git commit -m "docs(m0): pin token naming convention (the contract)"
 M0 introduces the shared bundled-font setup (§13 / DESIGN-BRIEF.md). The Neutral default uses a clean sans + mono; M3a adds serif/display faces for other themes. The `--font-sans`/`--font-mono` tokens reference next/font CSS variables, so a theme swap can repoint them.
 
 **Files:**
+
 - Create: `lib/fonts.ts`
 - Modify: `app/layout.tsx`
 
@@ -226,6 +229,7 @@ git commit -m "feat(m0): bundle shared fonts (next/font) — sans + mono"
 Replace shadcn's generated token block with the full curated v1 token set, the cleared namespaces, and the `@theme inline` mapping. This is the load-bearing file.
 
 **Files:**
+
 - Modify: `app/globals.css` (full rewrite of everything after the imports)
 
 - [ ] **Step 1: Write the runtime token layer (`:root` + `.dark`)**
@@ -539,6 +543,7 @@ git commit -m "feat(m0): author globals.css token source of truth (OKLCH, cleare
 Proves the load-bearing claim: cleared namespaces make `bg-red-500` a build error, while `bg-primary` compiles. This test is the executable contract for spec §6.2's compile-gate.
 
 **Files:**
+
 - Create: `tests/compile-gate.test.ts`
 - Create/Modify: `vitest.config.ts`, `package.json` (add `test` script)
 
@@ -631,6 +636,7 @@ git commit -m "test(m0): compile-gate — off-token utilities fail, tokens compi
 Prove `npm run dev` shows a themed shadcn app driven by the tokens, in both light and dark.
 
 **Files:**
+
 - Modify: `app/page.tsx`, `app/layout.tsx`
 
 - [ ] **Step 1: Render a minimal token-driven page**

@@ -23,13 +23,14 @@
 **Guarded families = 4** (the cleared namespaces with clean, unambiguous scale vocab):
 
 | Family | Class prefix | Theme namespace (in `@theme`) |
-|---|---|---|
+| --- | --- | --- |
 | radius | `rounded` (incl. side variants `rounded-{t,r,b,l,tl,tr,bl,br,s,e,ss,se,ee,es}-…`) | `--radius-*` |
 | shadow | `shadow` | `--shadow-*` |
 | text size | `text` | `--text-*` |
 | font weight | `font` | `--font-weight-*` |
 
 **Out of scope (recorded, not forgotten):**
+
 - **color** (`--color-*` cleared) — already covered: `default-palette` flags `bg-gray-500`-style named palette classes, `arbitrary-color` flags `[#...]`, and the M0 cleared-namespace compile-gate makes off-token color classes no-op at build. F3 here would be redundant.
 - **easing** (`--ease-*`) — niche, low usage; `ease-*` vocab is small and overlaps built-ins → low value, not worth the surface.
 - **container** (`--container-*`) — powers `max-w-*`/`@container` and overlaps layout/breakpoints; no clean scale list → false-positive risk, low value.
@@ -41,19 +42,21 @@ These are deferred as *possible* later additions, not committed work. color need
 ## 2. Detection rule (the core idea)
 
 For each guarded family with prefix `P`, the check holds two sets:
+
 - **`vocab(P)`** — the static set of Tailwind v4 **theme-var-based** scale steps for that family (the steps that the namespace-clear *can* turn off). Hardcoded in the check, with a comment that they are Tailwind v4 defaults.
 - **`defined(P)`** — the steps **actually defined in the `@theme` block** of `app/globals.css` right now (parsed live).
 
 **Flag** a class `P-{step}` (or `P-{side}-{step}`) **iff** `step ∈ vocab(P)` **and** `step ∉ defined(P)`.
 
 Two consequences that make it safe and self-maintaining:
+
 - **Non-scale utilities are never touched.** `text-center`, `text-accent`, `text-balance`, `font-mono`, `font-sans`, `shadow-brand-500`, `rounded-full`, `rounded-none` — none is in `vocab(P)`, so none is flagged. (`vocab` is *only* the scale steps, not every utility sharing the prefix.)
 - **Source of truth = `@theme`, NOT the manifest.** (Why: M6 finding F4 — `@theme`-only additions don't reach `design-system.{md,json}`. Keying on `@theme` means F3 keys on **what actually compiles**, and if someone legitimately extends the scale in `@theme` — e.g. adds `--radius-2xl` — the check **stops flagging** `rounded-2xl` with no other change. Self-maintaining, no hardcoded "defined" list to drift.)
 
 ### The vocab sets (Tailwind v4 theme-var-based scale steps)
 
 | Family | `vocab(P)` | `defined(P)` today (from `@theme`) | Flagged today |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | radius | `xs sm md lg xl 2xl 3xl 4xl` | `sm md lg xl` | `xs 2xl 3xl 4xl` |
 | shadow | `2xs xs sm md lg xl 2xl` | `sm md lg` | `2xs xs xl 2xl` |
 | text size | `xs sm base lg xl 2xl 3xl 4xl 5xl 6xl 7xl 8xl 9xl` | `xs … 7xl` | `8xl 9xl` |
@@ -62,6 +65,7 @@ Two consequences that make it safe and self-maintaining:
 `defined(P)` is parsed from `@theme`, so the "flagged today" column is *derived*, never hardcoded — it shifts automatically if the scale is extended.
 
 ### Edge handling
+
 - **Variant prefixes (CRITICAL — review gap).** Real classes carry `md:`, `hover:`, `dark:`, `group-hover:`, `sm:`, stacked (`md:hover:`), etc. `md:rounded-2xl` is one whitespace-delimited token and an `^`-anchored `rounded-{step}` match would **miss it** (false negative — the no-op still ships). **Rule:** before matching, strip the leading variant chain — split the class on `:` and take the **last segment** as the utility (`md:hover:rounded-2xl` → `rounded-2xl`). Match `P-{step}` on that final segment. (Arbitrary variants like `[&:hover]:` are rare in app code; splitting on the last `:` outside brackets is sufficient — the plan pins the exact tokenizer.)
 - **Side variants (radius):** `rounded-t-2xl`, `rounded-tl-3xl`, etc. The side segment is **optional** and the **step is always the final segment**. Match shape (after variant-strip): `^rounded(?:-(?:t|r|b|l|tl|tr|bl|br|s|e|ss|se|ee|es))?-(<step>)$`; check `<step>` against radius vocab/defined. `rounded-t-lg` → `lg` defined → ok; `rounded-t-2xl` → flag.
 - **Bare prefix:** `rounded` (alone) maps to the `--radius` knob (defined) → never flagged. `shadow`/`text`/`font` alone aren't scale steps → ignored.
@@ -89,6 +93,7 @@ Two consequences that make it safe and self-maintaining:
 The new check scans `app/` + `components/` (excl. `components/ui/**`). **The repo currently trips the new
 rule in exactly 2 places** (verified — this is the complete blast radius; no `text-8xl/9xl`, `shadow-xl`,
 `font-black`, `rounded-3xl/4xl`, or variant-prefixed offenders exist):
+
 - `app/design-system/page.tsx:34` — `… rounded-2xl border p-6 shadow-sm sm:p-8`
 - `components/design-system/token-section.tsx:60` — `… rounded-2xl border p-6 shadow-sm sm:p-8`
 
@@ -107,6 +112,7 @@ is wired in until these 2 are fixed — so fix them in the same task that wires 
 ## 5. Testing (TDD)
 
 Fixture-driven unit tests for `checkOffTokenScale` (mirror `tests/check/*`):
+
 - **Flagged:** `rounded-2xl`, `rounded-3xl`, `rounded-t-2xl`, `shadow-xl`, `shadow-2xs`, `text-8xl`, `text-9xl`, `font-black`, `font-thin`.
 - **Not flagged (defined steps):** `rounded-xl`, `rounded-md`, `shadow-md`, `text-7xl`, `text-base`, `font-bold`, `font-medium`.
 - **Not flagged (non-scale / static survivors):** `rounded-full`, `rounded-none`, `shadow-none`, `text-center`, `text-balance`, `text-accent`, `font-mono`, `font-sans`, `shadow-brand-500`, bare `rounded`.

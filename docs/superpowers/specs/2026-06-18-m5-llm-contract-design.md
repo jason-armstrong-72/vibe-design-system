@@ -85,7 +85,7 @@ A thin runner over **pure, fixture-tested** sub-checks in `lib/check/`. Each sub
 `Finding[]` (`{ file, line, message, fix }`); the runner collects, applies `ds-disable` suppression,
 prints actionable messages grouped by file, and exits non-zero if any survive.
 
-```
+```text
 lib/check/
   types.ts            # Finding, CheckResult
   ds-disable.ts       # parse + apply /* ds-disable: <reason> */ suppression
@@ -126,12 +126,14 @@ scripts/check.ts      # CLI entry: calls run(), prints, process.exit(code)
   3. **The loop (one sentence):** a token added via the procedure auto-appears on `/design-system` and
      becomes editable in the visual editor — extending the system beats hardcoding.
   4. **Recovery-command map** (so an LLM self-corrects from a red CI without a human):
+
      | Failure | Fix |
-     |---|---|
+     | --- | --- |
      | stale manifest | `npm run tokens && git add design-system.*` |
      | one-theme color | add the token to both `:root` and `.dark` in `globals.css`, then `npm run tokens` |
      | hardcoded color / off-token class | replace with `bg-<token>` (or add a token via the procedure) |
      | deliberate one-off | `/* ds-disable: <reason> */` on the line above |
+
   5. The IDE-squiggle trade-off note (gate runs on `npm run check`/pre-commit/CI, not as-you-type).
 - **`.cursor/rules/design-system.mdc`** — Cursor's current rules format; a **thin mirror/pointer** to the
   same law + `design-system.md`, not a third hand-maintained copy.

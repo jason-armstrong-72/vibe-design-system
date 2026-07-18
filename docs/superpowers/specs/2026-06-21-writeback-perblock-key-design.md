@@ -21,7 +21,7 @@ block-switch) is CUT** — see §4. Only nit #2 (this doc) ships.
 The queue holds collections in three categories; only **persist** gains the theme dimension:
 
 | Category | Members | Key | Why |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **persist** | `timers`, `pending`, `lastGood` | **`${name}\|${theme}`** | a token has independent pending writes + last-good per block |
 | **preview** | `applied` + `setVar`/`clearVar` | `name` (unchanged) | the inline preview var is a **single DOM property** on `documentElement` (`style.setProperty(name, …)`) — global, one live value at a time; a theme dimension is meaningless here |
 | **status** | `onStatus` → provider `perToken` | `name` (unchanged) | status is single-view display ("the selected token in the active block"); per-(name,theme) status is the deferred rekey (§4) |
@@ -29,7 +29,7 @@ The queue holds collections in three categories; only **persist** gains the them
 **Anti-foot-gun (required):** add one private helper `private key(name, theme) { return \`${name}|${theme}\`; }`
 so the composite key has exactly one spelling, and annotate each map declaration inline (`// keyed by
 name|theme` vs `// keyed by name — preview/DOM is global`). Mirror the wording of the provider's existing
-`committedRef` (`Map<"name|theme", value>`, editor-provider.tsx) so the two composite keys read as one idiom.
+`committedRef`(`Map<"name|theme", value>`, editor-provider.tsx) so the two composite keys read as one idiom.
 
 ---
 
@@ -68,8 +68,8 @@ block to suppress the setVar — that couples the queue to view state for a cosm
 Original brief included nit (a): block-switch resets a same-token in-flight save-state to idle. With status
 **name-keyed** there is one status slot per token shared across blocks, so on switching to dark the panel shows
 the dark value — *preserving* "saving" would paint a false "Saving…" on the dark value, while the current idle
-reset is **truthful for the block now shown** (the light write still lands silently via the armed timer). So
-#1 can't be made correct without the per-(name,theme) status rekey the user declined, and "preserve saving"
+reset is **truthful for the block now shown** (the light write still lands silently via the armed timer).
+So #1 can't be made correct without the per-(name,theme) status rekey the user declined, and "preserve saving"
 would be worse than today. **Decision: do not change the status reset.** Add a one-line comment at the
 `setEditingBlock` idle-reset noting cross-block in-flight status is intentionally not surfaced (a known
 limitation pending a per-block status model), and update the HANDOFF nit entry to reflect: #2 fixed, #1 =
@@ -78,6 +78,7 @@ documented limitation.
 ## 5. Provider call sites
 
 `seed` is called from three places, each with the theme in hand — update all:
+
 - `select` → `queue.seed(name, editingBlock, currentValue(name, editingBlock))`
 - `setEditingBlock` → `queue.seed(selectedToken, block, value)` — `value` is the already-bound
   `currentValue(selectedToken, block)`; just insert `block` as the middle arg (don't re-call `currentValue`).
@@ -89,6 +90,7 @@ No other provider change (status reset stays as-is per §4, plus the §4 comment
 ## 6. Testing
 
 **`tests/editor/use-token-writeback.test.ts`** (uses fake timers + a `fetch` stub):
+
 - **Body-capturing mock (required):** the existing mocks ignore args. Capture `JSON.parse(init.body)` so tests
   assert *what* was POSTed, not just the count.
 - **Cross-block (the fix):** `edit(--primary, "L", light)` then `edit(--primary, "D", dark)` within one debounce

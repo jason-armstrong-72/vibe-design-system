@@ -15,7 +15,7 @@
 ## File Structure
 
 | File | Responsibility |
-|---|---|
+| --- | --- |
 | `lib/tokens/types.ts` | `Token`, `Theme`, `TokenGroup`, `ControlType` types — the shared vocabulary |
 | `lib/tokens/schema.ts` | `groupForName()` (name→group, enforces convention), `controlForGroup()`, fg/bg pairing |
 | `lib/tokens/parse.ts` | `parseTokens(css)` → `Token[]` from `:root`/`.dark` only |
@@ -55,6 +55,7 @@ Then verify with a throwaway: `echo 'import {describe,it} from "vitest";describe
 ## Task 1: Types + a fixture mirroring M0
 
 **Files:**
+
 - Create: `lib/tokens/types.ts`
 - Create: `tests/tokens/fixtures/sample.css`
 
@@ -162,6 +163,7 @@ git commit -m "feat(m1): token types + parse/write fixture"
 Pure functions. `groupForName` enforces the naming convention by **throwing on unknown names** — drift surfaces loudly rather than silently defaulting.
 
 **Files:**
+
 - Create: `lib/tokens/schema.ts`
 - Create: `tests/tokens/schema.test.ts`
 
@@ -323,6 +325,7 @@ git commit -m "feat(m1): token schema — group inference, control map, fg/bg pa
 ## Task 3: `parse.ts` — `:root`/`.dark` → `Token[]`
 
 **Files:**
+
 - Create: `lib/tokens/parse.ts`
 - Create: `tests/tokens/parse.test.ts`
 
@@ -442,6 +445,7 @@ git commit -m "feat(m1): parse :root/.dark into typed tokens (postcss, @theme ig
 Security boundary (spec §5): the value flows into a CSS declaration. Reject delimiter break-outs first, then check the value matches its group's shape.
 
 **Files:**
+
 - Create: `lib/tokens/validate.ts`
 - Create: `tests/tokens/validate.test.ts`
 
@@ -572,6 +576,7 @@ git commit -m "feat(m1): value validation — injection rejection + per-group sh
 Composes validate + AST update + atomic IO. Must: re-read the file (catch external edits), update exactly one declaration in the right theme block, preserve everything else, write temp-then-rename, and refuse unknown tokens (no creation via the editor — spec §5).
 
 **Files:**
+
 - Create: `lib/tokens/write.ts`
 - Create: `tests/tokens/write.test.ts`
 
@@ -731,6 +736,7 @@ git commit -m "feat(m1): atomic single-declaration writeback with re-read + vali
 Prove the load-bearing property against the **real** `app/globals.css`: parse → write every token → re-parse → values match, file still parses, formatting stable.
 
 **Files:**
+
 - Create: `tests/tokens/roundtrip.test.ts`
 
 - [ ] **Step 1: Write the round-trip test**

@@ -17,7 +17,7 @@
 ## File structure (decomposition)
 
 | File | Responsibility | Task |
-|---|---|---|
+| --- | --- | --- |
 | `lib/check/types.ts` | add `key?: string` (stable baseline identity) to `Finding` | 1 |
 | `lib/check/hardcoded-color.ts` | populate `key` on its 3 emit sites | 1 |
 | `lib/check/arbitrary-tailwind.ts` | populate `key` on its 4 emit sites | 1 |
@@ -38,6 +38,7 @@
 ## Task 1: `Finding.key` — the stable baseline identity
 
 **Files:**
+
 - Modify: `lib/check/types.ts`
 - Modify: `lib/check/hardcoded-color.ts:23,25,28`
 - Modify: `lib/check/arbitrary-tailwind.ts:39,41,46,50`
@@ -96,6 +97,7 @@ export interface Finding {
 ```
 
 `lib/check/hardcoded-color.ts` — add `key` to each push:
+
 ```ts
 out.push({ file: path, line: i + 1, rule: "hardcoded-color", key: hex[0], message: MSG.hardcodedColor(hex[0]) });
 // ...fn[0]...
@@ -107,6 +109,7 @@ out.push({ file: path, line: i + 1, rule: "hardcoded-color", key: kw[2], message
 `lib/check/arbitrary-tailwind.ts` — add `key: cls` to all four pushes (arbitrary-color, arbitrary-length, off-scale-spacing, default-palette).
 
 `lib/check/off-token-scale.ts` — add `key: cls` to the push:
+
 ```ts
 out.push({ file: path, line, rule: "off-token-scale", key: cls,
   message: MSG.offTokenScale(cls, FAMILY_LABEL[hit.family], [...defined[hit.family]]) });
@@ -132,6 +135,7 @@ git commit -m "feat(check): add stable Finding.key (offending token) for baselin
 ## Task 2: shared atomic-write helper
 
 **Files:**
+
 - Create: `lib/fs/atomic-write.ts`
 - Modify: `scripts/apply-theme.ts:1,21-24`
 - Test: `tests/fs/atomic-write.test.ts`
@@ -179,12 +183,14 @@ export function atomicWriteFileSync(path: string, data: string): void {
 ```
 
 `scripts/apply-theme.ts` — replace lines 21-24:
+
 ```ts
 import { atomicWriteFileSync } from "../lib/fs/atomic-write";
 // ...
 // atomic write (Next watcher never sees a half-written file)
 atomicWriteFileSync(GLOBALS, out);
 ```
+
 (Drop the now-unused `writeFileSync, renameSync` from its `node:fs` import; keep `readFileSync, existsSync`.)
 
 - [ ] **Step 4: Run — verify**
@@ -206,6 +212,7 @@ git commit -m "refactor(fs): extract shared atomicWriteFileSync; use in apply-th
 ## Task 3: `lib/check/baseline.ts` (pure core)
 
 **Files:**
+
 - Create: `lib/check/baseline.ts`
 - Test: `tests/check/baseline.test.ts`
 
@@ -383,6 +390,7 @@ git commit -m "feat(check): pure baseline core — keyOf/buildBaseline/applyBase
 ## Task 4: wire `run()` — partition + optional baseline
 
 **Files:**
+
 - Modify: `lib/check/run.ts`
 - Test: append to `tests/check/baseline.test.ts`
 
@@ -495,6 +503,7 @@ git commit -m "feat(check): run() partitions source vs system findings; optional
 ## Task 5: `scripts/check-baseline.ts` + npm script
 
 **Files:**
+
 - Create: `scripts/check-baseline.ts`
 - Modify: `package.json:13` (add `check:baseline`)
 
@@ -520,6 +529,7 @@ console.log(baselineSavedMessage(baseline.entries.reduce((s, e) => s + e.count, 
 - [ ] **Step 2: Add the npm script**
 
 `package.json` scripts — after `"check": ...`:
+
 ```json
 "check:baseline": "tsx scripts/check-baseline.ts",
 ```
@@ -543,6 +553,7 @@ git commit -m "feat(check): npm run check:baseline writes .ds-baseline.json snap
 ## Task 6: `scripts/check.ts` — load + apply + warn-only stale
 
 **Files:**
+
 - Modify: `scripts/check.ts`
 
 - [ ] **Step 1: Implement** — rewrite `scripts/check.ts`:
@@ -608,6 +619,7 @@ git commit -m "feat(check): check.ts loads + applies .ds-baseline.json; warn-onl
 ## Task 7: docs — AGENTS.md directive + README section + drift coverage
 
 **Files:**
+
 - Modify: `AGENTS.md` (inside `<!-- BEGIN:design-system -->` … `<!-- END:design-system -->`, after the table at line 31)
 - Modify: `README.md` (new last section after `## Status`)
 - Test: extend `tests/surfaces.test.ts`
@@ -667,6 +679,7 @@ git commit -m "docs: brownfield baseline directive (AGENTS.md) + README adoption
 ## Task 8: end-to-end seeded integration
 
 **Files:**
+
 - Test: `tests/check/baseline-e2e.test.ts`
 
 Proves the headline loop with a real seeded fixture: build a baseline over known violations → suppressed → add a new one → caught. Uses the pure `run`-style checks directly over fixture content (no fs walk needed — call the checks on inline content, build/apply a baseline).
@@ -743,6 +756,7 @@ Run: `npx playwright test` → 25 pass (1 gallery skipped). (No UI change here, 
 - [ ] **Step 4: update HANDOFF**
 
 Mark F6 baseline DONE in `docs/HANDOFF.md` (M6 fast-follows / F6 row + the "Brownfield baseline (F6)" near-term item) with counts; convert the date to absolute (2026-06-24). Commit:
+
 ```bash
 git add docs/HANDOFF.md
 git commit -m "docs(HANDOFF): F6 brownfield baseline DONE 2026-06-24"
@@ -753,6 +767,7 @@ git commit -m "docs(HANDOFF): F6 brownfield baseline DONE 2026-06-24"
 ---
 
 ## Notes for the executor
+
 - **Never `git add -A`/`git add .`** — the smoke-tests (Task 5 Step 3, Task 9) write a throwaway `.ds-baseline.json` at repo root; it must NOT be committed (greenfield ships strict, spec §11). All `git add` lines in this plan are explicit-path; keep them that way and `rm .ds-baseline.json` after each smoke-test. (Do NOT gitignore it — an *adopter* commits their own; the template just ships without one.)
 - **Shared-tree hazard:** never `git checkout <paths>` to discard — use `git restore` and only after confirming identity to HEAD (a subagent once orphaned commits this way; you're in-session so lower risk, but the habit matters).
 - **`next build` is load-bearing** — `check`/`test`/`lint` skip the app-graph type-check + CSS compile. Always `npm run verify`.

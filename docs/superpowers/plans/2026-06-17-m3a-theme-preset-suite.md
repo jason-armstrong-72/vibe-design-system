@@ -49,6 +49,7 @@ The design direction is fully locked: spec §13 fixes the mechanism and the 3-th
 ```bash
 git switch -c m3a-theme-presets
 ```
+
 (Matches the M0–M3 "one milestone per branch" convention. `--no-ff` merge to `main` after full suite green.)
 
 ---
@@ -56,6 +57,7 @@ git switch -c m3a-theme-presets
 ### Task 1: `applyTheme` core (pure swap)
 
 **Files:**
+
 - Create: `lib/tokens/apply-theme.ts`
 - Test: `tests/themes/apply-theme.test.ts`
 
@@ -174,6 +176,7 @@ git commit -m "feat(m3a): applyTheme — pure :root/.dark value-set swap"
 The current shipped Neutral lives only inline in `globals.css`. Extract it verbatim so `npm run theme neutral` is a no-op and the round-trip is a provable identity (the load-bearing safety property of the swap).
 
 **Files:**
+
 - Create: `themes/neutral.css`
 - Test: extend `tests/themes/apply-theme.test.ts`
 
@@ -222,6 +225,7 @@ git commit -m "feat(m3a): extract themes/neutral.css + round-trip identity gate"
 ### Task 3: `syncAndGenerate` extraction (DRY) + `npm run theme` CLI
 
 **Files:**
+
 - Create: `lib/tokens/regenerate.ts`
 - Modify: `scripts/generate-tokens.ts`
 - Create: `scripts/apply-theme.ts`
@@ -329,6 +333,7 @@ Asserts each theme defines the **same `:root` token names** as Neutral and that 
 > **Green-between-commits strategy (no `.skip`).** The gate's theme list is **filtered by `existsSync`**, so it tests only the theme files that exist *right now*. Committed in Task 4 it tests only Neutral (trivially green, no missing-file `readFileSync` crash); once Task 6 authors Swiss/Brutalist the same test auto-covers them. A standalone "all 3 v1 themes exist" assertion (committed in Task 6, where it can pass) closes the "silently untested" gap. This avoids the `describe.skip.each`-body-execution subtlety entirely.
 
 **Files:**
+
 - Create: `tests/themes/parity.test.ts`
 
 - [ ] **Step 1: Write the test**
@@ -379,6 +384,7 @@ A pure-vitest check (no browser) that every fg/bg semantic pair in every theme m
 **Threshold policy (decide against the Neutral baseline first):** body pairs ≥ **4.5**; `muted-foreground/muted` is secondary/large text → ≥ **3.0** (WCAG AA large). Step 1 measures Neutral to confirm this split is honest before locking it. If Neutral's `muted-foreground` actually clears 4.5, raise it to 4.5 for all and drop the exception.
 
 **Files:**
+
 - Create: `lib/tokens/contrast.ts`
 - Create: `tests/themes/contrast.test.ts`
 
@@ -482,6 +488,7 @@ git commit -m "feat(m3a): WCAG-AA contrast gate over theme files (culori); Neutr
 This is the convergent creative task. For **each** theme: draft values from the mini-brief → run the contrast + parity gates → fix failures → screenshot (Task 7 machinery) → critique vs `DESIGN-BRIEF.md` → revise. Author against the gates; the gates are the floor, the brief is the target.
 
 **Files:**
+
 - Create: `themes/swiss.css`, `themes/brutalist.css`
 - Modify: `tests/themes/parity.test.ts` (add the "all 3 v1 themes exist" assertion)
 
@@ -520,6 +527,7 @@ npm run theme swiss && npm run build
 npm run theme brutalist && npm run build
 npm run theme neutral   # restore default
 ```
+
 Expected: each `next build` succeeds (no off-token compile errors introduced). Tree clean after restoring neutral.
 
 - [ ] **Step 6: Commit (function complete; aesthetic refined in Task 7)**
@@ -538,6 +546,7 @@ Screenshots and the overflow gate **inject** the theme's `:root`/`.dark` CSS ont
 > **Dark mode — the real mechanism (verified by review).** The app has **no theme toggle and no theme provider**: `app/layout.tsx` renders a static `<html>`, and `globals.css` keys dark on the `.dark` class (`@custom-variant dark (&:where(.dark, .dark *))`) — NOT `prefers-color-scheme`. So dark screenshots are produced **only** by `document.documentElement.classList.add("dark")`; `emulateMedia({colorScheme})` is irrelevant here and is dropped. **Caveat (same class as the overflow caveat):** `/design-system` was authored and tested light-only (M3 e2e never sets `.dark`), so the dark gallery shots are a brand-new render path — any dark glitch they surface is an **M3 page bug**, not a theme bug; note it for a separate fix, don't try to fix the page inside a theme file.
 
 **Files:**
+
 - Create: `e2e/themes.spec.ts` (overflow gate — runs in the normal suite)
 - Create: `e2e/gallery.spec.ts` (committed PNGs — env-guarded, skipped in the normal suite)
 - Create: `themes/screenshots/` (committed output)
@@ -611,7 +620,9 @@ Add to `package.json` scripts: `"gallery": "GALLERY=1 playwright test e2e/galler
 ```bash
 npm run gallery   # boots its own webServer via playwright.config.ts; writes themes/screenshots/
 ```
+
 Then `Read` each `themes/screenshots/*.png` and grade against `DESIGN-BRIEF.md`:
+
 1. Coherence — one intentional system?
 2. Distinctiveness — could you tell Swiss from Brutalist from Neutral in a thumbnail?
 3. Liveability — would a builder be happy starting here?
@@ -632,11 +643,12 @@ git commit -m "feat(m3a): overflow gate + committed gallery screenshots (light+d
 ### Task 8: README gallery + docs
 
 **Files:**
+
 - Modify: `README.md`
 
 - [ ] **Step 1: Add a Themes section** to `README.md`:
 
-```markdown
+````markdown
 ## Themes
 
 Pick a look at adoption time, then fine-tune in the editor. Default is **Neutral** (already applied — doing nothing is valid).
@@ -650,11 +662,12 @@ npm run theme brutalist  # raw, thick borders, hard shadows, mono
 `npm run theme <name>` swaps the preset's values into `app/globals.css` and regenerates the manifest. Names are the fixed contract; only values change.
 
 | Neutral | Swiss | Brutalist |
-|---|---|---|
+| --- | --- | --- |
 | ![Neutral](themes/screenshots/neutral.png) | ![Swiss](themes/screenshots/swiss.png) | ![Brutalist](themes/screenshots/brutalist.png) |
 
-_(Five more themes — Editorial, Warm, Pastel, Technical, Corporate — are a fast-follow on the same machinery.)_
-```
+*(Five more themes — Editorial, Warm, Pastel, Technical, Corporate — are a fast-follow on the same machinery.)*
+
+````
 
 - [ ] **Step 2: Commit**
 
@@ -679,6 +692,7 @@ npm run theme neutral && git status --porcelain   # expect clean
 npm test        # vitest — expect 88 + new theme tests, all green
 npx playwright test   # e2e — expect prior 4 + themes.spec (3) green
 ```
+
 Expected: all green. Note exact counts.
 
 - [ ] **Step 3: Update HANDOFF + spec status** — mark M3a done in `docs/HANDOFF.md` (move it from "next steps" to "where we are"; record the 3 themes, `npm run theme`, the gates, the gallery). Commit:

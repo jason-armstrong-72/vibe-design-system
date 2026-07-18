@@ -18,6 +18,7 @@
 ## Task 1: Pure resolver (`lib/editor/resolve-token.ts`)
 
 **Files:**
+
 - Create: `lib/editor/resolve-token.ts`
 - Test: `tests/editor/resolve-token.test.ts`
 
@@ -252,6 +253,7 @@ git commit -m "feat(editor): pure reverse-resolution matcher (resolve-token)"
 ## Task 2: Extract `use-hover-rect`, refactor highlight-overlay onto it
 
 **Files:**
+
 - Create: `lib/editor/use-hover-rect.ts`
 - Modify (refactor): `components/editor/highlight-overlay.tsx`
 - Test: `tests/editor/use-hover-rect.test.tsx` (new) + `tests/editor/highlight-overlay.test.tsx` (must still pass unchanged)
@@ -469,6 +471,7 @@ git commit -m "refactor(editor): extract use-hover-rect; highlight-overlay uses 
 ## Task 3: Provider `pickMode` + the DOM probe hook
 
 **Files:**
+
 - Modify: `components/editor/editor-provider.tsx` (add `pickMode`, `togglePickMode`; `disable()` clears it)
 - Create: `lib/editor/use-probe-index.ts`
 - Test: extend `tests/editor/editor-provider.test.tsx` (pickMode toggle + disable clears)
@@ -501,6 +504,7 @@ it("pickMode toggles and is cleared by disable()", () => {
 - [ ] **Step 3: Edit the provider**
 
 In `components/editor/editor-provider.tsx`:
+
 1. Add to `EditorContextValue`: `pickMode: boolean;` and `togglePickMode: () => void;`.
 2. Add state: `const [pickMode, setPickMode] = useState(false);`
 3. Add `const togglePickMode = useCallback(() => setPickMode((p) => !p), []);`
@@ -613,6 +617,7 @@ git commit -m "feat(editor): provider pickMode sub-mode + DOM probe-index hook"
 ## Task 4: Pick overlay + menu + toolbar toggle + chrome CSS
 
 **Files:**
+
 - Create: `components/editor/pick-overlay.tsx`
 - Create: `components/editor/pick-menu.tsx`
 - Modify: `components/editor/editor-mount.tsx` (mount `<PickOverlay/>`)
@@ -884,6 +889,7 @@ import { PickOverlay } from "@/components/editor/pick-overlay";
 ```
 
 - [ ] **Step 6: Toolbar toggle** — in `components/editor/panel-toolbar.tsx`:
+
 1. Import `Dropper`: `import { ChevronDown, Dropper, Moon01, Sun, X } from "@untitled-ui/icons-react";`
 2. Pull `pickMode, togglePickMode` from `useEditor()`.
 3. Add, as the first `.ed-iconbtn` in `.ed-toolbar-actions` (before the appearance button):
@@ -981,6 +987,7 @@ git commit -m "feat(editor): pick-anywhere overlay + menu + eyedropper toggle + 
 ## Task 5: e2e fidelity gate + full verify + visual checkpoint
 
 **Files:**
+
 - Create: `e2e/pick-anywhere.spec.ts`
 
 - [ ] **Step 1: e2e spec**
@@ -1062,8 +1069,8 @@ Throwaway shot spec into `e2e/__shots__/pick.shot.spec.ts` (gitignored; rename t
 ---
 
 ## Done criteria
+
 - `npm run verify` green; `npx playwright test` green.
 - Eyedropper toggle enters pick mode (crosshair, `--ed-warn` highlight, normal hover suspended); clicking any element lists its token(s) by property; collisions list all; row opens the token in the panel; pick auto-exits; Escape layered-exits; native actions suppressed.
 - User approved the screenshots.
 - Update `docs/HANDOFF.md`: mark pick-anywhere ✅ DONE (2026-06-22) in the M4 fast-follows; bump the test count; note the documented nested-child limitation. Commit. Then `superpowers:finishing-a-development-branch` (merge `--no-ff`, delete branch).
-```

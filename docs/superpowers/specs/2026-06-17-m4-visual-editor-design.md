@@ -29,7 +29,7 @@ change ripples everywhere it's used.
    **plus** (a) an **eyedropper** (feature-detected `window.EyeDropper`, sRGB→OKLCH on the way in), (b)
    **click-to-apply swatches of the other existing color tokens** (reuse-a-token; enumerated from the
    manifest), (c) a **read-only WCAG contrast badge** for the token's fg/bg pair (data via `foregroundFor`
-   + `lib/tokens/contrast.ts`). Storage stays OKLCH end-to-end (no lossy round-trip; P3 preserved).
+   - `lib/tokens/contrast.ts`). Storage stays OKLCH end-to-end (no lossy round-trip; P3 preserved).
 2. **Control set: standard set in v1; rich editors deferred.** v1 ships color, length slider, number,
    opacity slider, dropdown, duration slider, and **validated text** controls. **Easing = preset dropdown +
    validated `cubic-bezier()` text field; shadow = validated text field.** The **draggable cubic-bezier
@@ -75,7 +75,7 @@ change ripples everywhere it's used.
 
 ### Files (proposed)
 
-```
+```text
 app/design-system/page.tsx          # + mount <EditorMount/> (dev-only) around existing content
 app/api/ds/token/route.ts           # dev-only POST writeback (NODE_ENV-guarded) — WRITE ONLY (see §3)
 components/editor/
@@ -150,18 +150,22 @@ Reuses unchanged: `lib/tokens/{parse,write,validate,schema,regenerate}.ts`, `lib
 Docked right, ~312px, light-or-dark chrome. Page reflows to the remaining width.
 
 - **Toolbar** (icon buttons + tooltips). Two deliberately distinct theme controls + a live state caption:
+
   | Control | Style | Changes | Persisted |
-  |---|---|---|---|
+  | --- | --- | --- | --- |
   | **Panel appearance** | icon ☀/☾, tooltip "Panel appearance" | cosmetic light/dark of the **editor UI** (`data-editor-theme`) | yes (localStorage) |
   | **Editing block** | labelled chip "Editing: Light ▾ / Dark" + LED | functional — which DS block (`:root`/`.dark`) writes land in + preview reflects | session |
+
   A live caption echoes current state ("toolbox dark · editing your site's light theme") to prevent the two
   theme concepts from being conflated. Plus: edit on/off, close.
+
 - **Context bar.** `● --name · group · pairs --x-foreground`, with the **save-state indicator** (dirty /
   saving / saved / error using Part A `--warn`/`--eaccent`) and a **reset-to-original** affordance.
 - **Focused control** — chosen by the token's group via `controlForGroup` mapped to a component in
   `lib/editor/control-map.ts`:
+
   | Group | v1 control |
-  |---|---|
+  | --- | --- |
   | color | OKLCH L/C/H sliders + oklch/hex field + swatch + eyedropper + existing-token swatches + read-only contrast badge |
   | fontSize / lineHeight / radius / borderWidth / spacing / container | length slider + numeric+unit |
   | fontWeight / fontFamily | dropdown |
@@ -170,6 +174,7 @@ Docked right, ~312px, light-or-dark chrome. Page reflows to the remaining width.
   | duration | slider (ms) |
   | easing | preset dropdown + validated `cubic-bezier()` text field |
   | shadow | validated text field |
+
 - **Active-group siblings** — compact inline-editable rows (same control type, collapsed) for the other
   tokens in the selected token's group; clicking one promotes it to the focused control. No other groups
   listed in the panel.
@@ -205,6 +210,7 @@ easing/shadow editors must NOT leave a coverage hole: `easing`/`shadow` map to t
 ## 6. Testing (TDD, parent §9)
 
 **Unit (vitest):**
+
 - `lib/editor/control-map.ts` — disjoint + exhaustive over all `TokenGroup`s (missing/duplicate fails);
   spot-check group→control, incl. `easing`→easing-field, `shadow`→text-field.
 - `lib/editor/oklch.ts` — `oklch()` ⇄ `{l,c,h}` round-trips; hex⇄oklch within tolerance + gamut clamp
@@ -218,6 +224,7 @@ manifest is not auto-regenerated in CI. Either (a) point the e2e `webServer.comm
 real dev topology (watcher = regen owner) is exercised, or (b) have the test trigger `npm run tokens`
 explicitly after the write and assert on that. **Decide in the plan;** prefer (a) so tests match real dev.
 Use `expect.poll`/`toPass` to await hot-reload settling — never fixed timeouts (cf. M3a's timing bug).
+
 - Enable Edit → click `--primary` → drag the L slider → assert **live repaint** (computed color changes,
   instant) → assert `globals.css` rewritten → assert a **second element** bound to `--primary` ripples →
   assert the manifest regenerated (under the chosen harness).

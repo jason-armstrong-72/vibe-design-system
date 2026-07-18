@@ -23,7 +23,8 @@
 5. **`cn` from `@/lib/utils`.**
 6. **Each task:** failing test → run (FAIL) → implement component → add/extend its catalog registry entry → `npm run catalog` (regenerates `design-system.components.md`) → run test (PASS) → `npm run check` green (catalog-fresh + no-hardcoded via test) → commit (component + test + `lib/catalog/registry.ts` + `design-system.components.md`).
 7. **Commit message footer (every commit):**
-   ```
+
+   ```text
    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
    ```
 
@@ -32,7 +33,7 @@
 ## File structure
 
 | File | Responsibility | Task |
-|---|---|---|
+| --- | --- | --- |
 | `lib/tokens/schema.ts` | add `overlay` to `COLOR_ROLES` | 0 |
 | `app/globals.css` + `themes/{neutral,swiss,brutalist}.css` | `--overlay` (both blocks) | 0 |
 | `lib/catalog/registry.ts` | typed `CATALOG` array — one entry per primitive (lists its exports) | 1, every primitive |
@@ -61,6 +62,7 @@
 **Files:** Modify `lib/tokens/schema.ts`; `app/globals.css` + `themes/{neutral,swiss,brutalist}.css` (both blocks); regenerate manifest. Test `tests/tokens/overlay-role.test.ts`.
 
 - [ ] **Step 1: failing test**
+
 ```ts
 // tests/tokens/overlay-role.test.ts
 // @vitest-environment node
@@ -98,6 +100,7 @@ describe("--overlay scrim token", () => {
 - [ ] **Step 4: run → PASS.** `npm run check` green. `npx vitest run tests/themes` green (parity: overlay now in all 3 theme files both blocks).
 
 - [ ] **Step 5: commit**
+
 ```bash
 git add lib/tokens/schema.ts app/globals.css themes/*.css design-system.json design-system.md tests/tokens/overlay-role.test.ts
 git commit -m "feat(tokens): add --overlay scrim role for dialog/sheet backdrops"
@@ -112,6 +115,7 @@ Scaffold the catalog mechanism and make it **green against the current 8 primiti
 **Files:** Create `lib/catalog/{registry,generate,exports}.ts`, `lib/check/catalog-fresh.ts`, `scripts/generate-catalog.ts`, `design-system.components.md`; Modify `lib/check/run.ts`, `package.json`, `tests/ui/no-hardcoded-color.test.ts`, `AGENTS.md`, `design-system.md`. Tests `tests/catalog/catalog-fresh.test.ts`.
 
 - [ ] **Step 1: `exportsOf` + failing gate test**
+
 ```ts
 // lib/catalog/exports.ts
 /** Capitalized exported component symbols (ignores lowercase helpers like buttonVariants). */
@@ -129,6 +133,7 @@ export function exportsOf(content: string): string[] {
   return [...out];
 }
 ```
+
 ```ts
 // tests/catalog/catalog-fresh.test.ts
 // @vitest-environment node
@@ -167,6 +172,7 @@ describe("checkCatalogFresh", () => {
 - [ ] **Step 3: implement registry (existing 8 primitives), generator, gate, script, wiring**
 
 `lib/catalog/registry.ts` — type + entries for the **current** primitives (Capitalized exports verified: Button, Input, Card+5, Avatar+3, Badge, Separator, Code, Kbd):
+
 ```ts
 export type CatalogEntry = {
   name: string;        // logical primitive
@@ -220,6 +226,7 @@ export const CATALOG: CatalogEntry[] = [
 ```
 
 `lib/catalog/generate.ts`:
+
 ```ts
 import type { CatalogEntry } from "./registry";
 
@@ -252,6 +259,7 @@ export function buildCatalogMarkdown(catalog: CatalogEntry[]): string {
 ```
 
 `lib/check/catalog-fresh.ts`:
+
 ```ts
 import type { Finding } from "./types";
 import { exportsOf } from "@/lib/catalog/exports";
@@ -281,6 +289,7 @@ export function checkCatalogFresh(uiFiles: { path: string; content: string }[], 
 ```
 
 `scripts/generate-catalog.ts`:
+
 ```ts
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -291,6 +300,7 @@ console.log(`catalog: wrote design-system.components.md (${CATALOG.length} primi
 ```
 
 `lib/check/run.ts` — add a reader for the excluded `components/ui` dir + wire the gate into `system[]`:
+
 ```ts
 // near the other imports
 import { readdirSync } from "node:fs";
@@ -312,6 +322,7 @@ const system = [
 `package.json` scripts — add `"catalog": "tsx scripts/generate-catalog.ts"`.
 
 `tests/ui/no-hardcoded-color.test.ts` — replace the hardcoded FILES list with a dir glob so ALL primitives are covered:
+
 ```ts
 // tests/ui/no-hardcoded-color.test.ts
 // @vitest-environment node
@@ -337,14 +348,17 @@ describe("all ui primitives are token-only (no hardcoded colors)", () => {
 > **Components:** the available UI primitives (with imports + usage) are catalogued in [`design-system.components.md`](design-system.components.md) (generated). **Import and use them — do not hand-roll dialogs, dropdowns, toggles, etc.** New primitives go in `components/ui/*` and MUST be registered in `lib/catalog/registry.ts` (the `catalog-fresh` gate enforces this).
 
 - [ ] **Step 4: generate + run → PASS**
+
 ```bash
 npm run catalog            # writes design-system.components.md
 npx vitest run tests/catalog/catalog-fresh.test.ts tests/ui/no-hardcoded-color.test.ts
 npm run check              # catalog-fresh now part of the gate; must be green
 ```
+
 Expected: tests PASS, check green.
 
 - [ ] **Step 5: commit**
+
 ```bash
 git add lib/catalog scripts/generate-catalog.ts lib/check/catalog-fresh.ts lib/check/run.ts package.json design-system.components.md tests/catalog tests/ui/no-hardcoded-color.test.ts AGENTS.md design-system.md
 git commit -m "feat(catalog): generated component catalog + catalog-fresh gate (covers existing primitives)"
@@ -361,6 +375,7 @@ git commit -m "feat(catalog): generated component catalog + catalog-fresh gate (
 **Files:** Create `components/ui/dialog.tsx`; Test `tests/ui/dialog.test.tsx`; registry entry.
 
 - [ ] **Step 1: failing test**
+
 ```tsx
 // tests/ui/dialog.test.tsx
 // @vitest-environment jsdom
@@ -387,6 +402,7 @@ describe("Dialog", () => {
 - [ ] **Step 2: run → FAIL.**
 
 - [ ] **Step 3: implement**
+
 ```tsx
 // components/ui/dialog.tsx
 import * as React from "react"
@@ -437,7 +453,9 @@ function DialogDescription({ className, ...props }: React.ComponentProps<typeof 
 }
 export { Dialog, DialogTrigger, DialogPortal, DialogClose, DialogOverlay, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription }
 ```
+
 Registry entry (append to `CATALOG`):
+
 ```ts
 { name: "Dialog", file: "components/ui/dialog.tsx",
   exports: ["Dialog","DialogTrigger","DialogPortal","DialogClose","DialogOverlay","DialogContent","DialogHeader","DialogFooter","DialogTitle","DialogDescription"],
@@ -453,6 +471,7 @@ Registry entry (append to `CATALOG`):
 ### Task 3: AlertDialog
 
 Same structure as Dialog but no close-X, two-button footer, `role="alertdialog"`. Test asserts `getByRole("alertdialog")` after trigger click + an action button present.
+
 ```tsx
 // components/ui/alert-dialog.tsx
 import * as React from "react"
@@ -494,11 +513,13 @@ function AlertDialogCancel({ className, ...props }: React.ComponentProps<typeof 
 }
 export { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel }
 ```
+
 Registry: name "AlertDialog", all exports, purpose "Confirm a destructive/irreversible action (action + cancel).", snippet with Trigger/Content/Title/Footer/Action/Cancel. Commit `feat(ui): AlertDialog (radix)`.
 
 ### Task 4: Sheet (side panel)
 
 Radix Dialog with a `side` cva (top/right/bottom/left). Test: opens, `getByRole("dialog")`, asserts `data-slot=sheet-content`.
+
 ```tsx
 // components/ui/sheet.tsx
 import * as React from "react"
@@ -539,9 +560,11 @@ function SheetTitle({ className, ...props }: React.ComponentProps<typeof SheetPr
 function SheetDescription({ className, ...props }: React.ComponentProps<typeof SheetPrimitive.Description>) { return <SheetPrimitive.Description data-slot="sheet-description" className={cn("text-sm text-muted-foreground", className)} {...props} /> }
 export { Sheet, SheetTrigger, SheetClose, SheetContent, SheetHeader, SheetFooter, SheetTitle, SheetDescription }
 ```
+
 Registry + commit `feat(ui): Sheet (radix dialog, side variants)`.
 
 ### Task 5: Popover
+
 ```tsx
 // components/ui/popover.tsx
 import * as React from "react"
@@ -559,9 +582,11 @@ function PopoverContent({ className, align = "center", sideOffset = 4, ...props 
 }
 export { Popover, PopoverTrigger, PopoverAnchor, PopoverContent }
 ```
+
 Test: open → `getByText` content visible. Registry + commit `feat(ui): Popover (radix)`.
 
 ### Task 6: Tooltip
+
 ```tsx
 // components/ui/tooltip.tsx
 import * as React from "react"
@@ -586,9 +611,11 @@ function TooltipContent({ className, sideOffset = 4, children, ...props }: React
 }
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
 ```
+
 Test: render Tooltip with provider, assert trigger present + `data-slot=tooltip-trigger` (content is hover-driven; assert trigger to keep jsdom-stable). Registry + commit `feat(ui): Tooltip (radix)`.
 
 ### Task 7: DropdownMenu
+
 ```tsx
 // components/ui/dropdown-menu.tsx
 import * as React from "react"
@@ -636,6 +663,7 @@ function DropdownMenuShortcut({ className, ...props }: React.ComponentProps<"spa
 }
 export { DropdownMenu, DropdownMenuTrigger, DropdownMenuGroup, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut }
 ```
+
 Test: open → `getByRole("menuitem")` present. Registry + commit `feat(ui): DropdownMenu (radix)`.
 
 ---
@@ -643,6 +671,7 @@ Test: open → `getByRole("menuitem")` present. Registry + commit `feat(ui): Dro
 ## Form batch (Tasks 8–14)
 
 ### Task 8: Label
+
 ```tsx
 // components/ui/label.tsx
 import * as React from "react"
@@ -653,9 +682,11 @@ function Label({ className, ...props }: React.ComponentProps<typeof LabelPrimiti
 }
 export { Label }
 ```
+
 Test: renders `<Label htmlFor="x">` → `data-slot=label` + text. Commit `feat(ui): Label (radix)`.
 
 ### Task 9: Checkbox
+
 ```tsx
 // components/ui/checkbox.tsx
 import * as React from "react"
@@ -671,9 +702,11 @@ function Checkbox({ className, ...props }: React.ComponentProps<typeof CheckboxP
 }
 export { Checkbox }
 ```
+
 Test: render `<Checkbox defaultChecked />` → `getByRole("checkbox")` has `aria-checked="true"`. Commit `feat(ui): Checkbox (radix)`.
 
 ### Task 10: RadioGroup
+
 ```tsx
 // components/ui/radio-group.tsx
 import * as React from "react"
@@ -692,9 +725,11 @@ function RadioGroupItem({ className, ...props }: React.ComponentProps<typeof Rad
 }
 export { RadioGroup, RadioGroupItem }
 ```
+
 Test: render group with two items, `getAllByRole("radio")` length 2. Commit `feat(ui): RadioGroup (radix)`.
 
 ### Task 11: Switch
+
 ```tsx
 // components/ui/switch.tsx
 import * as React from "react"
@@ -709,9 +744,11 @@ function Switch({ className, ...props }: React.ComponentProps<typeof SwitchPrimi
 }
 export { Switch }
 ```
+
 Test: `<Switch defaultChecked />` → `getByRole("switch")` `aria-checked="true"`. Commit `feat(ui): Switch (radix)`.
 
 ### Task 12: Select
+
 ```tsx
 // components/ui/select.tsx
 import * as React from "react"
@@ -756,9 +793,11 @@ function SelectSeparator({ className, ...props }: React.ComponentProps<typeof Se
 }
 export { Select, SelectGroup, SelectValue, SelectTrigger, SelectContent, SelectLabel, SelectItem, SelectSeparator }
 ```
+
 Test: render Select with a trigger + placeholder Value → `getByRole("combobox")` present (radix Select trigger has role combobox). Commit `feat(ui): Select (radix)`.
 
 ### Task 13: Textarea
+
 ```tsx
 // components/ui/textarea.tsx
 import * as React from "react"
@@ -768,9 +807,11 @@ function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
 }
 export { Textarea }
 ```
+
 Test: render → `getByRole("textbox")` is a `TEXTAREA`. Commit `feat(ui): Textarea`.
 
 ### Task 14: Form (lib-agnostic styled wrappers — NO react-hook-form)
+
 ```tsx
 // components/ui/form.tsx
 import * as React from "react"
@@ -793,6 +834,7 @@ function FormMessage({ className, children, ...props }: React.ComponentProps<"p"
 }
 export { FormItem, FormLabel, FormDescription, FormMessage }
 ```
+
 Test: `<FormMessage>Required</FormMessage>` renders text in `text-destructive`; `<FormMessage />` renders nothing (`container.querySelector("[data-slot=form-message]")` is null). Commit `feat(ui): Form-layout wrappers (lib-agnostic, no react-hook-form)`.
 
 ---
@@ -800,6 +842,7 @@ Test: `<FormMessage>Required</FormMessage>` renders text in `text-destructive`; 
 ## Nav/structure batch (Tasks 15–17)
 
 ### Task 15: Tabs
+
 ```tsx
 // components/ui/tabs.tsx
 import * as React from "react"
@@ -819,9 +862,11 @@ function TabsContent({ className, ...props }: React.ComponentProps<typeof TabsPr
 }
 export { Tabs, TabsList, TabsTrigger, TabsContent }
 ```
+
 Test: render Tabs with two triggers/contents, default value → active panel text visible, click second → second visible. Commit `feat(ui): Tabs (radix)`.
 
 ### Task 16: Accordion
+
 ```tsx
 // components/ui/accordion.tsx
 import * as React from "react"
@@ -851,11 +896,13 @@ function AccordionContent({ className, children, ...props }: React.ComponentProp
 }
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent }
 ```
+
 > **Note:** `animate-accordion-up/down` come from `tw-animate-css` (already imported in globals); no token/keyframe work needed. Verify the class compiles in `npm run build` (Task 26).
 
 Test: render `type="single" collapsible` with one item, trigger text present + `getByRole("button")`. Commit `feat(ui): Accordion (radix)`.
 
 ### Task 17: Table (styled native elements)
+
 ```tsx
 // components/ui/table.tsx
 import * as React from "react"
@@ -872,6 +919,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) { return
 function TableCaption({ className, ...props }: React.ComponentProps<"caption">) { return <caption data-slot="table-caption" className={cn("mt-4 text-sm text-muted-foreground", className)} {...props} /> }
 export { Table, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell, TableCaption }
 ```
+
 Test: render a Table with one header/row/cell → `getByRole("table")` + cell text. Commit `feat(ui): Table (styled native)`.
 
 ---
@@ -892,6 +940,7 @@ Test: render a Table with one header/row/cell → `getByRole("table")` + cell te
 ### Task 19: Toaster (Sonner) — token-styled, no next-themes
 
 Sonner's default styling is theme-via-`next-themes`, which this repo does NOT use (class-based dark). Style the toasts with token utilities via `toastOptions.classNames` so they're correct in both themes without `next-themes`.
+
 ```tsx
 // components/ui/sonner.tsx
 "use client"
@@ -916,11 +965,13 @@ function Toaster(props: ToasterProps) {
 }
 export { Toaster, toast }
 ```
+
 > **Note:** `toast` is re-exported so consumers do `import { toast } from "@/components/ui/sonner"`. The `<Toaster />` mounts once (in a screen/layout). `"use client"` is required (Sonner is client-only).
 
 Test (jsdom): render `<Toaster />` → `document.querySelector("[data-slot=toaster]")` (or the sonner section) exists; `expect(typeof toast).toBe("function")`. Registry entry name "Toaster", exports `["Toaster"]` (note: `toast` is lowercase → not gate-tracked, but mention it in the snippet). Commit `feat(ui): Toaster (sonner, token-styled)`.
 
 ### Task 20: Skeleton
+
 ```tsx
 // components/ui/skeleton.tsx
 import * as React from "react"
@@ -930,9 +981,11 @@ function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
 }
 export { Skeleton }
 ```
+
 Test: render → `data-slot=skeleton` present + `animate-pulse` in className. Commit `feat(ui): Skeleton`.
 
 ### Task 21: Command (cmdk)
+
 ```tsx
 // components/ui/command.tsx
 import * as React from "react"
@@ -982,6 +1035,7 @@ function CommandShortcut({ className, ...props }: React.ComponentProps<"span">) 
 }
 export { Command, CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandSeparator, CommandShortcut }
 ```
+
 Test: render a Command with an Input + two Items, type into the input → filtered item matches (`fireEvent.change(getByRole("combobox"), { target: { value: "..." } })`; assert the matching item remains). Keep it simple: assert both items render initially + `data-slot=command`. Commit `feat(ui): Command palette (cmdk, token-styled)`.
 
 > **Icon name check:** verify `SearchSm` / `XClose` / `Check` / `Circle` / `ChevronDown`/`ChevronUp`/`ChevronRight` exist in `@untitled-ui/icons-react` before use (`node -e "const i=require('@untitled-ui/icons-react'); console.log(['SearchSm','XClose','Check','Circle','ChevronDown','ChevronUp','ChevronRight'].filter(n=>!i[n]))"` → prints any missing; substitute the nearest, e.g. `SearchMd`, `X`, `XCircle`).
@@ -1041,6 +1095,7 @@ Test: render a Command with an Input + two Items, type into the input → filter
 ---
 
 ## Notes for the executor
+
 - **Catalog discipline per primitive:** every primitive task adds its `lib/catalog/registry.ts` entry + runs `npm run catalog` + stages `design-system.components.md` in the same commit. Skipping it reds `catalog-fresh` at pre-commit. The gate keys on **Capitalized exported symbols**, not files (Code+Kbd, Avatar+Group, the Form set, etc. — register all of a file's exports).
 - **`components/ui` is gate-excluded at the walk level**, so the primitives' own token-cleanliness is enforced by `tests/ui/no-hardcoded-color.test.ts` (now dir-globbed). After each primitive, that test must stay green — a stray `bg-black/50`/`#fff`/`oklch(...)` fails it.
 - **Radix unified import only** — `import { X as XPrimitive } from "radix-ui"`. Never `@radix-ui/react-*`.
@@ -1049,4 +1104,3 @@ Test: render a Command with an Input + two Items, type into the input → filter
 - **`next build` is load-bearing** — always `npm run verify`, never just check+test. Tailwind v4 scans `tests/` so class fixtures can leak; keep test JSX minimal.
 - **Shared-tree hazard** — never `git checkout <paths>` to discard; use `git restore` after confirming identity to HEAD.
 - **jsdom + portals** — Radix portals render to `document.body`; query with `getByRole`/`getByText` (they search the whole document), and fire the trigger (`fireEvent.click`) before asserting portalled content.
-```

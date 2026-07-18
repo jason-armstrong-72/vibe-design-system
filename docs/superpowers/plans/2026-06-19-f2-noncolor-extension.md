@@ -28,6 +28,7 @@
 `lib/tokens/generate.ts` will need the parsed radius steps; `lib/tokens` importing from `lib/check` is backwards. Move the pure parser (+ a canonical radius order) to `lib/tokens/`.
 
 **Files:**
+
 - Create: `lib/tokens/theme-steps.ts`
 - Modify: `lib/check/off-token-scale.ts` (import from the new module; drop the local copy)
 - Modify: `lib/check/run.ts` (**also imports `parseThemeSteps` from `./off-token-scale` — line 10; repoint to `@/lib/tokens/theme-steps`**)
@@ -65,6 +66,7 @@ export function parseThemeSteps(globalsCss: string): ThemeSteps {
 
 Run: `npx vitest run tests/check/off-token-scale.test.ts tests/tokens/theme-steps.test.ts`
 Expected: PASS.
+
 ```bash
 git add lib/tokens/theme-steps.ts lib/check/off-token-scale.ts lib/check/run.ts tests/check/off-token-scale.test.ts tests/tokens/theme-steps.test.ts
 git commit -m "refactor(f2): move parseThemeSteps to lib/tokens/theme-steps (clean layering for generate)"
@@ -77,6 +79,7 @@ git commit -m "refactor(f2): move parseThemeSteps to lib/tokens/theme-steps (cle
 The trap (spec §4): an LLM applies the scale procedure to radius and writes `--radius-2xl` in `:root`. Today `groupForName` throws on it → `npm run tokens` crashes. Classify the `@theme` utility-namespace prefixes into their family so a misplaced token degrades gracefully (the gate message + docs steer the real fix). A genuine typo (`--primaryy`) must STILL throw (real-drift detection).
 
 **Files:**
+
 - Modify: `lib/tokens/schema.ts` (`groupForName`)
 - Test: `tests/tokens/schema.test.ts` (or wherever groupForName is tested)
 
@@ -119,6 +122,7 @@ git commit -m "fix(f2): groupForName classifies misplaced scale names by family 
 ## Task 3: Generalise sync → `syncThemeMappings` (the core)
 
 **Files:**
+
 - Modify: `lib/tokens/sync.ts` (generalise + rename, add `warnings`)
 - Modify callers: `lib/tokens/regenerate.ts`, `lib/check/manifest-fresh.ts`, `scripts/watch-tokens.ts`
 - Test: `tests/tokens/sync.test.ts`
@@ -176,6 +180,7 @@ it("is a no-op on the real app/globals.css", () => {
   expect(r.added).toEqual([]);
 });
 ```
+
 (Keep the existing colour tests — rename their import to `syncThemeMappings`.)
 
 - [ ] **Step 2: Run → fail** (`syncThemeMappings` not defined).
@@ -249,6 +254,7 @@ git commit -m "feat(f2): syncThemeMappings auto-wires scale @theme mappings (clo
 ## Task 4: Family-aware manifest-fresh message
 
 **Files:**
+
 - Modify: `lib/check/manifest-fresh.ts`
 
 - [ ] **Step 1: Update the stale-mapping message** — it currently says "missing @theme **color** mapping". Make it family-neutral and name the token(s) sync would add:
@@ -260,6 +266,7 @@ git commit -m "feat(f2): syncThemeMappings auto-wires scale @theme mappings (clo
 ```
 
 - [ ] **Step 2: Run** `npx vitest run tests/check/` → PASS (update any test asserting the old "color mapping" text). Commit:
+
 ```bash
 git add lib/check/manifest-fresh.ts tests/check/manifest-fresh.test.ts
 git commit -m "fix(f2): family-aware manifest-fresh message (names the missing mapping, not just 'color')"
@@ -270,6 +277,7 @@ git commit -m "fix(f2): family-aware manifest-fresh message (names the missing m
 ## Task 5: Manifest reports the true radius scale (F4 for radius)
 
 **Files:**
+
 - Modify: `lib/tokens/utilities.ts` (`utilitiesForToken` optional radius arg)
 - Modify: `lib/tokens/generate.ts` (`buildManifest`/`mergeByName` thread radius steps)
 - Modify: `lib/tokens/regenerate.ts` + `lib/check/manifest-fresh.ts` (pass post-sync radius steps)
@@ -281,17 +289,21 @@ git commit -m "fix(f2): family-aware manifest-fresh message (names the missing m
 
 - [ ] **Step 3: Implement**
   - `utilities.ts`: `export function utilitiesForToken(t: Token, radiusSteps?: string[]): UtilityHint` — radius case:
+
     ```ts
     case "radius":
       return { utilities: (radiusSteps ?? ["sm","md","lg","xl"]).map((s) => `rounded-${s}`), usage: "--radius is the knob; sm/md/lg/xl derived" };
     ```
+
   - `generate.ts`: **`buildManifest` ALREADY has a 2nd param `source = "app/globals.css"` (→ `generatedFrom`) — do NOT collide with it (review B1).** Add `radiusSteps` as the **3rd** param: `buildManifest(tokens: Token[], source = "app/globals.css", radiusSteps?: string[])`. `mergeByName(tokens, radiusSteps?)` passes it only for the radius token: `utilitiesForToken(t, t.group === "radius" ? radiusSteps : undefined)`. All callers that omit the 3rd arg keep the hardcoded default — no break.
   - `regenerate.ts`:
+
     ```ts
     import { parseThemeSteps, RADIUS_STEP_ORDER } from "./theme-steps";
     const radius = [...parseThemeSteps(sync.css).radius].sort((a,b) => RADIUS_STEP_ORDER.indexOf(a) - RADIUS_STEP_ORDER.indexOf(b));
     const { json, markdown } = buildManifest(parseTokens(sync.css), "app/globals.css", radius);
     ```
+
     (Pass `source` explicitly so `radius` lands in the 3rd slot, and use `sync.css` — the POST-sync string.)
   - `manifest-fresh.ts`: same — derive `radius` from `parseThemeSteps(sync.css).radius` (the **post-sync** string `sync.css`, NOT the `globalsCss` param), sort, and pass as the 3rd arg to `buildManifest`, so the gate's expected manifest matches `npm run tokens` byte-for-byte.
 
@@ -309,6 +321,7 @@ git commit -m "feat(f2): manifest reports true @theme radius scale (fixes F4); u
 ## Task 6: Radius knob nudge in the gate message (F3's check) — the load-bearing ergonomic fix
 
 **Files:**
+
 - Modify: `lib/check/messages.ts` (`offTokenScale` family-aware)
 - Test: `tests/check/off-token-scale.test.ts`
 
@@ -322,9 +335,11 @@ git commit -m "feat(f2): manifest reports true @theme radius scale (fixes F4); u
       ? `off-token scale step "${cls}" produces no styles — the radius scale is ${defined.join("/")}. To make corners rounder/softer overall, increase --radius in app/globals.css then npm run tokens (it shifts every step); for a one-off, add --radius-<step> to @theme. (see design-system.md)`
       : `off-token scale step "${cls}" produces no styles — the ${family} scale is ${defined.join("/")}. Add the value token to :root then npm run tokens, or use a defined step (see design-system.md)`,
 ```
+
 (`checkOffTokenScale` already passes `FAMILY_LABEL[family]` — `"radius"` for radius. No check-logic change.)
 
 - [ ] **Step 3: Run → pass.** `npx vitest run tests/check/off-token-scale.test.ts`. Commit:
+
 ```bash
 git add lib/check/messages.ts tests/check/off-token-scale.test.ts
 git commit -m "feat(f2): radius gate message nudges the --radius knob (the channel that redirects LLMs)"
@@ -335,6 +350,7 @@ git commit -m "feat(f2): radius gate message nudges the --radius knob (the chann
 ## Task 7: Docs — unified, easy-but-discouraged extension procedure
 
 **Files:**
+
 - Modify: `lib/tokens/generate.ts` (`PREAMBLE`) → regenerates `design-system.md`
 - Modify: `AGENTS.md`, `docs/NAMING-CONVENTION.md`
 
@@ -379,6 +395,7 @@ Expected: check ✓, vitest all passing (new sync/theme-steps/schema/message tes
 git add docs/M6-DOGFOOD.md docs/HANDOFF.md
 git commit -m "docs(f2): mark F2 done in ledgers (non-colour extension now one-step)"
 ```
+
 Run `npm run check` ✓.
 
 - [ ] **Step 5: Merge** — use **superpowers:finishing-a-development-branch**: `git checkout main && git merge --no-ff f2-noncolor-extension` (descriptive message) `&& git branch -d f2-noncolor-extension`. Confirm `npm run check` ✓ on main. (Push only if the user asks.)
