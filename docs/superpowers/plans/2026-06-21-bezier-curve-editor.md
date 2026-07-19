@@ -12,6 +12,7 @@
 **Spec:** [docs/superpowers/specs/2026-06-21-bezier-curve-editor-design.md](../specs/2026-06-21-bezier-curve-editor-design.md)
 
 **Conventions (read first):**
+
 - `.test.tsx` files need a top docblock `// @vitest-environment jsdom`; `.test.ts` run in node.
 - The `@` alias resolves via `vitest.config.ts`.
 - TDD per @superpowers:test-driven-development. Commit per task.
@@ -22,6 +23,7 @@
 ## Task 1: Pure bezier lib (`lib/editor/bezier.ts`)
 
 **Files:**
+
 - Create: `lib/editor/bezier.ts`
 - Test: `tests/editor/bezier.test.ts`
 
@@ -215,6 +217,7 @@ git commit -m "feat(editor): pure cubic-bezier lib (parse/format/clamp + svg coo
 ## Task 2: Rewrite the easing control as the curve editor
 
 **Files:**
+
 - Modify (full rewrite): `components/editor/controls/easing-field.tsx`
 - Modify (full rewrite): `tests/editor/easing-field.test.tsx`
 
@@ -656,6 +659,7 @@ git commit -m "feat(editor): draggable cubic-bezier curve editor (replaces easin
 ## Task 3: Editor-chrome styles (`.ed-bezier-*`)
 
 **Files:**
+
 - Modify: `components/editor/editor-chrome.css` (append a `.ed-bezier-*` block)
 
 No unit test (CSS); verified by `next build` (Task 4) + the screenshot checkpoint. `editor-chrome.css` is excluded from `npm run check`, so `cubic-bezier()`/`calc()`/hex are allowed here.
@@ -823,8 +827,8 @@ Present the screenshots to the user. Do NOT declare done until the user approves
 ---
 
 ## Done criteria
+
 - `npm run verify` green; `npx playwright test` green.
 - Easing tokens edit via drag / numeric / preset / raw row; drag = one undo entry; emits normalised `cubic-bezier()`; `steps()`/`var()` survive (raw row), never clobbered on mount.
 - User has approved the screenshots.
 - Update `docs/HANDOFF.md` M4 fast-follows: mark the bezier curve editor ✅ DONE (2026-06-21), note the dark-block-easing-write limitation as documented/deferred. Commit. Then `superpowers:finishing-a-development-branch` (merge `--no-ff`, delete branch).
-```

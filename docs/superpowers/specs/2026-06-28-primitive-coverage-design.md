@@ -11,6 +11,7 @@
 The system ships 8 primitives (Button, Input, Card, Avatar, Badge, Separator, Code, Kbd). That covers a static page. It does **not** cover a real app: the moment you build one you need the pieces that **pop up, fold, switch, and notify** — Dialog, Dropdown, Tooltip, Tabs, Select, Switch, Toast, Table, etc. Building the dense Linear dogfood screen this session, those were all **hand-faked** (fake nav buttons, fake menus). A vibe-coder (or the LLM building for them) hits the same wall and hand-rolls un-systematic, un-tokenized, un-audited markup — exactly the drift the design system exists to prevent.
 
 Two compounding gaps:
+
 1. **No interaction primitives.** ~19 high-frequency components are missing.
 2. **The LLM doesn't know what exists.** The contract auto-loads the **token** manifest (`design-system.md`) but **nothing about components**. So even after we add `Dialog`, the LLM has no signal it exists → hand-rolls a `<div>`. The token-drift problem, unsolved for components.
 
@@ -25,7 +26,7 @@ The audience is a **generic website/SaaS starter for vibe-coders building with a
 ## 3. The primitive set (~19, in 4 build batches)
 
 | Batch | Primitives | Backing |
-|---|---|---|
+| --- | --- | --- |
 | **Overlay (6)** | Dialog, AlertDialog, Sheet, Popover, Tooltip, DropdownMenu | `radix-ui` (unified) |
 | **Form (7)** | Label, Checkbox, RadioGroup, Switch, Select, Textarea, **Form-layout set** (FormItem/FormLabel/FormDescription/FormMessage) | `radix-ui`; Textarea is a styled `<textarea>`; Form set = **styled wrappers, lib-agnostic** |
 | **Nav/structure (3)** | Tabs, Accordion, Table | `radix-ui`; Table is styled `<table>` elements |
@@ -36,7 +37,7 @@ The audience is a **generic website/SaaS starter for vibe-coders building with a
 ### 3.1 Locked decisions (brainstorm)
 
 | # | Decision | Why |
-|---|---|---|
+| --- | --- | --- |
 | D1 | **Form is styling-only, NOT react-hook-form-coupled** | shadcn's canonical Form hard-couples react-hook-form (+zod +resolvers). For a generic vibe starter that's lock-in + dead bundle weight. Ship consistent label/control/error-text styling that works with anything; heavy-form users add RHF in 2 minutes. |
 | D2 | **Toast = Sonner** | shadcn deprecated its own Radix Toast in favor of Sonner; it's the current canonical (one `<Toaster/>` + `toast()`). |
 | D3 | **Command palette IN** (`cmdk`) | ⌘K is increasingly expected in "pro" apps; one extra lib, self-contained. |

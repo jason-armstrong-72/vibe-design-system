@@ -15,6 +15,7 @@ The system is a **generic website/SaaS starter for vibe-coders building with an 
 ## 2. Scope & stance
 
 In scope (this milestone, lands on `main` before the theme suite):
+
 - **Tokens:** one subtle **surface** role pair, a **`2xs`** micro type step (+ its gate fix), and **activating the dormant `--accent`** as the hover surface.
 - **Primitives** (`components/ui/*`, token-only): **Avatar/AvatarGroup, Badge, Separator, Code, Kbd**.
 - **Docs:** icon convention, `NAMING-CONVENTION.md` updates, `/design-system` showcase additions.
@@ -24,7 +25,7 @@ Out of scope: the 5-theme suite (next milestone), a numbered neutral ramp, workf
 ## 3. Locked decisions (brainstorm + 3-agent design review)
 
 | # | Decision | Why |
-|---|---|---|
+| --- | --- | --- |
 | D1 | **Hardening lands before the theme suite** | new tokens must exist in every theme; themes inherit them. |
 | D2 | **Surfaces, not a 3rd text tier, fix the flatness** | light mode has `background`/`card`/`popover` all at pure white + `muted`/`secondary`/`accent` at one off-white → every panel renders identically. Depth comes from surfaces. |
 | D3 | **Cut `--foreground-subtle` (keep 2 text tiers)** | it escapes the contrast gate (no `-foreground` suffix → never paired → AA unchecked) **and** a tier fainter than `muted-foreground` (already 4.73:1 on white) can only reach ~3.1–4.0:1 → never passes body AA. A footgun in a no-audit starter. |
@@ -62,7 +63,7 @@ For non-essential glyphs (avatar initials, kbd caps) — scale floors at `--fs-x
 All in `components/ui/*` (next to Button/Input/Card; that dir is gate-**excluded** as vendored). **House conventions (match `button.tsx`):** module-scope `cva` export, `data-slot`/`data-variant`/`data-size` attrs, `cn(...)`, `React.ComponentProps<...>`, `Slot` for `asChild` — **no `forwardRef`** (the repo uses function components + `ComponentProps`). **Radix import style = the unified package, matching `button.tsx`'s `import { Slot } from "radix-ui"`:** use `import { Avatar } from "radix-ui"` / `import { Separator } from "radix-ui"` (NOT the individual `@radix-ui/react-*` packages). Token-only. A **dedicated test** asserts each new primitive carries **no hardcoded color literals** (hex/rgb/hsl/oklch/named) — **reuse `checkHardcodedColor` from `lib/check/hardcoded-color.ts`** (a pure `(path, content)` fn), called directly on each `components/ui/*` new file (the dir is excluded only at the `run.ts` walk level, so a test can scan it) — restoring the dogfood coverage the dir-exclusion drops.
 
 | Primitive | Spec | a11y (required, not optional) |
-|---|---|---|
+| --- | --- | --- |
 | **Avatar** + **AvatarGroup** | Radix `@radix-ui/react-avatar` (already a dep): `Root`/`Image`/`Fallback`. Sizes sm/md/lg. Initials fallback. Group = stacked overlap + `+N` overflow chip. `bg-secondary`/`text-secondary-foreground`, `ring-background`. | img `alt` = person name; initials marked `aria-hidden` + wrapper `aria-label={name}`; `+N` chip has accessible name (counts/lists hidden). |
 | **Badge** | cva variants: `default`/`secondary`/`success`/`warning`/`info`/`destructive`/`outline`. Pill, `text-xs font-medium`. **Replaces the faked status spans** in `component-showcase.tsx:42-55`. | semantic color is **never the sole channel** — the label text carries meaning. |
 | **Status dot** (thin) | a small filled/ring dot as a Badge leading element or tiny helper — **always paired with a label**; filled vs ring distinguishes states by shape, not just hue. | label or `aria-label` **required**; no dot-only mode without an accessible name. |

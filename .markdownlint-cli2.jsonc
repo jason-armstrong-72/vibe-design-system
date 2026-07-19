@@ -1,0 +1,28 @@
+{
+  // Glob + ignore config for markdownlint-cli2 (rules live in .markdownlint.jsonc)
+  "globs": ["**/*.md"],
+  "ignores": [
+    "node_modules/**",
+    ".next/**",
+    "dist/**",
+    "build/**",
+    // Machine-generated from `npm run tokens` (scripts/*-tokens.ts) and diff-guarded
+    // in CI — hand-fixing it would just be reverted on the next generate. If its
+    // markdown should be lint-clean, fix the generator's emitter, not this file.
+    "design-system.md",
+    // Agent worktree checkouts — throwaway duplicate copies of the repo.
+    ".claude/**",
+    // Deliberately-malformed test fixtures (e.g. tests/check/__fixtures__/notes.md
+    // is literal "not a tsx file" input) — linting them defeats their purpose.
+    "**/__fixtures__/**",
+    // Machine-managed agent-instruction files, not prose. GEMINI.md and CLAUDE.md
+    // are single `@AGENTS.md` import directives — they cannot carry a top-level
+    // heading (MD041) without breaking the import. AGENTS.md's own headings live
+    // inside `<!-- BEGIN:... -->` blocks owned by a rules injector, so its
+    // multiple-H1 structure (MD025) is generated, not authored — hand-fixes would
+    // be clobbered on the next injection. Same rationale as the .claude exclusion.
+    "GEMINI.md",
+    "CLAUDE.md",
+    "AGENTS.md"
+  ]
+}

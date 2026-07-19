@@ -17,7 +17,7 @@
 ## File Structure
 
 | File | Responsibility | Action |
-|---|---|---|
+| --- | --- | --- |
 | `lib/check/css-colors.ts` | CSS named-color vocabulary + `isNamedColor()` | Create |
 | `lib/check/arbitrary-tailwind.ts` | variant-strip + palette/length/bracket-color fixes | Modify |
 | `lib/check/hardcoded-color.ts` | inline keyword-color pass | Modify |
@@ -214,15 +214,20 @@ git commit -m "feat(f6): variant-strip in checkArbitrary (bracket-aware) — clo
 - [ ] **Step 3: Implement** — three small edits to `lib/check/arbitrary-tailwind.ts`:
 
 (a) import the vocabulary at the top:
+
 ```ts
 import { isNamedColor } from "./css-colors";
 ```
+
 (b) extend two regex constants:
+
 ```ts
 const reArbLengthPrefix = new RegExp(`^-?(?:text|leading|rounded|border|ring|outline|ring-offset|${SPACING})-\\[`);
 const rePalette = new RegExp(`^-?(?:bg|text|placeholder|border|ring|from|via|to|fill|stroke|divide|outline|decoration|accent|caret|ring-offset)-(?:${PALETTES})-\\d{2,3}$`);
 ```
+
 (c) extend the color-branch inner test (the `if` at the arbitrary branch) to also flag exact named colors:
+
 ```ts
         if (reArbColorPrefix.test(base) && (/^(#|rgba?\(|hsla?\(|oklch\(|oklab\()/.test(inner) || isNamedColor(inner)))
           out.push({ file: path, line, rule: "arbitrary-color", message: MSG.arbitraryColor(cls) });
@@ -279,6 +284,7 @@ const KEYWORD = /(?:^|[\s{;,(])(?:background|fill|stroke|[a-zA-Z]*[cC]olor)\s*:\
 ```
 
 In the `forEach` line loop, after the HEX/FUNC loops, add:
+
 ```ts
     for (const kw of ln.matchAll(KEYWORD))
       if (isNamedColor(kw[2]))
@@ -304,7 +310,7 @@ git commit -m "feat(f6): inline keyword-color detection (color-prop key + exact 
 
 - [ ] **Step 1: AGENTS.md preamble note.** In the `design-system` block (after the "Law:" / off-token sentence, before the table), add one line:
 
-```
+```text
 **Variant prefixes don't exempt a class** — `md:bg-[red]`, `hover:rounded-[5px]`, `dark:text-gray-500` are rejected exactly like their unprefixed forms.
 ```
 
@@ -335,6 +341,7 @@ grep -rnE '(text|placeholder)-(slate|gray|zinc|neutral|stone|red|orange|amber|ye
 grep -rnE '(rounded|border|ring|outline)-\[' app components --include=*.tsx --include=*.ts | grep -v 'components/ui/'
 grep -rnE '(background|[a-zA-Z]*[cC]olor|fill|stroke)\s*:\s*["'"'"'][a-zA-Z]+["'"'"']' app components --include=*.tsx --include=*.ts | grep -v 'components/ui/'
 ```
+
 If any line is a real off-token usage, fix it (use a token utility) as F3 did with `rounded-2xl`. Expected: clean (per spec §5).
 
 - [ ] **Step 2: Full gate** — `npm run check && npm test && npm run lint`

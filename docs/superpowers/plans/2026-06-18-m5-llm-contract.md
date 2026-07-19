@@ -23,12 +23,14 @@
 7. **eslint fix.** 8. **Contract docs.** 9. **Husky.** 10. **CI.** 11. **Close + merge.**
 
 ## Branch
+
 ```bash
 git switch -c m5-llm-contract   # from main, after M4 merged
 ```
 
 ## File map
-```
+
+```text
 lib/check/
   types.ts            # Finding
   messages.ts         # message + fix strings (single source; tests import these)
@@ -58,6 +60,7 @@ tests/check/*         # fixture tests per check + dogfood self-pass
 **Files:** Create `lib/check/{types,messages,files,ds-disable,spacing-steps}.ts`; Test `tests/check/ds-disable.test.ts`, `tests/check/files.test.ts`
 
 - [ ] **Step 1: Write `lib/check/types.ts`**
+
 ```ts
 export interface Finding {
   file: string;
@@ -68,6 +71,7 @@ export interface Finding {
 ```
 
 - [ ] **Step 2: Write `lib/check/messages.ts`** (single source — tests import these)
+
 ```ts
 export const MSG = {
   hardcodedColor: (cls: string) =>
@@ -89,6 +93,7 @@ export const MSG = {
 ```
 
 - [ ] **Step 3: Write `lib/check/files.ts`** — recursive source walker (no glob dependency)
+
 ```ts
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
@@ -126,6 +131,7 @@ export function walkSource(
 ```
 
 - [ ] **Step 4: Write `lib/check/spacing-steps.ts`**
+
 ```ts
 /** Allowed steps on Tailwind v4's --spacing multiplier scale. Adopter-editable: add steps your
  *  design uses. The off-scale-spacing check flags p-/m-/gap-/space- utilities outside this set. */
@@ -136,6 +142,7 @@ export const ALLOWED_SPACING_STEPS = new Set([
 ```
 
 - [ ] **Step 5: Write `lib/check/ds-disable.ts`**
+
 ```ts
 import type { Finding } from "./types";
 import { MSG } from "./messages";
@@ -191,6 +198,7 @@ export function applySuppressions(findings: Finding[], content: string): [Findin
 - [ ] **Step 1: Export COLOR_ROLES** — in `lib/tokens/schema.ts` change `const COLOR_ROLES =` to `export const COLOR_ROLES =`. (Verify nothing else breaks: it's currently used internally by `groupForName`/`foregroundFor`.)
 
 - [ ] **Step 2: Write the failing test** `tests/check/both-theme.test.ts`
+
 ```ts
 import { describe, it, expect } from "vitest";
 import { checkBothTheme } from "@/lib/check/both-theme";
@@ -214,6 +222,7 @@ describe("both-theme", () => {
 ```
 
 - [ ] **Step 3: Implement** `lib/check/both-theme.ts`
+
 ```ts
 import type { Finding } from "./types";
 import { MSG } from "./messages";
@@ -248,6 +257,7 @@ export function checkBothTheme(globalsCss: string): Finding[] {
 **Files:** Create `lib/check/manifest-fresh.ts`; Test `tests/check/manifest-fresh.test.ts`
 
 - [ ] **Step 1: Write the failing test** — using the real `lib/tokens` helpers on an in-memory globals + matching/mismatching manifest strings.
+
 ```ts
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
@@ -270,6 +280,7 @@ describe("manifest-fresh", () => {
 ```
 
 - [ ] **Step 2: Implement** `lib/check/manifest-fresh.ts`
+
 ```ts
 import type { Finding } from "./types";
 import { MSG } from "./messages";
@@ -294,6 +305,7 @@ export function checkManifestFresh(globalsCss: string, committedJson: string, co
   return out;
 }
 ```
+
 > Note: `buildManifest` returns `markdown` WITHOUT a trailing-newline transform in `generate-tokens.ts` (it writes `markdown` directly). Confirm the exact write form in `lib/tokens/regenerate.ts` and match it byte-for-byte (json = `JSON.stringify(...,2)+"\n"`; md = `markdown` as-is). Adjust the comparison to whatever `regenerate.ts` writes.
 
 - [ ] **Step 3: Run** → green. **Step 4: Commit** `feat(m5): manifest-fresh check (in-process; CI adds git-dirty)`
@@ -310,6 +322,7 @@ spacing `p-13`; (d) off-token default-palette classes `bg-red-500`. ALLOWS `var(
 arbitraries and layout/size arbitraries.
 
 - [ ] **Step 1: Write the failing test** (cover flag + allow cases incl. the repo's real patterns)
+
 ```ts
 import { describe, it, expect } from "vitest";
 import { checkArbitrary } from "@/lib/check/arbitrary-tailwind";
@@ -335,6 +348,7 @@ describe("arbitrary-tailwind", () => {
 ```
 
 - [ ] **Step 2: Implement** `lib/check/arbitrary-tailwind.ts`
+
 ```ts
 import type { Finding } from "./types";
 import { MSG } from "./messages";
@@ -379,6 +393,7 @@ export function checkArbitrary(path: string, content: string): Finding[] {
   return out;
 }
 ```
+
 > The `text-` prefix is overloaded (`text-lg`, `text-center`, `text-primary`) — note the default-palette regex deliberately EXCLUDES `text-` to avoid flagging those; arbitrary `text-[10px]` is still caught by the length rule.
 
 - [ ] **Step 3: Run** → green (iterate the regexes until all cases pass). **Step 4: Commit** `feat(m5): arbitrary-tailwind + off-scale-spacing check`
@@ -390,6 +405,7 @@ export function checkArbitrary(path: string, content: string): Finding[] {
 **Files:** Create `lib/check/hardcoded-color.ts`; Test `tests/check/hardcoded-color.test.ts`
 
 - [ ] **Step 1: Write the failing test** (flag literal hex/rgb; exempt var() inline styles + href/url/id)
+
 ```ts
 import { describe, it, expect } from "vitest";
 import { checkHardcodedColor } from "@/lib/check/hardcoded-color";
@@ -406,6 +422,7 @@ describe("hardcoded-color", () => {
 ```
 
 - [ ] **Step 2: Implement** `lib/check/hardcoded-color.ts`
+
 ```ts
 import type { Finding } from "./types";
 import { MSG } from "./messages";
@@ -428,6 +445,7 @@ export function checkHardcodedColor(path: string, content: string): Finding[] {
   return out;
 }
 ```
+
 > Acceptable limitation (state in spec §8): line-scoped literal detection; a hex composed at runtime or split across lines is not caught. Good enough — the realistic drift is literals.
 
 - [ ] **Step 3: Run** → green. **Step 4: Commit** `feat(m5): hardcoded-color check (literal colors; var()/href exempt)`
@@ -439,6 +457,7 @@ export function checkHardcodedColor(path: string, content: string): Finding[] {
 **Files:** Create `lib/check/run.ts`, `scripts/check.ts`; Modify `package.json`; Test `tests/check/self.test.ts`
 
 - [ ] **Step 1: Write `lib/check/run.ts`** — compose everything; centralize exclusions.
+
 ```ts
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -477,9 +496,11 @@ export function run(): { findings: Finding[]; disableCount: number } {
   return { findings: all, disableCount };
 }
 ```
+
 > Note: `EXCLUDE_DIRS: ["ui"]` skips any dir named `ui` — fine here (only `components/ui`). If a stricter path match is wanted, extend `walkSource` to take path-prefixes; not needed for v1.
 
 - [ ] **Step 2: Write `scripts/check.ts`**
+
 ```ts
 import { run } from "../lib/check/run";
 const { findings, disableCount } = run();
@@ -503,6 +524,7 @@ process.exit(1);
 - [ ] **Step 4: Run `npm run check` against the real repo + clear the KNOWN violations.** With `app`+`components` scanned, the gate flags exactly **4 deliberate sub-12px token labels** (no token reproduces 10/11px — the smallest type token `--fs-xs` is 12px): `components/design-system/color-swatch.tsx` (`text-[11px]`, `text-[10px]`) and `components/design-system/token-section.tsx` (`text-[11px]`, `text-[10px]`). These are intentional → add `/* ds-disable: dense token label, below --fs-xs */` on the line above each (this also demonstrates the escape hatch in the real repo). Re-run `npm run check` → clean. (Dropping `lib` from SOURCE_ROOTS already removed the `generate.ts` doc-example + `oklch.ts` fallback edge cases.) If anything else surfaces, fix per the recovery message — don't broaden exclusions.
 
 - [ ] **Step 5: Write the dogfood self-pass test** `tests/check/self.test.ts`
+
 ```ts
 import { describe, it, expect } from "vitest";
 import { run } from "@/lib/check/run";
@@ -534,6 +556,7 @@ describe("dogfood", () => {
 **Files:** Modify `AGENTS.md`; Create `.cursor/rules/design-system.mdc`
 
 - [ ] **Step 1:** Append to `AGENTS.md` a managed block (mirrors the existing `nextjs-agent-rules` markers):
+
 ```markdown
 <!-- BEGIN:design-system -->
 # Design system contract
@@ -557,7 +580,9 @@ describe("dogfood", () => {
 _Note: the gate runs on `npm run check` / pre-commit / CI — not as live editor squiggles._
 <!-- END:design-system -->
 ```
+
 - [ ] **Step 2:** Create `.cursor/rules/design-system.mdc` — a thin mirror:
+
 ```markdown
 ---
 description: Design system token contract
@@ -565,6 +590,7 @@ alwaysApply: true
 ---
 Style only with the design system's token utilities / CSS vars — never hardcode color, size, font, or duration. Off-token classes produce no styles and fail `npm run check`. The authoritative, always-current token reference + one-step extension procedure is in `design-system.md`. To add a value: follow that procedure (`npm run tokens`), don't hardcode. See `AGENTS.md` (Design system contract) for the failure→fix table.
 ```
+
 - [ ] **Step 3:** Confirm `CLAUDE.md` still `@AGENTS.md`-includes (no change needed). **Step 4: Commit** `docs(m5): AGENTS.md design-system contract block + .cursor rule`
 
 ---
@@ -573,7 +599,7 @@ Style only with the design system's token utilities / CSS vars — never hardcod
 
 **Files:** `package.json`, `.husky/pre-commit`
 
-- [ ] **Step 1:** `npm install -D husky` then `npx husky init` (creates `.husky/` + adds a `prepare` script). 
+- [ ] **Step 1:** `npm install -D husky` then `npx husky init` (creates `.husky/` + adds a `prepare` script).
 - [ ] **Step 2:** Set `.husky/pre-commit` to `npm run check`.
 - [ ] **Step 3: Verify** — stage a temporary file with a hardcoded `#fff` in `app/` → `git commit` is **blocked** by the hook; remove it → commits fine. (Don't leave the temp file.)
 - [ ] **Step 4: Commit** `chore(m5): husky pre-commit runs npm run check`
@@ -585,6 +611,7 @@ Style only with the design system's token utilities / CSS vars — never hardcod
 **Files:** Create `.github/workflows/ci.yml`
 
 - [ ] **Step 1:** Write the workflow — blocking gate job + non-blocking e2e job.
+
 ```yaml
 name: CI
 on:
@@ -616,6 +643,7 @@ jobs:
       - if: always()
         run: git checkout -- app/globals.css   # editor specs write+restore; guard a crashed run
 ```
+
 - [ ] **Step 2:** Sanity-check the YAML parses (e.g. `npx --yes yaml-lint .github/workflows/ci.yml` or a quick node parse). We can't run Actions locally; verify each step's command works locally: `npm run check`, `npm test`, `npm run build`, and `npm run tokens && git diff --exit-code design-system.*` (expect clean).
 - [ ] **Step 3: Commit** `ci(m5): blocking gate (check+test+build+manifest) + non-blocking e2e job`
 
@@ -626,16 +654,19 @@ jobs:
 - [ ] **Step 1:** `npm run check` (clean) · `npm test` (green) · `npx playwright test` (green) · `npm run build` (ok) · `npm run lint` (0 errors) · `git status` clean.
 - [ ] **Step 2:** Update `docs/HANDOFF.md`: mark M5 done (the gate, the contract docs, CI, husky, eslint fix); update test counts; note M6 is next; move the M5 lint-debt note to "resolved." Commit.
 - [ ] **Step 3:** Merge:
+
 ```bash
 git switch main
 git merge --no-ff m5-llm-contract -m "Merge M5: LLM contract + blocking lint gate"
 git branch -d m5-llm-contract
 ```
+
 - [ ] **Step 4:** Verify suite green on `main`.
 
 ---
 
 ## Definition of done (spec §10)
+
 - A hardcoded color / off-token class / off-scale spacing **fails `npm run check`** (and CI + pre-commit).
 - A color in one theme only **fails**; a stale manifest **fails** (locally + the CI git-dirty gate).
 - The extension procedure + recovery commands are documented in `AGENTS.md` (pointer to `design-system.md`, no duplication) + `.cursor/rules`.
@@ -644,6 +675,7 @@ git branch -d m5-llm-contract
 - Full vitest + Playwright green; eslint clean; build ok; tree clean.
 
 ## Risks / notes
+
 - **Riskiest: arbitrary-tailwind regexes** (Task 4) — false-positive/negative risk on real className patterns; fixture against the actual repo strings; the dogfood self-pass (Task 6) is the backstop.
 - **manifest byte-matching** (Task 3) — must match `regenerate.ts`'s exact write form (json `+"\n"`, md as-is); confirm by reading it.
 - **CI can't be run locally** — verify each step's command locally; the workflow itself activates on push (repo isn't pushed yet — that's fine, it ships with the template).

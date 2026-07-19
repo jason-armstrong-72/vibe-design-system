@@ -18,7 +18,7 @@
 ## 1. The four holes (all verified open against current `lib/check/`)
 
 | # | Slips today | Why | Fix site |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 | `text-gray-500` | `rePalette` prefix list omits `text` (and `placeholder`) | `arbitrary-tailwind.ts` |
 | 2 | `rounded-[5px]`, `border-[3px]`, `ring-[3px]` | `reArbLengthPrefix` omits `rounded`/`border`/`ring`/`outline`/`ring-offset` (arbitrary radius **and** width) | `arbitrary-tailwind.ts` |
 | 3 | `bg-[red]`, `color: "red"` | no CSS-named-color vocabulary anywhere | new `css-colors.ts` + both checks |
@@ -63,6 +63,7 @@ across two legitimate consumers is normal DRY, not splitting one concern.
 ## 3. Fixes in `lib/check/arbitrary-tailwind.ts`
 
 ### 3.1 Variant-stripping (hole #4) — bracket-aware
+
 Before matching, reduce each whitespace-split class token to its **base utility** by removing leading
 `variant:` segments. Arbitrary values can contain `:` inside brackets (`bg-[url(http://x)]`), so the strip must
 only consider colons **before the first `[`**:
@@ -94,12 +95,14 @@ one-line pointer comment in `off-token-scale.ts` naming `baseUtil` as canonical,
 stripped — rare; `off-token-scale.ts`'s `split(":").pop()` has the same limitation. Acceptable.
 
 ### 3.2 text + placeholder palette (hole #1)
+
 Add `text` and `placeholder` to the `rePalette` prefix alternation. `text-gray-500` / `placeholder-gray-500`
 match `^…-(palette)-\d{2,3}$`; legit `text-primary`/`text-lg`/`text-brand-700` don't (`brand`/`chart` aren't in
 the palette list — confirmed `app/pricing/page.tsx`'s `text-brand-*` stays legal). Rule stays `default-palette`,
 message `MSG.defaultPalette`.
 
 ### 3.3 rounded / border / ring arbitrary length (hole #2)
+
 Add `rounded`, `border`, `ring`, `outline`, `ring-offset` to `reArbLengthPrefix`. `rounded-[5px]` / `border-[3px]`
 / `ring-[3px]` (inner matches the existing `^\d*\.?\d+(px|rem|em|%)$`) → rule `arbitrary-length`, message
 `MSG.arbitraryLength` (**generic, unchanged**). Routing note: `border`/`ring` are also in `reArbColorPrefix`, so
@@ -113,6 +116,7 @@ would give wrong advice. The `var(|min(|calc(…` inner-skip already protects `r
 pre-existing limit of the length test, not introduced here.
 
 ### 3.4 bracket named color (hole #3a)
+
 In the arbitrary-color branch, extend the inner test: flag when inner matches the existing
 `^(#|rgba?\(|hsla?\(|oklch\(|oklab\()` **OR** `cssColors.has(inner.toLowerCase())` — **exact membership, never
 substring** (else `bg-[url(tan.png)]` would false-positive). Covers `bg-[red]`, `border-[blue]`, `ring-[gold]`
@@ -135,7 +139,8 @@ For each match, flag (rule `hardcoded-color`, `MSG.hardcodedColor(namedColor)`) 
 `cssColors.has(group3.toLowerCase())`. Key set = `background | fill | stroke | *Color` (the `/Color$/`-style
 branch auto-covers `color`, `borderColor`, `caretColor`, `outlineColor`, `textDecorationColor`,
 `borderTopColor`, SVG `stopColor`/`floodColor`, …). Anchoring requirements (false-positive guards, from review):
-- Key is at a **property position** (`^` or after `{ ; , ( ` / whitespace) — so a Tailwind class substring like
+
+- Key is at a **property position** (`^` or after `{ ; , (` / whitespace) — so a Tailwind class substring like
   `hover:bg-red-500` or `decoration-color` inside `className="…"` can't trip it (no `prop: "value"` shape).
 - Color value is **anchored to its closing quote** (`(['"])([a-zA-Z]+)\2`) — so `"reddish"`, `"darkred bg"`,
   `"var(--foreground)"`, `boxShadow: v` all **fall through** (not exact, not a bare quoted word). This keeps the

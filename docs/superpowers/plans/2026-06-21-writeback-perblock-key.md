@@ -17,7 +17,7 @@
 ## File Structure
 
 | File | Responsibility | Action |
-|---|---|---|
+| --- | --- | --- |
 | `lib/editor/use-token-writeback.ts` | persist maps keyed by name\|theme; seed(theme); rollback applied re-add | Modify |
 | `components/editor/editor-provider.tsx` | 3 `seed()` call sites + nit-#1 doc comment | Modify |
 | `tests/editor/use-token-writeback.test.ts` | body-capture mock + cross-block/rollback/coalescing/leak tests + seed migration + afterEach | Modify |
@@ -59,6 +59,7 @@ function capturingFetch(ok = true, status = 200) {
 ```
 
 (b) Migrate the existing `seed` call (rollback test) to 3-arg + assert the rolled-back value:
+
 ```ts
     q.seed("--primary", "light", "oklch(0.2 0 0)");
 ```
@@ -66,6 +67,7 @@ function capturingFetch(ok = true, status = 200) {
 (c) Add `afterEach(() => vi.useRealTimers());` after the `beforeEach`.
 
 (d) New tests:
+
 ```ts
   it("cross-block: same token in light then dark within the debounce → BOTH writes POST", async () => {
     const { fn, bodies } = capturingFetch();
@@ -204,6 +206,7 @@ export class WritebackQueue {
   - `setEditingBlock` (~line 160): `queue.seed(selectedToken, block, value)` (value already bound at ~159).
   - `applyHistory` (~line 282): `queue.seed(entry.token, entry.theme, value)`.
   - At the `setEditingBlock` perToken idle-reset (~lines 161-173), add a comment:
+
     ```ts
     // NOTE: status is name-keyed (one slot per token, shared across blocks), so we reset to the new
     // block's truth (idle). A same-token write still in flight for the OLD block isn't surfaced after

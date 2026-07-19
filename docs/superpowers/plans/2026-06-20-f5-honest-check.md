@@ -17,7 +17,7 @@
 ## File Structure
 
 | File | Responsibility | Action |
-|---|---|---|
+| --- | --- | --- |
 | `lib/tokens/contrast.ts` | structural pairing + unresolvable/alpha skip (single source of truth) | Modify |
 | `tests/themes/contrast.test.ts` | existing theme AA tests — must stay green (regression) | Verify |
 | `tests/tokens/contrast-pairing.test.ts` | structural-pairing + skip regression for the lib | Create |
@@ -40,6 +40,7 @@
 ## Task 1: Structural pairing + skip in `lib/tokens/contrast.ts`
 
 **Files:**
+
 - Modify: `lib/tokens/contrast.ts`
 - Create: `tests/tokens/contrast-pairing.test.ts`
 - Verify (no edit): `tests/themes/contrast.test.ts`
@@ -157,6 +158,7 @@ git commit -m "feat(f5): contrast pairs --x/--x-foreground structurally; skips v
 ## Task 2: New `checkContrast` sub-check + message + wiring
 
 **Files:**
+
 - Create: `lib/check/contrast.ts`
 - Modify: `lib/check/messages.ts`, `lib/check/run.ts`
 - Create: `tests/check/contrast.test.ts`
@@ -265,6 +267,7 @@ git commit -m "feat(f5): checkContrast sub-check over globals.css with redirecti
 ## Task 3: Broaden `both-theme` to all color tokens
 
 **Files:**
+
 - Modify: `lib/check/both-theme.ts`
 - Create or extend: `tests/check/both-theme.test.ts`
 
@@ -359,6 +362,7 @@ git commit -m "feat(f5): both-theme covers all color tokens (ramps exempt), not 
 ## Task 4: Docs — correct the contract so it's honest
 
 **Files:**
+
 - Modify: `lib/tokens/generate.ts` (preamble), then regenerate `design-system.{md,json}`
 - Modify: `AGENTS.md`, `docs/HANDOFF.md`, `docs/M6-DOGFOOD.md`
 
@@ -366,7 +370,7 @@ git commit -m "feat(f5): both-theme covers all color tokens (ramps exempt), not 
 
 After the "Color — extend freely" code block's "then `npm run tokens` → use `bg-highlight ...`" line, add one line:
 
-```
+```text
 **The `<name>`/`<name>-foreground` pair must clear WCAG-AA contrast** (4.5:1, or 3:1 for large/muted text) in **both** blocks, or `npm run check` fails.
 ```
 
@@ -379,7 +383,7 @@ Expected: `design-system.md` + `design-system.json` updated (preamble line now p
 
 - [ ] **Step 3: Add the `contrast` row to the AGENTS.md recovery table** — `AGENTS.md` (after the off-token radius row)
 
-```
+```text
 | color pair below WCAG-AA contrast | raise/lower the foreground token's oklch L in the failing block (`:root` or `.dark`) until ≥ 4.5:1 (3:1 for muted/large), then `npm run tokens` |
 ```
 

@@ -33,7 +33,7 @@ git switch -c m4-visual-editor   # from main, after M3a merged
 
 ## File map (responsibilities)
 
-```
+```text
 lib/editor/
   control-map.ts            # TokenGroup -> ControlKind (string union). Disjoint + exhaustive. Pure.
   apply-edit.ts             # validate + allowlist + writeToken for one edit. No regen. Pure-ish (fs). Testable.
@@ -58,17 +58,19 @@ playwright.config.ts        # unchanged (bare `next dev`; editor e2e does NOT as
 ```
 
 **Testing notes (decided up front, from the 3-reviewer pass):**
+
 - The editor route is **write-only**. Manifest regeneration is the **watcher's** existing M2 behavior (under `npm run dev`), NOT the editor's. So the editor e2e asserts **preview + `globals.css` rewritten + ripple** only — it does **not** assert manifest regeneration (that would couple the test to cross-process watcher timing). A comment in the e2e records this boundary.
 - Client-component tests use `// @vitest-environment jsdom` + `@testing-library/react` (see `tests/design-system/token-item.test.tsx` for the established pattern).
 - `controlForGroup` already exists in `lib/tokens/schema.ts`; `control-map.ts` is the **UI** layer that maps a group to a *component kind* (richer/looser than the bare `ControlType`).
 
 ---
 
-# PHASE A — The seam
+## PHASE A — The seam
 
 ### Task 1: `control-map.ts` — group → ControlKind (disjoint + exhaustive)
 
 **Files:**
+
 - Create: `lib/editor/control-map.ts`
 - Test: `tests/editor/control-map.test.ts`
 
@@ -160,6 +162,7 @@ git commit -m "feat(m4): control-map — TokenGroup -> ControlKind (disjoint + e
 ### Task 2: `apply-edit.ts` — validate + allowlist + write (no regen)
 
 **Files:**
+
 - Create: `lib/editor/apply-edit.ts`
 - Test: `tests/editor/apply-edit.test.ts`
 
@@ -256,6 +259,7 @@ git commit -m "feat(m4): apply-edit — allowlist + writeToken (no manifest rege
 ### Task 3: `app/api/ds/token/route.ts` — dev-only POST
 
 **Files:**
+
 - Create: `app/api/ds/token/route.ts`
 - Test: `tests/editor/route.test.ts`
 
@@ -357,6 +361,7 @@ git commit -m "feat(m4): dev-only POST /api/ds/token (write-only, validated, pro
 ### Task 4: `use-token-writeback.ts` — per-token debounce + preview + rollback
 
 **Files:**
+
 - Create: `lib/editor/use-token-writeback.ts`
 - Test: `tests/editor/use-token-writeback.test.ts`
 
@@ -433,6 +438,7 @@ git commit -m "feat(m4): WritebackQueue — per-token debounce, optimistic previ
 ### Task 5: Editor shell + number-field control, wired to the page
 
 **Files:**
+
 - Create: `components/editor/editor-chrome.css`, `editor-provider.tsx`, `editor-mount.tsx`, `edit-toggle.tsx`, `highlight-overlay.tsx`, `editor-panel.tsx`, `panel-toolbar.tsx`, `controls/control-host.tsx`, `controls/number-field.tsx`
 - Modify: `app/design-system/page.tsx` (wrap children in `<EditorMount>`)
 - Test: `tests/editor/editor-provider.test.tsx` (state), `tests/editor/number-field.test.tsx` (control)
@@ -441,6 +447,7 @@ This is the integration task. Keep behavior minimal: edit mode on/off, click a `
 panel shows the control for its group (only `number` wired this task) → editing previews + queues writeback.
 
 **Pin these so the implementer doesn't get stuck:**
+
 - **Provider state shape** (spec §2): `{ enabled: boolean; selectedToken: string | null; editingBlock: "light"|"dark"; panelAppearance: "dark"|"light"; perToken: Record<string, { original: string; current: string; status: "idle"|"dirty"|"saving"|"saved"|"error"; error?: string }> }` + actions `enable/disable`, `select(name)`, `setEditingBlock`, `setPanelAppearance`, `reset(name)`. The provider owns a `WritebackQueue` (Task 4) whose `setVar` writes `document.documentElement.style.setProperty` and whose `onStatus` updates `perToken[*].status`.
 - **`EditorMount` dev-gate mechanism:** it's a **client** component (`"use client"`); gate with `if (process.env.NODE_ENV === "production") return <>{children}</>;` (render children untouched, no editor) — do NOT use a server-only check inside a client component. `process.env.NODE_ENV` is statically replaced at build, so the editor code tree-shakes out of the prod bundle.
 - **`ControlHost`:** `switch (controlKindForGroup(token.group))` → component; this task wires only `"number"` → `NumberField`, all other kinds render a small `<p>control coming…</p>` stub (replaced in Phases B/C). The token's `group` comes from the manifest (`design-system.json`) entry for `selectedToken`.
@@ -471,6 +478,7 @@ git commit -m "feat(m4): editor shell (provider/mount/panel/overlay) + number-fi
 ### Task 6: e2e — the seam end-to-end (zIndex)
 
 **Files:**
+
 - Create: `e2e/editor.spec.ts`
 
 - [ ] **Step 1: Write the test**
@@ -519,11 +527,12 @@ git commit -m "test(m4): e2e — seam (edit zIndex → preview + write + ripple)
 
 ---
 
-# PHASE B — Color
+## PHASE B — Color
 
 ### Task 7: `oklch.ts` — culori wrapper
 
 **Files:**
+
 - Create: `lib/editor/oklch.ts`
 - Test: `tests/editor/oklch.test.ts`
 
@@ -541,6 +550,7 @@ git commit -m "test(m4): e2e — seam (edit zIndex → preview + write + ripple)
 ### Task 8: `color-oklch.tsx` core + wire via control-host
 
 **Files:**
+
 - Create: `components/editor/controls/color-oklch.tsx`
 - Modify: `components/editor/controls/control-host.tsx` (add `color` → ColorOklch)
 - Test: `tests/editor/color-oklch.test.tsx`; extend `e2e/editor.spec.ts`
@@ -559,6 +569,7 @@ git commit -m "test(m4): e2e — seam (edit zIndex → preview + write + ripple)
 ### Task 9: Color enhancements — eyedropper · token swatches · contrast badge
 
 **Files:**
+
 - Modify: `components/editor/controls/color-oklch.tsx`
 - Test: extend `tests/editor/color-oklch.test.tsx`
 
@@ -573,11 +584,12 @@ git commit -m "test(m4): e2e — seam (edit zIndex → preview + write + ripple)
 
 ---
 
-# PHASE C — Remaining controls + editing-block toggle
+## PHASE C — Remaining controls + editing-block toggle
 
 ### Task 10: length / opacity / duration / select / easing / text controls
 
 **Files:**
+
 - Create: `controls/{length-slider,opacity-slider,duration-slider,select-field,easing-field,text-field}.tsx`
 - Modify: `controls/control-host.tsx` (wire all kinds)
 - Test: `tests/editor/controls.test.tsx` + a registry-completeness test
@@ -598,6 +610,7 @@ git commit -m "test(m4): e2e — seam (edit zIndex → preview + write + ripple)
 ### Task 11: Editing-block (light/dark) toggle + forced dark preview
 
 **Files:**
+
 - Modify: `editor-provider.tsx` (editingBlock drives preview scope + the POST `theme`), `panel-toolbar.tsx`
   (the chip + state caption), `use-token-writeback.ts` (target `.dark` scope)
 - Test: extend provider test; `e2e/editor.spec.ts`
@@ -612,11 +625,12 @@ git commit -m "test(m4): e2e — seam (edit zIndex → preview + write + ripple)
 
 ---
 
-# PHASE D — Edit safety
+## PHASE D — Edit safety
 
 ### Task 12: reset-to-original + save-state indicator + surfaced rollback
 
 **Files:**
+
 - Create: `components/editor/save-state.tsx`
 - Modify: `editor-provider.tsx` (already holds `{original,status,error}`), `editor-panel.tsx` (context bar)
 - Test: extend provider test; `e2e/editor.spec.ts`
@@ -633,11 +647,12 @@ git commit -m "test(m4): e2e — seam (edit zIndex → preview + write + ripple)
 
 ---
 
-# PHASE E — Panel appearance + polish
+## PHASE E — Panel appearance + polish
 
 ### Task 13: Panel-appearance (chrome light/dark) toggle
 
 **Files:**
+
 - Modify: `editor-chrome.css` (already has both sets), `editor-provider.tsx` (panelAppearance + persist),
   `panel-toolbar.tsx` (☀/☾ button)
 - Test: extend provider test; `e2e/editor.spec.ts`
@@ -655,6 +670,7 @@ git commit -m "test(m4): e2e — seam (edit zIndex → preview + write + ripple)
 ### Task 14: Polish — empty state · sibling rows · overlay token name · reflow width
 
 **Files:**
+
 - Modify: `editor-panel.tsx` (empty state + sibling rows), `highlight-overlay.tsx` (token-name label),
   `panel-toolbar.tsx` (effective preview-width readout)
 - Test: jsdom tests for empty state + sibling rows; extend e2e
@@ -669,7 +685,7 @@ git commit -m "test(m4): e2e — seam (edit zIndex → preview + write + ripple)
 
 ---
 
-# PHASE F — Close
+## PHASE F — Close
 
 ### Task 15: Full suite green + HANDOFF + merge
 
@@ -686,6 +702,7 @@ git switch main
 git merge --no-ff m4-visual-editor -m "Merge M4: dev-only visual token editor"
 git branch -d m4-visual-editor
 ```
+
 - [ ] **Step 4:** Verify suite green on `main`.
 
 ---

@@ -31,7 +31,7 @@ of Task 6 (CONTROL_KINDS + never-guard) is caught ONLY by `next build`, not `npm
 ## File Structure
 
 | File | Responsibility | Task |
-|---|---|---|
+| --- | --- | --- |
 | `lib/editor/css-list.ts` | **Create.** Pure `splitTopLevel(s)` — paren-aware depth-0 comma split (filter-empties). | 1 |
 | `lib/editor/gradient.ts` | **Modify.** Delete private `splitTopLevel`, import from `css-list`. | 1 |
 | `lib/editor/resolve-token.ts` | **Modify.** Refactor `splitLayers` to delegate to `splitTopLevel`. | 1 |
@@ -56,6 +56,7 @@ and re-implemented in `resolve-token.ts`. Extract once (rule-of-three). The shar
 **filter-empties** behaviour (safe superset — `resolve-token`'s only caller never has empty segments).
 
 **Files:**
+
 - Create: `lib/editor/css-list.ts`, `tests/editor/css-list.test.ts`
 - Modify: `lib/editor/gradient.ts:51-62` (delete private fn, import), `lib/editor/resolve-token.ts:44-55`
 
@@ -160,6 +161,7 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ## Task 2: Pure core `lib/editor/shadow.ts` — model + parse + format
 
 **Files:**
+
 - Create: `lib/editor/shadow.ts`, `tests/editor/shadow.test.ts`
 
 - [ ] **Step 1: Write the failing test** — `tests/editor/shadow.test.ts`
@@ -397,6 +399,7 @@ Purpose-built sibling of `GradientStopPicker` (read it first as the template). E
 `{ color: "black" | "--name", alpha }`. **Copy** the popover/grid/alpha idiom; do NOT extract a shared grid.
 
 **Files:**
+
 - Create: `components/editor/controls/shadow-color-picker.tsx`
 - Test: covered by the builder test (Task 5) + a focused render test appended to `shadow-builder.test.tsx`.
   (No standalone test file — it has no pure logic; behaviour is asserted through the builder.)
@@ -527,6 +530,7 @@ early-return-after-hooks. Decompose into in-file `LayerCard` + `LayerSummaryRow`
 calls MUST live in `LayerCard`** (hook-count safety).
 
 **Files:**
+
 - Create: `components/editor/controls/shadow-builder.tsx`, `tests/editor/shadow-builder.test.tsx`
 
 - [ ] **Step 1: Write the failing test** — `tests/editor/shadow-builder.test.tsx`
@@ -871,6 +875,7 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ## Task 6: Wire control-map + control-host (ATOMIC — must compile together)
 
 **Files:**
+
 - Modify: `lib/editor/control-map.ts:3-5,24`, `components/editor/controls/control-host.tsx`
 - Test: `tests/editor/control-host.test.tsx` (create or extend)
 
@@ -903,6 +908,7 @@ export const CONTROL_KINDS = [
   "color", "length", "number", "opacity", "select", "duration", "easing", "text", "gradient", "shadow",
 ] as const;
 ```
+
 ```ts
   shadow: "shadow",   // was "text"
 ```
@@ -913,6 +919,7 @@ export const CONTROL_KINDS = [
 ```tsx
 import { ShadowBuilder } from "@/components/editor/controls/shadow-builder";
 ```
+
 ```tsx
     case "shadow":
       return (

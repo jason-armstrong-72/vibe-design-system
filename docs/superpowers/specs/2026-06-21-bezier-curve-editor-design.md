@@ -62,7 +62,7 @@ store that drag and inputs both write.]**
 
 The **one** piece of local state is a transient gesture buffer:
 
-```
+```ts
 const [drag, setDrag] = useState<Cubic | null>(null); // non-null only mid-gesture
 const display: Cubic = drag ?? parsed ?? FALLBACK;     // what the canvas/inputs/preview render
 ```
@@ -193,6 +193,7 @@ and would persist + push undo history.]**
 ## 6. Testing
 
 **`tests/editor/bezier.test.ts`** (pure, fast — the testable core):
+
 - `parseBezier`: each keyword → its exact spec tuple; `cubic-bezier` with varied whitespace; `steps()` /
   `var()` / garbage → `null`.
 - `formatBezier`: 2dp **numeric** rounding (`0.2`, not `0.20`); `parseBezier(formatBezier(c)) === c` round-trip;
@@ -202,6 +203,7 @@ and would persist + push undo history.]**
   returns `x ∈ [0,1]` (the validator won't catch a regression — §3).
 
 **`tests/editor/easing-field.test.tsx`** (rewritten; `// @vitest-environment jsdom`):
+
 - renders the SVG canvas, two handles, four numeric inputs, the preset strip, the preview, the raw row.
 - pointer drag (pointerdown→move→up, mocking `getBoundingClientRect` + pointer capture): emits **one**
   `onChange` with a normalised, x-clamped `cubic-bezier`, and emits **nothing** mid-move.

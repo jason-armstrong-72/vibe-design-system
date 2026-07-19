@@ -23,7 +23,7 @@ three returned **NEEDS CHANGES — "designed to pass / theater risk."** The conv
 fixes folded into this protocol:
 
 | Reviewer finding | Fix (in this protocol) |
-|---|---|
+| --- | --- |
 | Brief leaked the answer — "vibrant promo highlight" ≈ the manifest's own worked `--highlight` example | Briefs describe the **feature**, never the mechanism; **frozen** here before any run (§2) |
 | N=1 is an anecdote, not a gate | **2 briefs × ~2 fresh runs each** + brownfield run; all required runs pass clean (§3) |
 | Pricing too narrow — never hits interactive states / non-color extension / both-theme | Brief B is a **stateful form**; forces focus/hover/disabled/validation + a **non-color** extension (§2) |
@@ -159,6 +159,7 @@ the brownfield observation (§2.3) recorded. A fix→re-run (§8) *replaces* a f
 becomes a finding, and the 2-green-per-brief minimum still must be met after any fix.
 
 **PASS-preserving subagent actions (expected, healthy — NOT failures):**
+
 - Reading/consulting any repo file, including the auto-loaded `AGENTS.md` / `design-system.md`.
 - Iterating against a **red `npm run check`** — editing its own code and re-running until green.
 - Running `npm run tokens` after adding a token (the extension procedure working as designed).
@@ -166,6 +167,7 @@ becomes a finding, and the 2-green-per-brief minimum still must be met after any
 - Multiple build / test attempts; reading CI/check output; re-reading the manifest.
 
 **FAIL-triggering events (any one fails that run):**
+
 - The **observer** sends the subagent any message beyond the frozen brief (hint, nudge, correction).
 - The subagent edits any **contract machinery**: `lib/check/**`, `lib/tokens/**`, `AGENTS.md`,
   `CLAUDE.md`, `.cursor/rules/**`, the manifest generator, or `design-system.{md,json}` by hand (the

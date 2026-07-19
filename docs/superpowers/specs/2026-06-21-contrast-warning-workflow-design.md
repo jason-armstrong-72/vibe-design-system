@@ -53,6 +53,7 @@ checked only the active editing block — letting a user fix Light, see green, a
 rejects. **The report covers BOTH blocks**, regardless of the active block:
 
 For the selected colour token, for **each** theme ∈ {light, dark}:
+
 1. resolve the edited token's value for that theme (the **live** value — §3),
 2. find its partner via `partnerOf`; resolve the **partner's live** value for that theme (§3),
 3. if either value is **not `measurable`** (after one-level `var()` resolution — §3), skip that theme (no
@@ -131,6 +132,7 @@ current control uses an inline SVG glyph, so plain text (no icon) is an acceptab
 ## 5. Testing
 
 **Pure units (highest value):**
+
 - `schema.ts`: `minRatio("--muted-foreground")===3.0`, else 4.5; `partnerOf` both directions
   (`--primary`↔`--primary-foreground`, `--background`↔`--foreground`, invented `--promo`↔`--promo-foreground`),
   `--foreground` does **not** strip to `--`, returns null when no partner present.
@@ -138,9 +140,10 @@ current control uses an inline SVG glyph, so plain text (no icon) is an acceptab
   returns a passing L, not a false null (regression for C1); **high-chroma** case where the raw value would
   "pass" but the clamped one fails → returned L passes *gamut-mapped* (C2); returns null when truly unreachable.
 - `contrast.ts` refactor: `contrastResults` output is **unchanged** vs before (run the existing theme-AA + F5
-  + contrast-pairing suites — all green; that's the parity guard for the schema-extraction refactor).
+  - contrast-pairing suites — all green; that's the parity guard for the schema-extraction refactor).
 
 **Hook/behaviour:**
+
 - `useContrastReport` (or the control): a pair failing in **dark only** shows a Dark warning + a Light pass
   (proves both-block); the Fix button label contains the target L; clicking calls `onChange` with a value whose
   gamut-mapped ratio ≥ min for that block.

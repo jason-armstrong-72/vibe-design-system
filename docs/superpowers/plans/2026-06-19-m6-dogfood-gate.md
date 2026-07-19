@@ -38,6 +38,7 @@ A building run can FAIL (a FAIL event in spec §4, or the 4 commands not green).
 ## Task 0: Branch + report skeleton
 
 **Files:**
+
 - Create: `docs/M6-DOGFOOD.md`
 - Branch: `m6-dogfood`
 
@@ -100,6 +101,7 @@ git commit -m "docs(m6): dogfood run record skeleton + frozen briefs"
 If an existing token satisfies a brief's need, that brief's forcing function never fires. Prove it's real, record proof in the report §2.
 
 **Files:**
+
 - Modify: `docs/M6-DOGFOOD.md` (§2)
 
 - [ ] **Step 1: Enumerate color tokens (Brief A)**
@@ -128,6 +130,7 @@ git commit -m "docs(m6): gap-proof for both briefs (§6)"
 ## Task 2: Run A1 — /pricing, fresh blind subagent
 
 **Files:**
+
 - Subagent creates: `app/pricing/page.tsx` (+ any components it chooses)
 - Possibly modifies: `app/globals.css` (extension), regenerates `design-system.{md,json}`
 - Modify (orchestrator, after): `docs/M6-DOGFOOD.md` (§3 Run A1)
@@ -143,6 +146,7 @@ Do NOT add anything about tokens, the contract, AGENTS.md, `npm run check`, or a
 - [ ] **Step 2: Observe — capture the run for grading**
 
 While/after it runs, note against spec §4 + §5:
+
 - Did it **consult/follow** the auto-loaded contract (`AGENTS.md`/`design-system.md`), or ignore it? (The contract is auto-present per spec §3 — we observe whether it *acts on* it, not whether it *finds* it.)
 - Did it build with token utilities, or reach for hardcoded/arbitrary classes?
 - Did it hit a **red `npm run check`** and recover from the output alone? (§5 #2)
@@ -177,11 +181,14 @@ git commit -m "docs(m6): record run A1 (/pricing)"
 - [ ] **Step 7: Reset the working tree for the next independent run (keeper scheme — N1/N2)**
 
 Run A2 must be **independent** (fresh repo state, no memory of A1's page). Keep **at most one keeper candidate per brief**, in a **named, path-scoped** stash so the stack stays unambiguous:
+
 - **If A1 PASSED and is the current best `/pricing` candidate:** save just its output to a named stash, replacing any prior pricing candidate:
+
   ```bash
   git stash drop "$(git stash list | grep keeper-pricing | head -1 | cut -d: -f1)" 2>/dev/null || true
   git stash push -u -m keeper-pricing -- app/pricing app/globals.css design-system.json design-system.md
   ```
+
 - **If A1 FAILED or is not the keeper:** discard its output: `git checkout -- app/globals.css design-system.* && git clean -fd app/pricing`.
 
 - [ ] **Step 8: Gate on a clean tree before the next dispatch**
@@ -209,6 +216,7 @@ Identical to Task 2, second independent subagent, same verbatim Brief A.
 ## Task 4: Run B1 — /settings, fresh blind subagent
 
 **Files:**
+
 - Subagent creates: `app/settings/page.tsx` (+ components); may modify `app/globals.css` (`--radius` knob), regenerate manifest.
 - Modify (orchestrator): `docs/M6-DOGFOOD.md` (§3 Run B1)
 
@@ -241,6 +249,7 @@ Identical to Task 4, second independent subagent, same verbatim Brief B.
 ## Task 6: Brownfield observation (spec §2.3) — observational, not pass/fail
 
 **Files:**
+
 - Create (temporary): `app/legacy/page.tsx`, `components/legacy-card.tsx`
 - Modify: `docs/M6-DOGFOOD.md` (§4)
 
@@ -276,6 +285,7 @@ git commit -m "docs(m6): brownfield adoption observation (§2.3)"
 ## Task 7: Assertion audit + findings ledger + verdict (spec §5, §8)
 
 **Files:**
+
 - Modify: `docs/M6-DOGFOOD.md` (§5, §6, §7)
 
 - [ ] **Step 1: Audit the 3 required assertions (§5).** For each, confirm it was witnessed across Runs A1/A2/B1/B2 and cite the run:
@@ -303,6 +313,7 @@ git commit -m "docs(m6): assertion audit, findings ledger, verdict"
 The keep-decision is NOT automatic. Screenshots → user reviews → user signs off any kept surface + any new token (the section-by-section token review).
 
 **Files:**
+
 - Restore (if keeping): the keeper run's `app/pricing/**`, `app/settings/**`, `app/globals.css` extension, regenerated `design-system.{md,json}`
 - Temporary: `e2e/__m6_shots__.spec.ts` (throwaway screenshot spec, gitignored shots)
 
@@ -312,6 +323,7 @@ The keep-decision is NOT automatic. Screenshots → user reviews → user signs 
 git stash pop "$(git stash list | grep keeper-pricing  | head -1 | cut -d: -f1)"
 git stash pop "$(git stash list | grep keeper-settings | head -1 | cut -d: -f1)"
 ```
+
 Resolve any conflict in `app/globals.css` (both stashes may touch it — take the union of both added tokens / the radius edit). Then run `npm run tokens` so the manifest reflects the merged globals. (If only one brief produced a keeper, pop just that one.)
 
 - [ ] **Step 2: Capture screenshots** — write a throwaway Playwright spec that loads `/pricing` and `/settings` in **light and dark** (≥1 theme), saves PNGs to `e2e/__shots__/` (gitignored). Run it.
@@ -325,11 +337,13 @@ Expected: PNGs written.
 
 - [ ] **Step 5: Apply the keep-decision.**
   - If **keeping**: ensure token (if any) is in both blocks + manifest regenerated (`npm run tokens`); remove the throwaway shot spec. Commit the kept surface in its **own** commit:
+
     ```bash
     rm e2e/__m6_shots__.spec.ts
     git add app/ design-system.json design-system.md
     git commit -m "feat(m6): /pricing + /settings example routes (+ <token>), user-approved"
     ```
+
   - If **not keeping**: discard the page output, keep only the report. `git checkout -- . && git clean -fd app/pricing app/settings e2e/__m6_shots__.spec.ts`.
 
 ---
@@ -337,6 +351,7 @@ Expected: PNGs written.
 ## Task 9: Finalize (only if verdict = PASS)
 
 **Files:**
+
 - Modify: `docs/HANDOFF.md`, `docs/specs/2026-06-16-design-system-starter-design.md` (§10 M6)
 
 - [ ] **Step 1: Mark M6 done** in parent spec §10 M6 and in HANDOFF (status line + "Where we are"), citing run count + linking `docs/M6-DOGFOOD.md`. Move any newly-confirmed holes into the HANDOFF M6 fast-follow block (already seeded).

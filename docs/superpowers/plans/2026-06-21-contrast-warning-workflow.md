@@ -17,7 +17,7 @@
 ## File Structure
 
 | File | Responsibility | Action |
-|---|---|---|
+| --- | --- | --- |
 | `lib/tokens/schema.ts` | `LARGE_OK` + `minRatio(fg)` + structural `partnerOf(name, present)` | Modify |
 | `lib/tokens/contrast.ts` | use `minRatio`/`partnerOf`; export `measurable` | Modify |
 | `lib/editor/oklch.ts` | `nearestPassingL(value, partnerValue, min)` | Modify |
@@ -252,6 +252,7 @@ it("committedValue returns the live per-block value (edited > manifest)", () => 
   // → the edited value; committedValue(otherToken,"dark") → manifest value.
 });
 ```
+
 (Use the existing test harness in this file for mounting the provider + invoking context methods.)
 
 - [ ] **Step 2: Run — expect FAIL**: `npx vitest run tests/editor/editor-provider.test.tsx`

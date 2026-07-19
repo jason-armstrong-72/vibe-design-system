@@ -17,7 +17,7 @@
 ## File Structure
 
 | File | Responsibility |
-|---|---|
+| --- | --- |
 | `lib/design-system/sections.ts` | `groupedSections(manifest)` → ordered sections (group → its tokens); the render model |
 | `components/design-system/token-item.tsx` | one token: `data-token`-tagged, group-appropriate preview + name + value + utilities |
 | `components/design-system/token-section.tsx` | a titled section rendering a group's `TokenItem`s |
@@ -34,6 +34,7 @@ Decomposition: the render *model* (`sections.ts`) is pure and unit-tested for co
 ## Task 0: Playwright setup
 
 **Files:**
+
 - Create: `playwright.config.ts`
 - Modify: `package.json` (scripts + dep)
 
@@ -79,6 +80,7 @@ git commit -m "chore(m3): add Playwright + config"
 ## Task 1: `sections.ts` — the render model (completeness-tested)
 
 **Files:**
+
 - Create: `lib/design-system/sections.ts`
 - Create: `tests/design-system/sections.test.ts`
 
@@ -170,6 +172,7 @@ git commit -m "feat(m3): grouped-sections render model (completeness-tested)"
 Each token renders `data-token="--name"` (the editor's hook — spec §4/§6) with a group-appropriate preview. Function only; styling refined in Task 6.
 
 **Files:**
+
 - Create: `components/design-system/token-item.tsx`
 - Create: `components/design-system/token-section.tsx`
 - Create: `tests/design-system/token-item.test.tsx`
@@ -181,6 +184,7 @@ npm i -D @testing-library/react @testing-library/dom jsdom
 ```
 
 Two required config changes (Vitest v4 — do NOT use `environmentMatchGlobs`, it was removed in v3):
+
 1. **Broaden the test glob** in `vitest.config.ts`: `test.include` is currently `["tests/**/*.test.ts"]`, which will NOT collect `.test.tsx`. Change it to `["tests/**/*.test.{ts,tsx}"]` — otherwise the component test silently isn't run and appears to "pass" by not existing.
 2. **Select jsdom per-file** (keeps `.test.ts` in fast `node`): put a docblock at the TOP of each component `.test.tsx`:
 
@@ -240,6 +244,7 @@ git commit -m "feat(m3): TokenItem (data-token tagged) + TokenSection"
 ## Task 3: `/design-system` page — auto-iterate sections
 
 **Files:**
+
 - Create: `app/design-system/page.tsx`
 
 - [ ] **Step 1: Build the page**
@@ -294,6 +299,7 @@ git commit -m "feat(m3): /design-system page auto-iterates token sections"
 ## Task 4: Component showcase (hand-authored)
 
 **Files:**
+
 - Create: `components/design-system/component-showcase.tsx`
 - Modify: `app/design-system/page.tsx` (include it)
 
@@ -322,6 +328,7 @@ git commit -m "feat(m3): hand-authored shadcn component showcase"
 ## Task 5: Playwright e2e — the truthful-by-construction proof
 
 **Files:**
+
 - Create: `e2e/design-system.spec.ts`
 
 - [ ] **Step 1: Write the e2e spec**

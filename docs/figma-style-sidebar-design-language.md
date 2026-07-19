@@ -13,7 +13,8 @@ dense, dark-first, sectioned, themable.
   apply to your tool — and some are actively wrong for a design-system builder.** Read Part B as context,
   not prescription. Each item says when it applies and what to do instead.
 
-> ### ⚠ If your tool edits a DESIGN SYSTEM (not pre-built HTML), read this first
+> ## ⚠ If your tool edits a DESIGN SYSTEM (not pre-built HTML), read this first
+>
 > This guide was distilled from a tool that loads a **finished web page** and restyles it by generating
 > CSS selectors that override the page's existing styles. A lot of its machinery — per-edit *scope*,
 > "this element vs all look-alikes", CSS *specificity boosting*, cascade-conflict flagging — exists only
@@ -29,7 +30,7 @@ dense, dark-first, sectioned, themable.
 
 ---
 
-# Part A — Universal design language (adopt this)
+## Part A — Universal design language (adopt this)
 
 ## A0. The one rule that matters most
 
@@ -44,6 +45,7 @@ land or what they affect.**
 ## A1. Visual language
 
 ### A1.1 Density & layout
+
 - **Dense, not sparse.** Tight vertical rhythm. Rows ~28–32px tall. 6px gaps. 12px section padding.
 - **Two-up grid** for short controls (size + weight side by side); full-width for long ones (font, colour).
 - **Sectioned.** Every group is a collapsible section with a caret + title, divided by a 1px hairline.
@@ -51,32 +53,34 @@ land or what they affect.**
 - **Panel width** ~280–320px. Content scrolls; header/toolbar stays fixed.
 
 ### A1.2 Colour tokens
+
 Define **semantic tokens**, theme them once, and have every component consume tokens — never hardcode hex
 in components. This is what makes a light/dark toggle a one-line change.
 
-| Token             | Dark            | Light           | Use                                   |
-|-------------------|-----------------|-----------------|---------------------------------------|
-| `panel`           | `#1e1e1e`       | `#ffffff`       | Sidebar background                    |
-| `panel-raised`    | `#252525`       | `#f7f8fa`       | Header/toolbar strip                  |
-| `field`           | `#2a2a2a`       | `#f1f3f5`       | Input/field background                |
-| `field-hover`     | `#303030`       | `#e9ecef`       | Field hover / segmented active        |
-| `border`          | `#333333`       | `#e2e5e9`       | Hairlines, dividers                   |
-| `text`            | `#e6e6e6`       | `#1a1a1a`       | Primary text / values                 |
-| `text-muted`      | `#8a8a8a`       | `#6b7280`       | Labels, units, captions               |
-| `accent`          | `#4f9cf9`       | `#2563eb`       | Selection, focus ring, active state   |
-| `accent-soft`     | `#26344a`       | `#dbeafe`       | Accent chip background                 |
-| `warn`            | `#f5b454`       | `#b45309`       | "changed / needs attention" markers   |
+| Token | Dark | Light | Use |
+| ------------------- | ----------------- | ----------------- | --------------------------------------- |
+| `panel` | `#1e1e1e` | `#ffffff` | Sidebar background |
+| `panel-raised` | `#252525` | `#f7f8fa` | Header/toolbar strip |
+| `field` | `#2a2a2a` | `#f1f3f5` | Input/field background |
+| `field-hover` | `#303030` | `#e9ecef` | Field hover / segmented active |
+| `border` | `#333333` | `#e2e5e9` | Hairlines, dividers |
+| `text` | `#e6e6e6` | `#1a1a1a` | Primary text / values |
+| `text-muted` | `#8a8a8a` | `#6b7280` | Labels, units, captions |
+| `accent` | `#4f9cf9` | `#2563eb` | Selection, focus ring, active state |
+| `accent-soft` | `#26344a` | `#dbeafe` | Accent chip background |
+| `warn` | `#f5b454` | `#b45309` | "changed / needs attention" markers |
 
 Swap the accent for your product's brand colour. Keep contrast: muted text ≥ 4.5:1 on `field`.
 
 ### A1.3 Type & shape
+
 - System UI stack, 12–13px body, 11px uppercase section labels (letter-spacing ~0.04em), 10px units.
 - Monospace for any code-like value (IDs, hex, token names).
 - Radius: 6px fields, 5px chips, 10px panel corners. Small and consistent — not pill-round.
 
 ## A2. Anatomy of the panel (top → bottom)
 
-```
+```text
 ┌─ Toolbar ───────────────────────────────┐  panel-raised, fixed
 │  ◐ theme   ⤓ export   ⊙ ⊙ ⊙ icon-toggles │
 ├─ Context bar ───────────────────────────┤
@@ -112,6 +116,7 @@ Every editable property is one **field row**: `[icon/label] [value input] [unit]
 - **Slider** — bounded continuous value; pair with a numeric field showing the exact value.
 
 Rules:
+
 - One interaction per row. Don't stack two editable things except `swatch + value` (they're one value).
 - Show the **current/computed value** as the seed so a row is never blank.
 - Echo edits live to the preview; debounce persistence (~250ms), apply preview immediately.
@@ -196,7 +201,7 @@ Rules:
 
 ---
 
-# Part B — Originating-project context (QA Restyle Tool)
+## Part B — Originating-project context (QA Restyle Tool)
 
 **Read as context, not prescription.** These patterns solve problems specific to editing **pre-built,
 captured HTML**. For each, this section states **when it applies** and **what a design-system builder
@@ -205,7 +210,7 @@ should do instead**. If you own your design system, expect to **skip most of Par
 ## B0. The architecture difference (read this before the rest of Part B)
 
 | | QA Restyle Tool (origin) | A design-system / website-builder tool |
-|---|---|---|
+| --- | --- | --- |
 | Source of truth | A **captured, finished HTML page** it does not own | **Tokens + component definitions** it fully owns |
 | How an edit applies | Emits a **CSS selector + rule** that must override the page's existing CSS | Updates a token/component; bindings re-render by design |
 | The cascade | An **adversary** to beat (specificity, `!important`, inheritance) | **Yours to define**; no fight |
@@ -216,6 +221,7 @@ Everything below flows from the left column. If you're in the right column, the 
 is unnecessary.
 
 ## B1. Per-edit *scope* and the scope ladder — **probably skip**
+
 - **What it is here:** every edit chooses a *scope* — apply to just this one element, or to every element
   that "looks the same". A "scope ladder" lists reach-ordered selectors (this element → this class → all
   buttons …) with match counts.
@@ -227,6 +233,7 @@ is unnecessary.
   instance) instead. That's clearer and needs no selector inference.
 
 ## B2. CSS specificity boosting & cascade-conflict flagging — **don't port**
+
 - **What it is here:** when an emitted rule loses to the site's existing CSS, the tool escalates
   specificity (a `:not(#_sp)` ladder) until it wins, and flags conflicts it can't safely resolve.
 - **Why it exists here:** it's overriding CSS it didn't write and can't edit.
@@ -234,6 +241,7 @@ is unnecessary.
   Specificity boosting would be solving a problem you don't have. Omit entirely.
 
 ## B3. The two-scope split (Text style vs Appearance) — **a product choice built on B1**
+
 - **What it is here:** typography/structural edits default to cascading across the look-alike cluster;
   colour/decorative edits default to *this element only* — so you can recolour one button without dragging
   the whole group.
@@ -244,6 +252,7 @@ is unnecessary.
   so you likely **don't need a two-scope UI** — though you may still group properties visually (Part A).
 
 ## B4. Live preview into a captured-HTML iframe + debounced diff-sync — **adapt, don't copy**
+
 - **What it is here:** edits are applied to an `<iframe>` of the captured page via an injected override
   stylesheet for instant feedback, then persisted by diffing against a canonical
   `{selector, property, value}` map.
@@ -253,6 +262,7 @@ is unnecessary.
   the override approach.
 
 ## B5. Preserving e2e/test handles through the restyle — **the principle is universal, the specifics aren't**
+
 - Here the restyle had to keep specific structural handles (`data-section`, scope-ladder toggles, active
   selector markup) stable so the existing behaviour tests kept passing unchanged — proof the re-skin
   changed nothing. **The discipline generalises (A5#8); the exact handles are this project's.**

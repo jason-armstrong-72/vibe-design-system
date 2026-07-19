@@ -17,7 +17,7 @@
 ## File structure
 
 | File | Responsibility | Task |
-|---|---|---|
+| --- | --- | --- |
 | `lib/check/off-token-scale.ts` | add `"2xs"` to `VOCAB.text` (gate fix) | 1 |
 | `app/globals.css` + `themes/{neutral,swiss,brutalist}.css` | `--fs-2xs`/`--lh-2xs`; `--surface`/`--surface-foreground`; tune neutral `--accent` | 2,3,4 |
 | `lib/tokens/schema.ts` | add `surface` to `COLOR_ROLES` | 3 |
@@ -38,6 +38,7 @@
 **Files:** Modify `lib/check/off-token-scale.ts:16`; Test `tests/check/off-token-scale-2xs.test.ts`
 
 - [ ] **Step 1: failing test**
+
 ```ts
 // tests/check/off-token-scale-2xs.test.ts
 // @vitest-environment node
@@ -61,6 +62,7 @@ describe("text-2xs is a recognized scale step", () => {
 - [ ] **Step 2: run → FAIL** — `npx vitest run tests/check/off-token-scale-2xs.test.ts` (first test fails: `2xs` not in `VOCAB.text`, so it's silently unflagged).
 
 - [ ] **Step 3: implement** — `lib/check/off-token-scale.ts:16`, prepend `"2xs"`:
+
 ```ts
   text: new Set(["2xs", "xs", "sm", "base", "lg", "xl", "2xl", "3xl", "4xl", "5xl", "6xl", "7xl", "8xl", "9xl"]),
 ```
@@ -68,6 +70,7 @@ describe("text-2xs is a recognized scale step", () => {
 - [ ] **Step 4: run → PASS.**
 
 - [ ] **Step 5: commit**
+
 ```bash
 git add lib/check/off-token-scale.ts tests/check/off-token-scale-2xs.test.ts
 git commit -m "fix(check): recognize text-2xs as a scale step (VOCAB.text)"
@@ -82,6 +85,7 @@ git commit -m "fix(check): recognize text-2xs as a scale step (VOCAB.text)"
 Add the step next to `--fs-xs` in each `:root` (the `fs/lh` block). Value: `--fs-2xs: 0.6875rem; --lh-2xs: 0.875rem;`.
 
 - [ ] **Step 1: failing test**
+
 ```ts
 // tests/tokens/micro-type.test.ts
 // @vitest-environment node
@@ -101,10 +105,13 @@ describe("2xs micro type step", () => {
 - [ ] **Step 2: run → FAIL.**
 
 - [ ] **Step 3: implement** — in EACH of `app/globals.css`, `themes/neutral.css`, `themes/swiss.css`, `themes/brutalist.css`, add to the `:root` fs/lh block (right before `--fs-xs`):
+
 ```css
   --fs-2xs: 0.6875rem; --lh-2xs: 0.875rem;
 ```
+
 Then regenerate (auto-wires `--text-2xs` in `@theme` + manifest):
+
 ```bash
 npm run tokens
 ```
@@ -112,6 +119,7 @@ npm run tokens
 - [ ] **Step 4: run → PASS.** Also `npm run check` (now green — Task 1 made `text-2xs` valid + the step is defined).
 
 - [ ] **Step 5: commit**
+
 ```bash
 git add app/globals.css themes/neutral.css themes/swiss.css themes/brutalist.css design-system.json design-system.md tests/tokens/micro-type.test.ts
 git commit -m "feat(tokens): add 2xs micro type step (~11px) across themes"
@@ -126,6 +134,7 @@ git commit -m "feat(tokens): add 2xs micro type step (~11px) across themes"
 Value guidance: `--surface` = a subtle step off that theme's `--background` (neutral: light `oklch(0.985 0 0)`, dark `oklch(0.19 0 0)`; swiss/brutalist: a hair off their `--background`, same hue/chroma). `--surface-foreground` = that theme's body text (`= --foreground` value).
 
 - [ ] **Step 1: failing test**
+
 ```ts
 // tests/tokens/surface-role.test.ts
 // @vitest-environment node
@@ -168,6 +177,7 @@ describe("--surface role", () => {
 - [ ] **Step 4: run → PASS.** `npm run check` green (both-theme + contrast satisfied).
 
 - [ ] **Step 5: commit**
+
 ```bash
 git add lib/tokens/schema.ts app/globals.css themes/*.css design-system.json design-system.md tests/tokens/surface-role.test.ts
 git commit -m "feat(tokens): add gated --surface/--surface-foreground role"
@@ -180,6 +190,7 @@ git commit -m "feat(tokens): add gated --surface/--surface-foreground role"
 **Files:** Modify `app/globals.css` + `themes/neutral.css` (tune `--accent`, both blocks); `components/ui/button.tsx`; regenerate manifest. Test `tests/ui/button-hover.test.tsx`.
 
 - [ ] **Step 1: failing test**
+
 ```tsx
 // tests/ui/button-hover.test.tsx
 // @vitest-environment jsdom
@@ -206,6 +217,7 @@ describe("button hover uses the accent surface", () => {
 - [ ] **Step 4: run → PASS.** `npm run check` green. Sanity: `--accent` ≠ `--muted` in neutral both blocks.
 
 - [ ] **Step 5: commit**
+
 ```bash
 git add components/ui/button.tsx app/globals.css themes/neutral.css design-system.json design-system.md tests/ui/button-hover.test.tsx
 git commit -m "feat(ui): activate --accent as button hover surface (un-overload --muted)"
@@ -218,6 +230,7 @@ git commit -m "feat(ui): activate --accent as button hover surface (un-overload 
 **Files:** Create `components/ui/avatar.tsx`; Test `tests/ui/avatar.test.tsx`.
 
 - [ ] **Step 1: failing test**
+
 ```tsx
 // tests/ui/avatar.test.tsx
 // @vitest-environment jsdom
@@ -243,6 +256,7 @@ describe("Avatar", () => {
 - [ ] **Step 2: run → FAIL.**
 
 - [ ] **Step 3: implement**
+
 ```tsx
 // components/ui/avatar.tsx
 import * as React from "react"
@@ -268,6 +282,7 @@ export { Avatar, AvatarImage, AvatarFallback, AvatarGroup }
 - [ ] **Step 4: run → PASS.**
 
 - [ ] **Step 5: commit**
+
 ```bash
 git add components/ui/avatar.tsx tests/ui/avatar.test.tsx
 git commit -m "feat(ui): Avatar/AvatarImage/AvatarFallback/AvatarGroup (radix)"
@@ -280,6 +295,7 @@ git commit -m "feat(ui): Avatar/AvatarImage/AvatarFallback/AvatarGroup (radix)"
 **Files:** Create `components/ui/badge.tsx`; Test `tests/ui/badge.test.tsx`.
 
 - [ ] **Step 1: failing test**
+
 ```tsx
 // tests/ui/badge.test.tsx
 // @vitest-environment jsdom
@@ -300,6 +316,7 @@ describe("Badge", () => {
 - [ ] **Step 2: run → FAIL.**
 
 - [ ] **Step 3: implement**
+
 ```tsx
 // components/ui/badge.tsx
 import * as React from "react"
@@ -334,6 +351,7 @@ export { Badge, badgeVariants }
 - [ ] **Step 4: run → PASS.**
 
 - [ ] **Step 5: commit**
+
 ```bash
 git add components/ui/badge.tsx tests/ui/badge.test.tsx
 git commit -m "feat(ui): Badge with semantic variants"
@@ -346,6 +364,7 @@ git commit -m "feat(ui): Badge with semantic variants"
 **Files:** Create `components/ui/separator.tsx`; Test `tests/ui/separator.test.tsx`.
 
 - [ ] **Step 1: failing test**
+
 ```tsx
 // tests/ui/separator.test.tsx
 // @vitest-environment jsdom
@@ -366,6 +385,7 @@ describe("Separator", () => {
 - [ ] **Step 2: run → FAIL.**
 
 - [ ] **Step 3: implement**
+
 ```tsx
 // components/ui/separator.tsx
 import * as React from "react"
@@ -389,6 +409,7 @@ export { Separator }
 - [ ] **Step 4: run → PASS.**
 
 - [ ] **Step 5: commit**
+
 ```bash
 git add components/ui/separator.tsx tests/ui/separator.test.tsx
 git commit -m "feat(ui): Separator (radix)"
@@ -401,6 +422,7 @@ git commit -m "feat(ui): Separator (radix)"
 **Files:** Create `components/ui/code.tsx`; Test `tests/ui/code.test.tsx`.
 
 - [ ] **Step 1: failing test**
+
 ```tsx
 // tests/ui/code.test.tsx
 // @vitest-environment jsdom
@@ -425,6 +447,7 @@ describe("Code + Kbd", () => {
 - [ ] **Step 2: run → FAIL.**
 
 - [ ] **Step 3: implement**
+
 ```tsx
 // components/ui/code.tsx
 import * as React from "react"
@@ -442,6 +465,7 @@ export { Code, Kbd }
 - [ ] **Step 4: run → PASS.**
 
 - [ ] **Step 5: commit**
+
 ```bash
 git add components/ui/code.tsx tests/ui/code.test.tsx
 git commit -m "feat(ui): Code + Kbd (Kbd consumes 2xs)"
@@ -456,6 +480,7 @@ git commit -m "feat(ui): Code + Kbd (Kbd consumes 2xs)"
 `components/ui/` is gate-excluded (`run.ts` `EXCLUDE_DIRS`), so assert directly via the pure check fn.
 
 - [ ] **Step 1: write test**
+
 ```ts
 // tests/ui/no-hardcoded-color.test.ts
 // @vitest-environment node
@@ -478,6 +503,7 @@ describe("new ui primitives are token-only (no hardcoded colors)", () => {
 - [ ] **Step 2: run → PASS** (the components above use only token utilities). If any fails, fix the component to use tokens.
 
 - [ ] **Step 3: commit**
+
 ```bash
 git add tests/ui/no-hardcoded-color.test.ts
 git commit -m "test(ui): new primitives carry no hardcoded colors"
@@ -490,6 +516,7 @@ git commit -m "test(ui): new primitives carry no hardcoded colors"
 **Files:** Modify `components/design-system/component-showcase.tsx`.
 
 - [ ] **Step 1: implement** — replace the faked `Status (token utilities)` `<span>` block (lines 42-55) with `Badge` usage, and add Avatar / Separator / Code+Kbd groups:
+
 ```tsx
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarGroup } from "@/components/ui/avatar";
@@ -520,11 +547,13 @@ import { Code, Kbd } from "@/components/ui/code";
   <div className="flex h-5 items-center gap-3 text-sm text-muted-foreground">Docs <Separator orientation="vertical" /> API <Separator orientation="vertical" /> Blog</div>
 </Group>
 ```
+
 (Status dots use `bg-current` — inherits the badge's foreground, not a hardcoded color; the label always carries the meaning.)
 
 - [ ] **Step 2: verify** — `npm run check` green (showcase is scanned; ensure no arbitrary/hardcoded classes — `size-1.5`/`bg-current` are fine). `npm run build` compiles.
 
 - [ ] **Step 3: commit**
+
 ```bash
 git add components/design-system/component-showcase.tsx
 git commit -m "docs(design-system): showcase Badge/Avatar/Separator/Code+Kbd (Badge replaces faked pills)"
@@ -543,6 +572,7 @@ git commit -m "docs(design-system): showcase Badge/Avatar/Separator/Code+Kbd (Ba
 - [ ] **Step 2: verify** — `npx vitest run tests/surfaces.test.ts` green (AGENTS.md edit stays inside the design-system block; doesn't break the inline-guard).
 
 - [ ] **Step 3: commit**
+
 ```bash
 git add docs/NAMING-CONVENTION.md AGENTS.md
 git commit -m "docs: document surface role, 2xs step, accent-as-hover, icon set"
@@ -563,6 +593,7 @@ git commit -m "docs: document surface role, 2xs step, accent-as-hover, icon set"
 ---
 
 ## Notes for the executor
+
 - **`npm run tokens` after ANY token edit** — value changes (like `--accent`) make the manifest stale → `manifest-fresh` red until regenerated; stage `design-system.{json,md}` with the change.
 - **All 4 theme surfaces** (globals + neutral + swiss + brutalist) must carry every new COLOR token in BOTH blocks or `both-theme`/`parity`/`contrast` go red. Note: `npm run check`'s `both-theme`+`contrast` read **only `app/globals.css`**; the THEME files (swiss/brutalist) are gated by `tests/themes/{parity,contrast}.test.ts` (run via `npm test`) — so a missing/under-contrast theme token reds the **test suite**, not `npm run check`. The `2xs` type step is `:root`-only (type isn't themed per-block).
 - **`npm run tokens` regenerates from `app/globals.css` alone** (the only file with an `@theme inline` block); theme files just hold `:root`/`.dark` value-sets applied later via `npm run theme`.

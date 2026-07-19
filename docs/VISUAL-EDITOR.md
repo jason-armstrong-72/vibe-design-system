@@ -8,7 +8,7 @@ The design system ships a built-in visual editor for live token editing. It runs
 
 ## Starting the editor
 
-1. Open **http://localhost:3000/design-system** (dev server must be running).
+1. Open **<http://localhost:3000/design-system>** (dev server must be running).
 2. Click the **Edit** button fixed to the bottom-right corner of the page.
 3. The editor panel appears docked on the right side.
 
@@ -19,7 +19,8 @@ The design system ships a built-in visual editor for live token editing. It runs
 **Method 1 — Direct click**
 Hover over any element on the page. Elements with design tokens show a thin outline. Click to select; the panel updates to show that token's controls.
 
-**Method 2 — Eyedropper / pick mode**
+### Method 2 — Eyedropper / pick mode
+
 1. Click the eyedropper icon in the panel toolbar.
 2. Cursor becomes a crosshair. Click any element on the page.
 3. A menu lists all tokens that apply to that element.
@@ -33,7 +34,7 @@ Hover over any element on the page. Elements with design tokens show a thin outl
 Controls are matched to the token type:
 
 | Token type | Control |
-|---|---|
+| --- | --- |
 | Colors | OKLCH sliders (Lightness / Chroma / Hue), hex input, screen eyedropper (Chromium only) |
 | Spacing / radius / font size | Slider + number field + unit selector (rem / px / em / %) |
 | Durations | Millisecond slider |
@@ -74,11 +75,12 @@ Changes save automatically — no save button needed.
 ## Undo and redo
 
 | Action | Keyboard | Button |
-|---|---|---|
+| --- | --- | --- |
 | Undo | Cmd+Z (Mac) / Ctrl+Z (Win/Linux) | ← in panel header |
 | Redo | Cmd+Shift+Z (Mac) / Ctrl+Shift+Z (Win/Linux) | → in panel header |
 
 Notes:
+
 - Keyboard shortcuts work when focus is **not** inside a text field (to allow native field undo).
 - Slider drags coalesce into a single history entry.
 - Undoing a change in the opposite theme automatically switches the editing block.

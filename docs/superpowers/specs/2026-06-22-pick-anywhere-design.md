@@ -49,6 +49,7 @@ synthesized `bg-foreground`/`bg-primary-foreground` aren't emitted by Tailwind, 
 group except radius — these vars (`--primary`, `--primary-foreground`, `--fs-sm`, `--elevation-md`,
 `--font-sans`, …) are all emitted to `:root`/`.dark`, so `var(<token.name>)` always resolves, with **no
 dependency on which Tailwind utility class got emitted** and **no per-token prefix logic**:
+
 - **color** → `probe.style.color = var(<token.name>)`, read `color`. (One resolved colour per token; matched
   against the element's `background-color` **and** `color`.) Works uniformly for base, `-foreground`, `border`,
   `ring`, `input` colour tokens.
@@ -98,6 +99,7 @@ under `color`, so it surfaces only as an incidental value-collision if its colou
 background/text — harmless and honest under option A.
 
 **Documented no-match cases (honest; no fuzzy/nearest matching) [R: correctness-B2/S6/S7]:**
+
 - a computed colour with alpha < 1 / `transparent` / `rgba(0,0,0,0)` (the default bg of most elements) →
   skip, no match (don't round zero-alpha into a near-black token);
 - `box-shadow: none`, inherited default font where nothing token-backed applies → skip;
@@ -137,7 +139,8 @@ framework- and DOM-free):
 - **`lib/editor/use-hover-rect.ts` — extracted shared hook [R: architecture-S1 / DRY].** The hover/rect/
   scroll-reposition logic in `highlight-overlay.tsx` (the cohesive `useEffect` at lines 33-114, whose comments
   document a real ~10-20px scroll-lag fix) is lifted to a **generic** hook **[R2: architecture-S1]**:
-  ```
+
+  ```ts
   useHoverRect<M>({
     active: boolean,
     match: (target: EventTarget | null) => M | null,   // returns the matched PAYLOAD, not a boolean
@@ -146,6 +149,7 @@ framework- and DOM-free):
     label?: (m: M) => string | null,                    // highlight renders data-token; pick → null
   }): { box: (Box & { label: string | null }) | null, boxRef }
   ```
+
   - **highlight-overlay:** `M = string` (token name); `match = t => closest("[data-token]")?.getAttribute(...)`;
     `onPick = name => select(name)`; `onScroll: "reposition"`; `label = name => name`. Behavior unchanged — its
     existing tests assert only `.ed-highlight`/`.ed-highlight-label`/clear-on-leave/scroll-listener, all preserved.
@@ -168,7 +172,7 @@ framework- and DOM-free):
   each listing its matching token(s) with a colour **swatch reusing the `.ed-reuse-swatch` markup**
   (`components/editor/controls/color-oklch.tsx:349`; style at `editor-chrome.css:546`) for colour rows
   **[R: architecture-N1; R2/R3: path-fix]**. Row = `<button role="menuitem">`; click → `select(token)` then close
-  + clear highlight + **exit pick mode** (§3). Empty state — **honest copy** (the algorithm only knows "no
+  - clear highlight + **exit pick mode** (§3). Empty state — **honest copy** (the algorithm only knows "no
   index hit", not the *cause*): **"No matching design token for this element"** (do NOT assert "hardcoded /
   off-token" — unprovable) **[R3: should-fix-4]**.
   - **a11y [R: ux-S4]:** focus moves into the menu on open, restores to the eyedropper toggle on close (after the
@@ -207,6 +211,7 @@ Pick mode targets **real interactive elements** (buttons, links, inputs in the s
 resolve, never fire the element's native action or steal focus/scroll. **Pick mode is pointer-driven**
 (hover-to-pick); the resolve fires on **capture-phase `click`** (symmetry with the existing highlight-overlay
 click handler). The overlay binds, all **capture-phase**:
+
 - `pointerdown` → `preventDefault()` + `stopPropagation()` — suppresses native activation **and** focus-steal
   (so no element gets focused → no scroll-into-view excursion, and no subsequent keyboard activation). On the
   few engines where `<input>`/`<label>`/`contenteditable` can still focus on pointer-down, **defensively blur**
@@ -242,6 +247,7 @@ Resolution reads the **live-rendered theme**; `select` opens in the current `edi
 ## 5. Testing
 
 **`tests/editor/resolve-token.test.ts`** (pure, fast):
+
 - `resolveMatches`: single match; **collision** (one value → multiple tokens, all listed); multiple properties
   on one element grouped correctly; **no-match** → empty; alpha/`transparent`/`none` inputs skipped;
   `border-radius` only matches when the four corners are equal; the `GROUP_PROPERTY` table is exhaustive over
@@ -258,6 +264,7 @@ clears on leave, calls `onPick` on click; parameterized match predicate works fo
 `el => el`. (Keeps the refactor of `highlight-overlay` honest — its existing tests must still pass unchanged.)
 
 **`e2e/pick-anywhere.spec.ts`** (the real fidelity gate, Playwright on `/design-system`):
+
 - enable editor → toggle eyedropper → click a showcase **Button** → popover lists `background → --primary` (+
   `text colour → --primary-foreground`); click the row → panel opens `--primary`, pick mode exits.
 - click a **Card** surface → the neutral **collision** (several tokens) + a `box-shadow → --elevation-*` row
@@ -277,5 +284,6 @@ clears on leave, calls `onPick` on click; parameterized match predicate works fo
 ---
 
 ## 6. Out-of-scope (YAGNI)
+
 No spacing/font-weight/duration/z-index resolution, no parent-climb, no smart-ranking, no inline-edit, no
 multi-element/marquee, no "copy token name", no pick history.
