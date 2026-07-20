@@ -635,7 +635,9 @@ export function ComponentShowcase() {
                   </SidebarGroup>
                 </SidebarContent>
               </Sidebar>
-              <main className="flex-1 p-4 text-sm text-muted-foreground">Main content area.</main>
+              {/* A <div>, not <main>: this is a demo of a sidebar layout embedded in a page that
+                  already has its own <main>. A second <main> would be a duplicate landmark. */}
+              <div className="flex-1 p-4 text-sm text-muted-foreground">Main content area.</div>
             </SidebarProvider>
           </div>
         </Group>

@@ -8,7 +8,7 @@ afterEach(cleanup);
 describe("LengthSlider", () => {
   it("seeds the numeric value and unit from a rem value", () => {
     render(<LengthSlider token="--radius" value="0.625rem" onChange={() => {}} />);
-    const num = screen.getByLabelText(/--radius value/i) as HTMLInputElement;
+    const num = screen.getByRole("textbox", { name: /--radius value/i }) as HTMLInputElement;
     const unit = screen.getByLabelText(/--radius unit/i) as HTMLSelectElement;
     expect(num.value).toBe("0.625");
     expect(unit.value).toBe("rem");
@@ -23,7 +23,7 @@ describe("LengthSlider", () => {
   it("typing the number does NOT persist; it commits on blur with a validator-passing length", () => {
     const onChange = vi.fn();
     render(<LengthSlider token="--radius" value="0.625rem" onChange={onChange} />);
-    const num = screen.getByLabelText(/--radius value/i) as HTMLInputElement;
+    const num = screen.getByRole("textbox", { name: /--radius value/i }) as HTMLInputElement;
     fireEvent.change(num, { target: { value: "1" } });
     expect(onChange).not.toHaveBeenCalled();
     fireEvent.blur(num);
@@ -33,7 +33,7 @@ describe("LengthSlider", () => {
   it("commits the number on Enter", () => {
     const onChange = vi.fn();
     render(<LengthSlider token="--radius" value="0.625rem" onChange={onChange} />);
-    const num = screen.getByLabelText(/--radius value/i) as HTMLInputElement;
+    const num = screen.getByRole("textbox", { name: /--radius value/i }) as HTMLInputElement;
     fireEvent.change(num, { target: { value: "1.5" } });
     fireEvent.keyDown(num, { key: "Enter" });
     expect(onChange).toHaveBeenCalledWith("1.5rem");
@@ -60,7 +60,7 @@ describe("LengthSlider", () => {
     const { rerender } = render(
       <LengthSlider token="--radius" value="0.625rem" onChange={() => {}} />,
     );
-    const num = screen.getByLabelText(/--radius value/i) as HTMLInputElement;
+    const num = screen.getByRole("textbox", { name: /--radius value/i }) as HTMLInputElement;
     fireEvent.change(num, { target: { value: "9" } }); // uncommitted draft
     rerender(<LengthSlider token="--radius" value="1rem" onChange={() => {}} />);
     expect(num.value).toBe("1");
