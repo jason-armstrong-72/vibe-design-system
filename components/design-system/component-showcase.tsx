@@ -207,6 +207,9 @@ export function ComponentShowcase() {
         <Group label="Buttons — variants">
           <Button>Default</Button>
           <Button variant="secondary">Secondary</Button>
+          <Button variant="success">Success</Button>
+          <Button variant="warning">Warning</Button>
+          <Button variant="info">Info</Button>
           <Button variant="destructive">Destructive</Button>
           <Button variant="outline">Outline</Button>
           <Button variant="ghost">Ghost</Button>

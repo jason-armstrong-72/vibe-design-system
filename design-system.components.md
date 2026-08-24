@@ -6,7 +6,7 @@ These primitives already exist in `components/ui/*` — **import and use them; d
 
 ## Button
 
-- **Purpose:** Clickable action — variants (default/secondary/outline/ghost/destructive/link) + sizes.
+- **Purpose:** Clickable action — variants (default/secondary/outline/ghost/success/warning/info/destructive/link) + sizes.
 - **When to use:** Any action or submit. Use asChild to render a link as a button.
 - **Exports:** Button
 

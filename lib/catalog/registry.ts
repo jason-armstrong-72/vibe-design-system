@@ -10,7 +10,7 @@ export type CatalogEntry = {
 
 export const CATALOG: CatalogEntry[] = [
   { name: "Button", file: "components/ui/button.tsx", exports: ["Button"],
-    purpose: "Clickable action — variants (default/secondary/outline/ghost/destructive/link) + sizes.",
+    purpose: "Clickable action — variants (default/secondary/outline/ghost/success/warning/info/destructive/link) + sizes.",
     whenToUse: "Any action or submit. Use asChild to render a link as a button.",
     import: `import { Button } from "@/components/ui/button"`,
     snippet: `<Button variant="outline">Save</Button>` },
