@@ -8,7 +8,7 @@ afterEach(cleanup);
 describe("DurationSlider", () => {
   it("seeds the numeric value + unit from a ms value", () => {
     render(<DurationSlider token="--duration-base" value="250ms" onChange={() => {}} />);
-    const num = screen.getByLabelText(/--duration-base value/i) as HTMLInputElement;
+    const num = screen.getByRole("textbox", { name: /--duration-base value/i }) as HTMLInputElement;
     const unit = screen.getByLabelText(/--duration-base unit/i) as HTMLSelectElement;
     expect(num.value).toBe("250");
     expect(unit.value).toBe("ms");
@@ -17,7 +17,7 @@ describe("DurationSlider", () => {
   it("typing the number does NOT persist; it commits on blur with a validator-passing duration", () => {
     const onChange = vi.fn();
     render(<DurationSlider token="--duration-base" value="250ms" onChange={onChange} />);
-    const num = screen.getByLabelText(/--duration-base value/i) as HTMLInputElement;
+    const num = screen.getByRole("textbox", { name: /--duration-base value/i }) as HTMLInputElement;
     fireEvent.change(num, { target: { value: "300" } });
     expect(onChange).not.toHaveBeenCalled();
     fireEvent.blur(num);
@@ -27,7 +27,7 @@ describe("DurationSlider", () => {
   it("commits the number on Enter", () => {
     const onChange = vi.fn();
     render(<DurationSlider token="--duration-base" value="250ms" onChange={onChange} />);
-    const num = screen.getByLabelText(/--duration-base value/i) as HTMLInputElement;
+    const num = screen.getByRole("textbox", { name: /--duration-base value/i }) as HTMLInputElement;
     fireEvent.change(num, { target: { value: "120" } });
     fireEvent.keyDown(num, { key: "Enter" });
     expect(onChange).toHaveBeenCalledWith("120ms");
@@ -45,7 +45,7 @@ describe("DurationSlider", () => {
     const { rerender } = render(
       <DurationSlider token="--duration-base" value="250ms" onChange={() => {}} />,
     );
-    const num = screen.getByLabelText(/--duration-base value/i) as HTMLInputElement;
+    const num = screen.getByRole("textbox", { name: /--duration-base value/i }) as HTMLInputElement;
     fireEvent.change(num, { target: { value: "999" } }); // uncommitted draft
     rerender(<DurationSlider token="--duration-base" value="400ms" onChange={() => {}} />);
     expect(num.value).toBe("400");

@@ -9,7 +9,7 @@ describe("OpacitySlider", () => {
   it("seeds the slider + numeric field from the value", () => {
     render(<OpacitySlider token="--opacity-disabled" value="0.5" onChange={() => {}} />);
     const slider = screen.getByLabelText(/--opacity-disabled slider/i) as HTMLInputElement;
-    const num = screen.getByLabelText(/--opacity-disabled value/i) as HTMLInputElement;
+    const num = screen.getByRole("textbox", { name: /--opacity-disabled value/i }) as HTMLInputElement;
     expect(slider.type).toBe("range");
     expect(Number(slider.value)).toBeCloseTo(0.5, 3);
     expect(num.value).toBe("0.5");
@@ -26,7 +26,7 @@ describe("OpacitySlider", () => {
   it("typing the number does NOT persist; it commits on blur (clamped/tidied)", () => {
     const onChange = vi.fn();
     render(<OpacitySlider token="--opacity-disabled" value="0.5" onChange={onChange} />);
-    const num = screen.getByLabelText(/--opacity-disabled value/i) as HTMLInputElement;
+    const num = screen.getByRole("textbox", { name: /--opacity-disabled value/i }) as HTMLInputElement;
     fireEvent.change(num, { target: { value: "0.3" } });
     expect(onChange).not.toHaveBeenCalled();
     fireEvent.blur(num);
@@ -36,7 +36,7 @@ describe("OpacitySlider", () => {
   it("commits the number on Enter", () => {
     const onChange = vi.fn();
     render(<OpacitySlider token="--opacity-disabled" value="0.5" onChange={onChange} />);
-    const num = screen.getByLabelText(/--opacity-disabled value/i) as HTMLInputElement;
+    const num = screen.getByRole("textbox", { name: /--opacity-disabled value/i }) as HTMLInputElement;
     fireEvent.change(num, { target: { value: "0.8" } });
     fireEvent.keyDown(num, { key: "Enter" });
     expect(onChange).toHaveBeenCalledWith("0.8");
@@ -46,7 +46,7 @@ describe("OpacitySlider", () => {
     const { rerender } = render(
       <OpacitySlider token="--opacity-disabled" value="0.5" onChange={() => {}} />,
     );
-    const num = screen.getByLabelText(/--opacity-disabled value/i) as HTMLInputElement;
+    const num = screen.getByRole("textbox", { name: /--opacity-disabled value/i }) as HTMLInputElement;
     fireEvent.change(num, { target: { value: "0.9" } }); // uncommitted draft
     rerender(<OpacitySlider token="--opacity-disabled" value="0.2" onChange={() => {}} />);
     expect(num.value).toBe("0.2");

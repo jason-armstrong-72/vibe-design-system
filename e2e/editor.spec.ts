@@ -13,7 +13,7 @@ test.describe("editor seam", () => {
       await page.goto("/design-system");
       await page.getByRole("button", { name: /edit/i }).click(); // enable edit mode
       await page.locator('[data-token="--z-modal"]').click(); // select
-      const input = page.getByLabel(/--z-modal value/i);
+      const input = page.getByRole("textbox", { name: /--z-modal value/i });
       await input.fill("1500");
       await input.blur();
       // persisted (debounced) → poll the file
@@ -122,7 +122,7 @@ test.describe("editor seam", () => {
       await page.locator('[data-token="--z-modal"]').click(); // select
 
       // Change it and confirm the file was rewritten.
-      const input = page.getByLabel(/--z-modal value/i);
+      const input = page.getByRole("textbox", { name: /--z-modal value/i });
       await input.fill("1500");
       await input.blur();
       await expect
@@ -206,7 +206,7 @@ test.describe("editor seam", () => {
       await page.locator('[data-token="--z-modal"]').first().click();
       await page.evaluate(() => window.scrollTo(0, 600));
 
-      const num = page.getByLabel(/--z-modal value/i);
+      const num = page.getByRole("textbox", { name: /--z-modal value/i });
       await expect(num).toBeVisible();
       await num.click();
       await num.fill("1500");
@@ -283,7 +283,7 @@ test.describe("editor seam", () => {
       await page.getByRole("button", { name: /edit/i }).click(); // enable edit mode
       await page.locator('[data-token="--z-toast"]').click(); // select
 
-      const input = page.getByLabel(/--z-toast value/i);
+      const input = page.getByRole("textbox", { name: /--z-toast value/i });
 
       // First committed edit → 2400.
       await input.fill("2400");
@@ -339,7 +339,7 @@ test.describe("editor seam", () => {
       await page.getByRole("button", { name: /edit/i }).click(); // enable edit mode
       await page.locator('[data-token="--radius"]').first().click(); // select
 
-      const num = page.getByLabel(/--radius value/i);
+      const num = page.getByRole("textbox", { name: /--radius value/i });
       await expect(num).toBeVisible();
       await num.fill("1");
       await num.dispatchEvent("input");
