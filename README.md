@@ -20,6 +20,21 @@ Gemini CLI, and GitHub Copilot auto-load the contract (`CLAUDE.md` / `.cursor/ru
 those two files. _(On Gemini CLI, run `/memory show` to confirm the contract loaded — `@`-import support is
 version-dependent.)_
 
+## Pages
+
+```bash
+npm run dev            # http://localhost:3000
+PORT=3100 npm run dev  # the port is set by env — `-- --port` is swallowed by concurrently
+```
+
+The home page (`/`) links to all three:
+
+| Route | What it is |
+| --- | --- |
+| `/design-system` | Every token, grouped and live, plus the component showcase. The visual editor mounts here. |
+| `/preview-app` | Dense issue-tracker app shell — the dogfood check on a real product UI. |
+| `/pricing` | Marketing-style pricing layout on the same tokens. |
+
 ## Themes
 
 Pick a look at adoption time, then fine-tune in the editor. Default is **Neutral** (already applied —

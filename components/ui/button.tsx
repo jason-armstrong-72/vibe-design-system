@@ -14,6 +14,9 @@ const buttonVariants = cva(
           "border-border bg-background hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+        success: "bg-success text-success-foreground hover:bg-success/80",
+        warning: "bg-warning text-warning-foreground hover:bg-warning/80",
+        info: "bg-info text-info-foreground hover:bg-info/80",
         ghost:
           "hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground dark:hover:bg-accent/50",
         destructive:
